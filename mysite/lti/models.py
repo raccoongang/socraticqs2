@@ -33,11 +33,13 @@ class LTIUser(models.Model):
     LTI user params saved to extra_data field::
 
         'user_id'
-        'ext_lms'
+        'context_id'
         'lis_person_name_full'
         'lis_person_name_given'
         'lis_person_name_family'
+        'tool_consumer_instance_guid'
         'lis_person_contact_email_primary'
+        'tool_consumer_info_product_family_code'
     """
     user_id = models.CharField(max_length=255, blank=False)
     consumer = models.CharField(max_length=64, blank=True)

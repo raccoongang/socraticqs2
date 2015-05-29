@@ -8,8 +8,8 @@ from django.views.decorators.csrf import csrf_exempt
 from ims_lti_py.tool_provider import DjangoToolProvider
 from django.shortcuts import render_to_response, redirect
 
-from lti.models import LTIUser
 from lti import app_settings as settings
+from lti.models import LTIUser, CourseRef
 
 
 ROLES_MAP = {
@@ -19,23 +19,24 @@ ROLES_MAP = {
 
 MOODLE_PARAMS = (
     'user_id',
-    'ext_lms',
+    'context_id',
     'lis_person_name_full',
     'lis_person_name_given',
     'lis_person_name_family',
+    'tool_consumer_instance_guid',
     'lis_person_contact_email_primary',
+    'tool_consumer_info_product_family_code',
 )
 
 LOGGER = logging.getLogger('lti_debug')
 
 
 @csrf_exempt
-def lti_init(request, course_id=None, unit_id=None):
+def lti_init(request, unit_id=None):
     """LTI init view
 
     Analyze LTI POST request to start LTI session.
 
-    :param course_id: course id from launch url
     :param unit_id: unit id from lunch url
     """
     if settings.LTI_DEBUG:
@@ -68,26 +69,33 @@ def lti_init(request, course_id=None, unit_id=None):
     if not is_valid:
         return render_to_response('lti/error.html', RequestContext(request))
 
-    return lti_redirect(request, course_id, unit_id)
+    return lti_redirect(request, unit_id)
 
 
-def lti_redirect(request, course_id=None, unit_id=None):
+def lti_redirect(request, unit_id=None):
     """Create user and redirect to Course
 
     |  Create LTIUser with all needed link to Django user
     |  and/or UserSocialAuth.
     |  Finally login Django user and redirect to Course
 
-    :param course_id: course id from launch url
     :param unit_id: unit id from lunch url
     """
     request_dict = pickle.loads(request.session['LTI_POST'])
-    consumer_name = request_dict.get('ext_lms', 'lti')
+
+    context_id = request_dict.get('context_id')
+    course_ref = CourseRef.objects.filter(context_id=context_id).first()
+    consumer_name = request_dict.get('tool_consumer_info_product_family_code', 'lti')
     user_id = request_dict.get('user_id', None)
     roles = ROLES_MAP.get(request_dict.get('roles', None), 'student')
-    if not user_id or not course_id:
+
+    if not user_id:
         return render_to_response('lti/error.html', RequestContext(request))
-    course_id = int(course_id)
+
+    if course_ref:
+        course_id = course_ref.course.id
+    else:
+        return redirect(reverse('ct:home'))
 
     user, created = LTIUser.objects.get_or_create(user_id=user_id,
                                                   consumer=consumer_name,
