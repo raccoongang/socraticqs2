@@ -1,4 +1,6 @@
 import json
+from django.utils import timezone
+
 from django.db import models
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -129,3 +131,35 @@ class LTIUser(models.Model):
         :return: bool
         """
         return bool(self.django_user)
+
+
+class CourseRef(models.Model):
+    """Course reference
+
+    Represent Course reference with meta information
+    such as::
+
+        parent -> parent CourseRef
+        course -> Courslet Course entry
+        instructors -> list of User entry
+        date - > creation date
+        context_id -> LTI context_id
+        tc_guid - > LTI tool_consumer_instance_guid
+    """
+    parent = models.ForeignKey(
+        'self', blank=True, null=True,
+        verbose_name='Previous generation of Course'
+    )
+    course = models.OneToOneField(Course, verbose_name='Courslet Course')
+    instructors = models.ManyToManyField(User, verbose_name='Course Instructors')
+    date = models.DateTimeField('Creation date and time', default=timezone.now)
+    context_id = models.CharField('LTI context_id', max_length=254)
+    tc_guid = models.CharField('LTI tool_consumer_instance_guid', max_length=128)
+
+    class Meta:
+        verbose_name = "CourseRef"
+        verbose_name_plural = "CourseRefs"
+        unique_together = ('context_id', 'course')
+
+    def __str__(self):
+        return 'Course reference with meta info'
