@@ -10,6 +10,7 @@ from django.shortcuts import render_to_response, redirect
 
 from lti import app_settings as settings
 from lti.models import LTIUser, CourseRef
+from ct.models import Course
 
 
 ROLES_MAP = {
@@ -92,14 +93,10 @@ def lti_redirect(request, unit_id=None):
     if not user_id:
         return render_to_response('lti/error.html', RequestContext(request))
 
-    if course_ref:
-        course_id = course_ref.course.id
-    else:
-        return redirect(reverse('ct:home'))
-
-    user, created = LTIUser.objects.get_or_create(user_id=user_id,
-                                                  consumer=consumer_name,
-                                                  course_id=course_id)
+    user, created = LTIUser.objects.get_or_create(
+        user_id=user_id, consumer=consumer_name,
+        course_id=request_dict.get('context_id')
+    )
     extra_data = {k: v for (k, v) in request_dict.iteritems()
                   if k in MOODLE_PARAMS}
     user.extra_data = json.dumps(extra_data)
@@ -107,8 +104,16 @@ def lti_redirect(request, unit_id=None):
 
     if not user.is_linked:
         user.create_links()
-
     user.login(request)
+
+    if course_ref:
+        course_id = course_ref.course.id
+    elif 'prof' in roles:
+        course_ref = create_courseref(request, user)
+        course_id = course_ref.course.id
+    else:
+        return redirect(reverse('ct:home'))
+
     user.enroll(roles, course_id)
 
     if user.is_enrolled(roles, course_id):
@@ -125,3 +130,22 @@ def lti_redirect(request, unit_id=None):
             return redirect(reverse(dispatch, args=(course_id, unit_id)))
     else:
         return redirect(reverse('ct:home'))
+
+
+def create_courseref(request, user):
+    """Create CourseRef and Course entry based on context_title
+
+    :param user: LTI user
+    """
+    request_dict = pickle.loads(request.session['LTI_POST'])
+    course, created = Course.objects.get_or_create(
+        title=request_dict.get('context_title'), addedBy=user.django_user,
+    )
+    course_ref = CourseRef(
+        course=course, context_id=request_dict.get('context_id'),
+        tc_guid=request_dict.get('tool_consumer_instance_guid')
+    )
+    course_ref.save()
+    course_ref.instructors.add(user.django_user)
+
+    return course_ref

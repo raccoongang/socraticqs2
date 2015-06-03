@@ -9,6 +9,7 @@ class LTIUserAdmin(admin.ModelAdmin):
 
 class CourseRefAdmin(admin.ModelAdmin):
     list_display = ('context_id', 'parent', 'course', 'date')
+    filter_horizontal = ('instructors',)
 
 
 admin.site.register(LTIUser, LTIUserAdmin)

@@ -135,7 +135,7 @@ class LTIUser(models.Model):
         return bool(self.django_user)
 
 
-class CourseRef(models.Model):
+class CourseRef(models.Model):  # pragma: no cover
     """Course reference
 
     Represent Course reference with meta information
@@ -164,4 +164,4 @@ class CourseRef(models.Model):
         unique_together = ('context_id', 'course')
 
     def __str__(self):
-        return 'Course reference with meta info'
+        return self.course.title + str(self.date)
