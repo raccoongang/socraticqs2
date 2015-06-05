@@ -1,0 +1,34 @@
+{% extends "ct/index.html" %}
+
+{% block title %}
+    Course source choise
+    <hr>
+{% endblock %}
+
+{% block content %}
+    <p>Select Course creation method.</p>
+    <p>You can choise to create new Course or select previously created Course below and make a new revision.</p>
+
+    <form action="." method="post">
+        {% csrf_token %}
+        {{ form }}
+        <br>
+        <input type="submit" value="Submit" />
+    </form>
+
+    <script type="text/javascript">
+        $("label[for='id_source']").hide();
+        $("#id_source").hide();
+        $("#choice_0, #choice_1").change(function () {
+            var choise_val = $(this).val();
+            if (choise_val == 0) {
+                $("label[for='id_source']").hide();
+                $("#id_source").hide();
+            }
+            else if (choise_val == 1) {
+                $("label[for='id_source']").show();
+                $("#id_source").show();
+            }
+         });
+    </script>
+{% endblock content %}

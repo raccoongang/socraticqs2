@@ -1,26 +1,26 @@
 # coding=utf-8
 
 import json
+import pickle
 import oauth2
 
-from mock import patch
+from mock import patch, Mock
 from ddt import ddt, data, unpack
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 
 from psa.models import UserSocialAuth
-from ct.models import Course, Role, Unit
+from ct.models import Course, Role, Unit, CourseUnit
 from lti.models import LTIUser, CourseRef
+from lti.views import clone_course, create_courseref
 
 
 class LTITestCase(TestCase):
     def setUp(self):
         """Preconditions."""
         self.client = Client()
-
-        self.user = User(username='test_user',
-                         email='test@test.com')
-        self.user.save()
+        self.user = User.objects.create_user('test', 'test@test.com', 'test')
 
         mocked_nonce = u'135685044251684026041377608307'
         mocked_timestamp = u'1234567890'
@@ -57,6 +57,8 @@ class LTITestCase(TestCase):
         self.course = Course(title='Test title',
                              description='test description',
                              access='Public',
+                             enrollCode='111',
+                             lockout='222',
                              addedBy=self.user)
         self.course.save()
         self.course_ref = CourseRef(
@@ -64,6 +66,13 @@ class LTITestCase(TestCase):
             tc_guid=self.headers.get('tool_consumer_instance_guid')
         )
         self.course_ref.save()
+        self.course_ref.instructors.add(self.user)
+
+        self.courseunit = CourseUnit(
+            unit=self.unit, course=self.course,
+            order=0, addedBy=self.user
+        )
+        self.courseunit.save()
 
 
 @patch('lti.views.DjangoToolProvider')
@@ -241,27 +250,63 @@ class ModelTest(LTITestCase):
         self.assertTrue(lti_user.is_linked)
 
 
+@ddt
 @patch('lti.views.DjangoToolProvider')
 class TestCourseRef(LTITestCase):
     """Testing CourseRef object"""
-    def test_course_ref_as_prof(self, mocked):
+    @unpack
+    @data(('Instructor', 'lti/choice-course-source.html'), ('Student', 'ct/index.html'))
+    def test_course_ref_roles(self, role, page, mocked):
+        """Test different action for different roles"""
         mocked.return_value.is_valid_request.return_value = True
-        self.headers['roles'] = 'Instructor'
+        self.headers['roles'] = role
         self.course_ref.delete()
-        response = self.client.post(
-            '/lti/', data=self.headers, follow=True
-        )
-        self.assertTrue(CourseRef.objects.filter(course=self.course).exists())
-        self.assertTemplateUsed(response, 'ct/course.html')
-
-    def test_course_ref_as_student(self, mocked):
-        mocked.return_value.is_valid_request.return_value = True
-        self.course_ref.delete()
-        response = self.client.post(
-            '/lti/', data=self.headers, follow=True
-        )
+        response = self.client.post('/lti/', data=self.headers, follow=True)
         self.assertFalse(CourseRef.objects.filter(course=self.course).exists())
-        self.assertTemplateUsed(response, 'ct/index.html')
+        self.assertTemplateUsed(response, page)
+
+    def test_clone_course(self, mocked):
+        """Test Course cloning
+
+        Check that Course is cloned correctly
+        and CourseUnit entry also cloned correctly.
+        """
+        cloned_course = clone_course(self.user, self.course)
+        self.assertEqual(cloned_course.title, self.course.title)
+        self.assertEqual(cloned_course.description, self.course.description)
+        self.assertEqual(cloned_course.access, self.course.access)
+        self.assertEqual(cloned_course.enrollCode, self.course.enrollCode)
+        self.assertEqual(cloned_course.lockout, self.course.lockout)
+        self.assertTrue(cloned_course.courseunit_set.all())
+        self.assertNotEqual(cloned_course.courseunit_set.first(), self.courseunit)
+        self.assertEqual(cloned_course.courseunit_set.first().unit, self.unit)
+
+    def test_create_courseref_only_lti(self, mocked):
+        """Test that only LTI is assowed"""
+        request = Mock()
+        request.session = {}
+        res = create_courseref(request)
+        self.assertEqual(res.content, 'Only LTI allowed')
+
+    def test_create_courseref_existed_courseref(self, mocked):
+        lti_post = {'context_id': '1',
+                    'context_title': 'test title',
+                    'tool_consumer_instance_guid': 'test.dot.com'}
+        request = Mock()
+        request.user = self.user
+        request.session = {'LTI_POST': pickle.dumps(lti_post)}
+        res = create_courseref(request)
+        self.assertEqual(res.url, reverse('ct:edit_course', args=(self.course.id,)))
+
+    def test_create_courseref_non_existed_courseref(self, mocked):
+        lti_post = {'context_id': '1111',
+                    'context_title': 'test title',
+                    'tool_consumer_instance_guid': 'test.dot.com'}
+        request = Mock()
+        request.user = self.user
+        request.session = {'LTI_POST': pickle.dumps(lti_post)}
+        res = create_courseref(request)
+        self.assertEqual(res.url, reverse('ct:edit_course', args=(2,)))
 
 
 @patch('lti.views.DjangoToolProvider')
@@ -273,3 +318,39 @@ class TestUnit(LTITestCase):
             '/lti/unit/1/', data=self.headers, follow=True
         )
         self.assertTemplateUsed(response, 'ct/study_unit.html')
+
+
+class TestChoiceCourseSourceForm(LTITestCase):
+    """Testing render ChoiceCourseForm"""
+    def test_get_fail(self):
+        """GET must fail due to @login_required decorator"""
+        res = self.client.get(reverse('lti:choice_course_source'))
+        self.assertRedirects(res, '/login/?next=' + reverse('lti:choice_course_source'))
+
+    def test_get_success(self):
+        """GET must be success"""
+        self.client.login(username='test', password='test')
+        res = self.client.get(reverse('lti:choice_course_source'))
+        self.assertTemplateUsed(res, 'lti/choice-course-source.html')
+        self.assertIn('id="choice"', res.content)
+        self.assertIn('for="choice_0"', res.content)
+        self.assertIn('for="choice_1"', res.content)
+
+    def test_post_fail_only_lti(self):
+        """POST must fail due to @only_lti decorator"""
+        self.client.login(username='test', password='test')
+        res = self.client.post(
+            reverse('lti:choice_course_source'),
+            data={'choice': '0', 'source': '1'}
+        )
+        self.assertEqual(res.content, 'Only LTI allowed')
+
+    def test_post_fail_no_courseref(self):
+        """POST must fail because of no CourseRef is availabe"""
+        self.course_ref.instructors.remove(self.user)
+        self.client.login(username='test', password='test')
+        res = self.client.post(
+            reverse('lti:choice_course_source'),
+            data={'choice': '0', 'source': '1'}
+        )
+        self.assertIn('class="errorlist"', res.content)

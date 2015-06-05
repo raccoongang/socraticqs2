@@ -6,11 +6,14 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import csrf_exempt
 from ims_lti_py.tool_provider import DjangoToolProvider
-from django.shortcuts import render_to_response, redirect
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render_to_response, redirect, render
 
+from lti.utils import only_lti
+from lti.forms import ChoiceCourseForm
 from lti import app_settings as settings
 from lti.models import LTIUser, CourseRef
-from ct.models import Course
+from ct.models import Course, Role, CourseUnit
 
 
 ROLES_MAP = {
@@ -109,8 +112,7 @@ def lti_redirect(request, unit_id=None):
     if course_ref:
         course_id = course_ref.course.id
     elif 'prof' in roles:
-        course_ref = create_courseref(request, user)
-        course_id = course_ref.course.id
+        return redirect(reverse('lti:choice_course_source'))
     else:
         return redirect(reverse('ct:home'))
 
@@ -132,20 +134,80 @@ def lti_redirect(request, unit_id=None):
         return redirect(reverse('ct:home'))
 
 
-def create_courseref(request, user):
+@login_required
+def choice_course_source(request):
+    """Handler for ChoiceCourseForm
+
+    Make a choise to create new Course or
+    merge content from existing one
+    """
+    parent_courseref = None
+    if request.method == 'POST':
+        form = ChoiceCourseForm(request.user, request.POST)
+        if form.is_valid():
+            choice = int(form.cleaned_data['choice'])
+            if choice:
+                parent_courseref = CourseRef.objects.filter(
+                    id=form.cleaned_data['source']
+                ).first()
+            return create_courseref(request, parent_courseref=parent_courseref)
+    else:
+        form = ChoiceCourseForm(request.user)
+
+    return render(request, 'lti/choice-course-source.html', {'form': form})
+
+
+def clone_course(user, course):
+    """Clone Course with all related entries
+
+    param: course Course entry
+    return: cloned Course entry
+    """
+    cloned_course = Course(
+        title=course.title, addedBy=user,
+        description=course.description, access=course.access,
+        enrollCode=course.enrollCode, lockout=course.lockout,
+    )
+    cloned_course.save()
+
+    for courseunit in course.courseunit_set.all():
+        cloned_courseunit = CourseUnit(
+            unit=courseunit.unit, course=cloned_course,
+            order=courseunit.order, addedBy=user
+        )
+        cloned_courseunit.save()
+
+    return cloned_course
+
+
+@only_lti
+def create_courseref(request, parent_courseref=None):
     """Create CourseRef and Course entry based on context_title
 
-    :param user: LTI user
+    param: parent_courseref: CourseRef
     """
     request_dict = pickle.loads(request.session['LTI_POST'])
-    course, created = Course.objects.get_or_create(
-        title=request_dict.get('context_title'), addedBy=user.django_user,
-    )
+    context_id = request_dict.get('context_id')
+    # Make sure this context_id is not used
+    course_ref = CourseRef.objects.filter(context_id=context_id).first()
+    if course_ref:
+        return redirect(reverse('ct:edit_course', args=(course_ref.course.id,)))
+
+    if parent_courseref:
+        course = clone_course(request.user, parent_courseref.course)
+    else:
+        course = Course(
+            title=request_dict.get('context_title'), addedBy=request.user
+        )
+        course.save()
+    role = Role(role='prof', course=course, user=request.user)
+    role.save()
+    course_id = course.id
     course_ref = CourseRef(
-        course=course, context_id=request_dict.get('context_id'),
+        parent=parent_courseref, course=course, context_id=context_id,
         tc_guid=request_dict.get('tool_consumer_instance_guid')
     )
     course_ref.save()
-    course_ref.instructors.add(user.django_user)
+    course_ref.instructors.add(request.user)
 
-    return course_ref
+    return redirect(reverse('ct:edit_course', args=(course_id,)))
