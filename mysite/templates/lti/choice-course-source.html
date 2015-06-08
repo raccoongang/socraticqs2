@@ -19,6 +19,10 @@
     <script type="text/javascript">
         $("label[for='id_source']").hide();
         $("#id_source").hide();
+        if ($('#id_source option').length == 0) {
+            $("#choice_1").attr('disabled', 'disabled');
+            $("#choice_1").attr('title', 'You have no saved Courses');
+        }
         $("#choice_0, #choice_1").change(function () {
             var choise_val = $(this).val();
             if (choise_val == 0) {

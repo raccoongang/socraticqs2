@@ -12,7 +12,7 @@ class ChoiceCourseForm(forms.Form):
         super(ChoiceCourseForm, self).__init__(*args, **kwargs)
         self.fields['source'] = forms.ChoiceField(
             choices=[(i.id, str(i)) for i in CourseRef.objects.filter(instructors__in=[user])],
-            label='Previous revisions'
+            label='Previous revisions', required=False
         )
 
     choice = forms.ChoiceField(
