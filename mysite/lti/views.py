@@ -111,7 +111,8 @@ def lti_redirect(request, unit_id=None):
 
     if course_ref:
         course_id = course_ref.course.id
-    elif 'prof' in roles:
+    elif ('prof' in roles and 'context_title' in request_dict and
+          'tool_consumer_instance_guid' in request_dict):
         return redirect(reverse('lti:choice_course_source'))
     else:
         return redirect(reverse('ct:home'))

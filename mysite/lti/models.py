@@ -45,7 +45,7 @@ class LTIUser(models.Model):
     consumer = models.CharField(max_length=64, blank=True)
     extra_data = models.TextField(max_length=1024, blank=False)
     django_user = models.ForeignKey(User, null=True, related_name='lti_auth')
-    course_id = models.IntegerField()
+    course_id = models.CharField(max_length=255)
 
     class Meta:  # pragma: no cover
         unique_together = ('user_id', 'consumer', 'course_id')
