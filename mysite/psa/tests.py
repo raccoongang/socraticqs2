@@ -21,9 +21,11 @@ from psa.pipeline import (social_user,
                           validated_user_details,
                           custom_mail_validation)
 from psa.mail import send_validation
+from psa.custom_backends import EmailAuth
 
 
 class ViewsUnitTest(TestCase):
+    """Functional tests"""
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('/login/')
@@ -123,7 +125,7 @@ class ViewsUnitTest(TestCase):
 
 
 class TestSocialUser(TestCase):
-    """Test for custom_mail_validation pipeline"""
+    """Test for social_user pipeline"""
     def setUp(self):
         self.exists = mock.Mock()
         self.exists.exists.return_value = False
@@ -358,8 +360,8 @@ class UnionMergeTest(TestCase):
         user.role_set.filter = mock.Mock(return_value=None)
 
         unitstatus1, unitstatus2 = (mock.Mock(), mock.Mock())
-        for us in (unitstatus1, unitstatus2):
-            us.save = save
+        for unitstatus in (unitstatus1, unitstatus2):
+            unitstatus.save = save
         tmp_user.unitstatus_set.all = mock.Mock(return_value=(unitstatus1,
                                                               unitstatus2))
 
@@ -597,9 +599,9 @@ class CustomMailValidation(TestCase):
                 with mock.patch('psa.pipeline.login') as mocked_login:
                     mocked_logout.return_value = None
                     mocked_login.return_value = None
-                    qs = mock.Mock()
-                    qs.first.return_value = self.user
-                    mocked_user.objects.filter.return_value = qs
+                    queryset = mock.Mock()
+                    queryset.first.return_value = self.user
+                    mocked_user.objects.filter.return_value = queryset
                     res = custom_mail_validation(strategy=self.strategy,
                                                  pipeline_index=5,
                                                  backend=self.backend,
@@ -651,3 +653,23 @@ class CustomMailValidation(TestCase):
             self.assertEqual(res, self.backend.strategy.redirect())
             self.assertEqual(get_or_create.call_count, 1)
             self.assertEqual(send_email_validation.call_count, 1)
+
+
+@mock.patch('psa.custom_backends.CustomCode')
+class EmailAuthTest(TestCase):
+    """Testing EmailAuth.auth_complete method"""
+    def setUp(self):
+        self.test_email = 'test@test.com'
+        self.email_auth = EmailAuth()
+        self.email_auth.strategy = mock.Mock()
+        self.email_auth.strategy.request.REQUEST.get.return_value = True
+
+        code_object = mock.Mock()
+        code_object.email = self.test_email
+        self.first = mock.Mock()
+        self.first.first.return_value = code_object
+
+    def test_update_email_from_code(self, code):
+        code.objects.filter.return_value = self.first
+        self.email_auth.auth_complete()
+        self.assertEqual(self.email_auth.data.get('email'), self.test_email)

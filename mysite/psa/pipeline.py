@@ -1,3 +1,7 @@
+"""Module define custom pipeline to handle custom cases
+
+custom_mail_validation - > implement code obj inspect
+"""
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.auth import login, logout
@@ -59,8 +63,10 @@ def custom_mail_validation(backend, details, user=None, is_new=False, *args, **k
         data = backend.strategy.request_data()
         if 'verification_code' in data:
             backend.strategy.session_pop('email_validation_address')
-            if not backend.strategy.validate_email(details['email'],
-                                                   data['verification_code']):
+            if not backend.strategy.validate_email(
+                    details.get('email'),
+                    data.get('verification_code')
+            ):
                 raise InvalidEmail(backend)
             code = backend.strategy.storage.code.get_code(data['verification_code'])
             # This is very straightforward method
@@ -77,9 +83,10 @@ def custom_mail_validation(backend, details, user=None, is_new=False, *args, **k
             if user and user.groups.filter(name='Temporary').exists():
                 AnonymEmail.objects.get_or_create(user=user, email=details.get('email'),
                                                   defaults={'date': datetime.now()})
-            backend.strategy.send_email_validation(backend, details['email'])
-            backend.strategy.session_set('email_validation_address',
-                                         details['email'])
+            backend.strategy.send_email_validation(backend, details.get('email'))
+            backend.strategy.session_set(
+                'email_validation_address', details.get('email')
+            )
             return backend.strategy.redirect(
                 backend.strategy.setting('EMAIL_VALIDATION_URL')
             )
@@ -103,9 +110,9 @@ def union_merge(tmp_user, user):
         role.save()
 
     unitstatus_to_reset = (us for us in tmp_user.unitstatus_set.all())
-    for ut in unitstatus_to_reset:
-        ut.user = user
-        ut.save()
+    for unitstatus in unitstatus_to_reset:
+        unitstatus.user = user
+        unitstatus.save()
     tmp_user.fsmstate_set.all().update(user=user)
     tmp_user.response_set.all().update(author=user)
     tmp_user.studenterror_set.all().update(author=user)
@@ -121,7 +128,7 @@ def social_merge(tmp_user, user):
 
 
 @partial
-def validated_user_details(strategy, backend, details, user=None, is_new=False, *args, **kwargs):
+def validated_user_details(strategy, backend, details, user=None, *args, **kwargs):
     """Merge actions
 
     Make different merge actions based on user type.
@@ -194,15 +201,15 @@ def validated_user_details(strategy, backend, details, user=None, is_new=False, 
                     'social': social}
 
 
-def not_allowed_to_merge(user, social_user):
+def not_allowed_to_merge(user, user_social):
     """Check if two users are allowed to merge
 
     Check all social-auth from two users to predict providers intersection.
     """
     user_auths = set([i.provider for i in user.social_auth.all()])
-    social_user_auths = set([i.provider for i in social_user.social_auth.all()])
+    user_social_auths = set([i.provider for i in user_social.social_auth.all()])
 
-    return user_auths.intersection(social_user_auths)
+    return user_auths.intersection(user_social_auths)
 
 
 def social_user(backend, uid, user=None, *args, **kwargs):
