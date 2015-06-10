@@ -37,6 +37,7 @@ class LTIUser(models.Model):
         'lis_person_name_full'
         'lis_person_name_given'
         'lis_person_name_family'
+        'lis_person_sourcedid'
         'tool_consumer_instance_guid'
         'lis_person_contact_email_primary'
         'tool_consumer_info_product_family_code'
@@ -53,7 +54,10 @@ class LTIUser(models.Model):
     def create_links(self):
         """Create all needed links to Django and/or UserSocialAuth"""
         extra_data = json.loads(self.extra_data)
-        username = extra_data.get('lis_person_name_full', self.user_id)
+        username = extra_data.get(
+            'lis_person_name_full',
+            extra_data.get('lis_person_sourcedid', self.user_id)
+        )
         first_name = extra_data.get('lis_person_name_given', '')
         last_name = extra_data.get('lis_person_name_family', '')
         email = extra_data.get('lis_person_contact_email_primary', '').lower()
@@ -164,4 +168,6 @@ class CourseRef(models.Model):  # pragma: no cover
         unique_together = ('context_id', 'course')
 
     def __str__(self):
-        return self.course.title + str(self.date)
+        return '{0} {1}'.format(
+            self.course.title, str(self.date.strftime('%H:%M %d-%m-%y'))
+        )

@@ -27,6 +27,7 @@ MOODLE_PARAMS = (
     'lis_person_name_full',
     'lis_person_name_given',
     'lis_person_name_family',
+    'lis_person_sourcedid',
     'tool_consumer_instance_guid',
     'lis_person_contact_email_primary',
     'tool_consumer_info_product_family_code',

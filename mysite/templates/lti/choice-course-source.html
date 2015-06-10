@@ -1,13 +1,13 @@
 {% extends "ct/index.html" %}
 
 {% block title %}
-    Course source choise
+    Create new course
     <hr>
 {% endblock %}
 
 {% block content %}
-    <p>Select Course creation method.</p>
-    <p>You can choise to create new Course or select previously created Course below and make a new revision.</p>
+    <p>It looks that you want to create new course.</p>
+    <p>You can choise to create new blank Course or select previously created Course below and make a new revision.</p>
 
     <form action="." method="post">
         {% csrf_token %}

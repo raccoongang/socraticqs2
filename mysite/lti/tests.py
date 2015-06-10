@@ -31,6 +31,7 @@ class LTITestCase(TestCase):
             u'lis_person_name_given': u'First',
             u'lis_person_name_family': u'Second',
             u'lis_person_contact_email_primary': u'test@test.com',
+            u'lis_person_sourcedid': u'Test_Username',
             u'oauth_callback': u'about:blank',
             u'launch_presentation_return_url': '',
             u'lti_message_type': u'basic-lti-launch-request',
@@ -185,7 +186,7 @@ class ParamsTest(LTITestCase):
                             User.objects.get(id=1))
         self.assertEqual(LTIUser.objects.get(consumer='moodle').
                          django_user.username,
-                         LTIUser.objects.get(consumer='moodle').user_id)
+                         self.headers.get('lis_person_sourcedid'))
 
     def test_lti_user_link_social(self, mocked):
         """Default LTI user creation process"""
@@ -223,7 +224,7 @@ class ModelTest(LTITestCase):
     def test_lti_user(self):
         """Test enrollment process"""
         lti_user = LTIUser(user_id=1,
-                           consumer='test_consimer',
+                           consumer='test_consumer',
                            extra_data=json.dumps(self.headers),
                            django_user=self.user,
                            course_id=1)
@@ -240,7 +241,7 @@ class ModelTest(LTITestCase):
         Testing Django user creation process.
         """
         lti_user = LTIUser(user_id=1,
-                           consumer='test_consimer',
+                           consumer='test_consumer',
                            extra_data=json.dumps(self.headers),
                            course_id=1)
         lti_user.save()
