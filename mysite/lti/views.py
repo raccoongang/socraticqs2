@@ -113,8 +113,7 @@ def lti_redirect(request, unit_id=None):
 
     if course_ref:
         course_id = course_ref.course.id
-    elif ('prof' in roles and 'context_title' in request_dict and
-          'tool_consumer_instance_guid' in request_dict):
+    elif 'prof' in roles:
         return redirect(reverse('lti:choice_course_source'))
     else:
         return redirect(reverse('ct:home'))
@@ -200,7 +199,8 @@ def create_courseref(request, parent_courseref=None):
         course = clone_course(request.user, parent_courseref.course)
     else:
         course = Course(
-            title=request_dict.get('context_title'), addedBy=request.user
+            title=request_dict.get('context_title', 'Course title for %s' % context_id),
+            addedBy=request.user
         )
         course.save()
     role = Role(role='prof', course=course, user=request.user)
@@ -208,7 +208,7 @@ def create_courseref(request, parent_courseref=None):
     course_id = course.id
     course_ref = CourseRef(
         parent=parent_courseref, course=course, context_id=context_id,
-        tc_guid=request_dict.get('tool_consumer_instance_guid')
+        tc_guid=request_dict.get('tool_consumer_instance_guid', request.META.get('HTTP_HOST'))
     )
     course_ref.save()
     course_ref.instructors.add(request.user)
