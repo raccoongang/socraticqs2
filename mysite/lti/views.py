@@ -138,21 +138,27 @@ def lti_redirect(request, unit_id=None):
 
 
 @login_required
+@only_lti
 def choice_course_source(request):
     """Handler for ChoiceCourseForm
 
     Make a choise to create new Course or
     merge content from existing one
     """
+    lti_post = request.session.get('LTI_POST')
+    course_ref = CourseRef.objects.filter(
+        context_id=pickle.loads(lti_post).get('context_id')
+    ).first()
+    if course_ref:
+        return redirect(reverse('ct:home'))
+
     parent_courseref = None
     if request.method == 'POST':
         form = ChoiceCourseForm(request.user, request.POST)
         if form.is_valid():
-            choice = int(form.cleaned_data['choice'])
-            if choice:
-                parent_courseref = CourseRef.objects.filter(
-                    id=form.cleaned_data['source']
-                ).first()
+            parent_courseref = CourseRef.objects.filter(
+                id=form.cleaned_data['source']
+            ).first()
             return create_courseref(request, parent_courseref=parent_courseref)
     else:
         form = ChoiceCourseForm(request.user)
@@ -190,11 +196,17 @@ def create_courseref(request, parent_courseref=None):
     param: parent_courseref: CourseRef
     """
     request_dict = pickle.loads(request.session['LTI_POST'])
+    if not request.session.get('is_valid'):
+        return redirect(reverse('ct:home'))
     context_id = request_dict.get('context_id')
+    role = ROLES_MAP.get(request_dict.get('roles', None), 'student')
     # Make sure this context_id is not used
     course_ref = CourseRef.objects.filter(context_id=context_id).first()
     if course_ref:
-        return redirect(reverse('ct:edit_course', args=(course_ref.course.id,)))
+        if role == 'prof':
+            return redirect(reverse('ct:edit_course', args=(course_ref.course.id,)))
+        else:
+            return redirect(reverse('ct:home'))
 
     if parent_courseref:
         course = clone_course(request.user, parent_courseref.course)

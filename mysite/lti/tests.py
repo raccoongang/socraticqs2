@@ -289,25 +289,20 @@ class TestCourseRef(LTITestCase):
         res = create_courseref(request)
         self.assertEqual(res.content, 'Only LTI allowed')
 
-    def test_create_courseref_existed_courseref(self, mocked):
-        lti_post = {'context_id': '1',
+    @unpack
+    @data(('1', 1), ('1111', 2))
+    def test_create_courseref_existence(self, context_id, _id, mocked):
+        """Test for existence/non-existence of CourseRef"""
+        lti_post = {'context_id': context_id,
                     'context_title': 'test title',
-                    'tool_consumer_instance_guid': 'test.dot.com'}
+                    'tool_consumer_instance_guid': 'test.dot.com',
+                    'roles': 'Instructor'}
         request = Mock()
         request.user = self.user
-        request.session = {'LTI_POST': pickle.dumps(lti_post)}
+        request.session = {'LTI_POST': pickle.dumps(lti_post),
+                           'is_valid': True}
         res = create_courseref(request)
-        self.assertEqual(res.url, reverse('ct:edit_course', args=(self.course.id,)))
-
-    def test_create_courseref_non_existed_courseref(self, mocked):
-        lti_post = {'context_id': '1111',
-                    'context_title': 'test title',
-                    'tool_consumer_instance_guid': 'test.dot.com'}
-        request = Mock()
-        request.user = self.user
-        request.session = {'LTI_POST': pickle.dumps(lti_post)}
-        res = create_courseref(request)
-        self.assertEqual(res.url, reverse('ct:edit_course', args=(2,)))
+        self.assertEqual(res.url, reverse('ct:edit_course', args=(_id,)))
 
 
 @patch('lti.views.DjangoToolProvider')
@@ -330,28 +325,39 @@ class TestChoiceCourseSourceForm(LTITestCase):
 
     def test_get_success(self):
         """GET must be success"""
+        lti_post = {'context_id': '1111',
+                    'context_title': 'test title',
+                    'tool_consumer_instance_guid': 'test.dot.com'}
         self.client.login(username='test', password='test')
+        session = self.client.session
+        session['LTI_POST'] = pickle.dumps(lti_post)
+        session.save()
         res = self.client.get(reverse('lti:choice_course_source'))
         self.assertTemplateUsed(res, 'lti/choice-course-source.html')
-        self.assertIn('id="choice"', res.content)
-        self.assertIn('for="choice_0"', res.content)
-        self.assertIn('for="choice_1"', res.content)
+        self.assertIn('id="id_source"', res.content)
+        self.assertIn('for="id_source"', res.content)
 
     def test_post_fail_only_lti(self):
         """POST must fail due to @only_lti decorator"""
         self.client.login(username='test', password='test')
         res = self.client.post(
             reverse('lti:choice_course_source'),
-            data={'choice': '0', 'source': '1'}
+            data={'source': '1'}
         )
         self.assertEqual(res.content, 'Only LTI allowed')
 
     def test_post_fail_no_courseref(self):
         """POST must fail because of no CourseRef is availabe"""
+        lti_post = {'context_id': '1111',
+                    'context_title': 'test title',
+                    'tool_consumer_instance_guid': 'test.dot.com'}
         self.course_ref.instructors.remove(self.user)
         self.client.login(username='test', password='test')
+        session = self.client.session
+        session['LTI_POST'] = pickle.dumps(lti_post)
+        session.save()
         res = self.client.post(
             reverse('lti:choice_course_source'),
-            data={'choice': '0', 'source': '1'}
+            data={'source': '1'}
         )
         self.assertIn('class="errorlist"', res.content)

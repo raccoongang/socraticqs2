@@ -1,38 +1,35 @@
 {% extends "ct/index.html" %}
 
 {% block title %}
+    <div class="col-md-8">
     Create new course
-    <hr>
+    </div>
 {% endblock %}
 
 {% block content %}
-    <p>It looks that you want to create new course.</p>
-    <p>You can choise to create new blank Course or select previously created Course below and make a new revision.</p>
+    <div class="col-md-8">
+        <h4>It looks that you want to 
+            <a href="/lti/create_courseref/" class="btn btn-default">create new Course</a>
+        </h4>
+    </div>
 
-    <form action="." method="post">
-        {% csrf_token %}
-        {{ form }}
-        <br>
-        <input type="submit" value="Submit" />
-    </form>
-
-    <script type="text/javascript">
-        $("label[for='id_source']").hide();
-        $("#id_source").hide();
-        if ($('#id_source option').length == 0) {
-            $("#choice_1").attr('disabled', 'disabled');
-            $("#choice_1").attr('title', 'You have no saved Courses');
-        }
-        $("#choice_0, #choice_1").change(function () {
-            var choise_val = $(this).val();
-            if (choise_val == 0) {
-                $("label[for='id_source']").hide();
-                $("#id_source").hide();
-            }
-            else if (choise_val == 1) {
-                $("label[for='id_source']").show();
-                $("#id_source").show();
-            }
-         });
-    </script>
+    <div class="col-md-8">
+        <form action="." method="post" class="form-horizontal">
+        <h4>Also you can select previously created Course below and
+        <input type="submit" id="id_for_submit" class="btn btn-default" value="make a new revision" /></h4>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.source.errors }}
+            <label for="id_source">
+              {{ form.source }}
+            </label>
+        </form>
+    </div>
+     <script type="text/javascript">
+         if ($('#id_source option').length == 0) {
+             $("#id_for_submit").attr('disabled', 'disabled');
+             $("#id_for_submit").attr('title', 'You have no saved Courses');
+             $("#id_source").hide();
+         }
+     </script>
 {% endblock content %}
