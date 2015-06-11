@@ -18,7 +18,7 @@ from ct.models import Course, Role, CourseUnit
 
 ROLES_MAP = {
     'Instructor': 'prof',
-    'Leaner': 'student',
+    'Learner': 'student',
 }
 
 MOODLE_PARAMS = (
@@ -100,7 +100,8 @@ def lti_redirect(request, unit_id=None):
         return render_to_response('lti/error.html', RequestContext(request))
 
     user, created = LTIUser.objects.get_or_create(
-        user_id=user_id, consumer=consumer_name,
+        user_id=user_id,
+        consumer=consumer_name,
         course_id=request_dict.get('context_id')
     )
     extra_data = {k: v for (k, v) in request_dict.iteritems()
@@ -152,7 +153,6 @@ def choice_course_source(request):
     if course_ref:
         return redirect(reverse('ct:home'))
 
-    parent_courseref = None
     if request.method == 'POST':
         form = ChoiceCourseForm(request.user, request.POST)
         if form.is_valid():
@@ -173,16 +173,21 @@ def clone_course(user, course):
     return: cloned Course entry
     """
     cloned_course = Course(
-        title=course.title, addedBy=user,
-        description=course.description, access=course.access,
-        enrollCode=course.enrollCode, lockout=course.lockout,
+        addedBy=user,
+        title=course.title,
+        access=course.access,
+        lockout=course.lockout,
+        enrollCode=course.enrollCode,
+        description=course.description
     )
     cloned_course.save()
 
     for courseunit in course.courseunit_set.all():
         cloned_courseunit = CourseUnit(
-            unit=courseunit.unit, course=cloned_course,
-            order=courseunit.order, addedBy=user
+            addedBy=user,
+            course=cloned_course,
+            unit=courseunit.unit,
+            order=courseunit.order,
         )
         cloned_courseunit.save()
 
@@ -220,7 +225,9 @@ def create_courseref(request, parent_courseref=None):
     role.save()
     course_id = course.id
     course_ref = CourseRef(
-        parent=parent_courseref, course=course, context_id=context_id,
+        course=course,
+        context_id=context_id,
+        parent=parent_courseref,
         tc_guid=request_dict.get('tool_consumer_instance_guid', request.META.get('HTTP_HOST'))
     )
     course_ref.save()

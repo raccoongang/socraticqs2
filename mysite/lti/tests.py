@@ -18,7 +18,9 @@ from lti.views import clone_course, create_courseref
 
 class LTITestCase(TestCase):
     def setUp(self):
-        """Preconditions."""
+        """
+        Preconditions.
+        """
         self.client = Client()
         self.user = User.objects.create_user('test', 'test@test.com', 'test')
 
@@ -78,8 +80,9 @@ class LTITestCase(TestCase):
 
 @patch('lti.views.DjangoToolProvider')
 class MethodsTest(LTITestCase):
-    """Test for correct request method passed in view."""
-
+    """
+    Test for correct request method passed in view.
+    """
     def test_post(self, mocked):
         mocked.return_value.is_valid_request.return_value = True
         response = self.client.post('/lti/',
@@ -104,7 +107,9 @@ class MethodsTest(LTITestCase):
 @ddt
 @patch('lti.views.DjangoToolProvider')
 class ParamsTest(LTITestCase):
-    """Test different params handling."""
+    """
+    Test different params handling.
+    """
 
     def test_tool_consumer_info_product_family_code(self, mocked):
         del self.headers[u'tool_consumer_info_product_family_code']
@@ -142,7 +147,9 @@ class ParamsTest(LTITestCase):
         self.assertTrue(Role.objects.filter(role='student').exists())
 
     def test_lti_user(self, mocked):
-        """Default LTI user creation process"""
+        """
+        Default LTI user creation process.
+        """
         mocked.return_value.is_valid_request.return_value = True
         self.client.post('/lti/',
                          data=self.headers,
@@ -189,7 +196,9 @@ class ParamsTest(LTITestCase):
                          self.headers.get('lis_person_sourcedid'))
 
     def test_lti_user_link_social(self, mocked):
-        """Default LTI user creation process"""
+        """
+        Default LTI user creation process.
+        """
         social = UserSocialAuth(
             user=self.user,
             uid=self.headers[u'lis_person_contact_email_primary'],
@@ -209,8 +218,9 @@ class ParamsTest(LTITestCase):
 @ddt
 @patch('lti.views.DjangoToolProvider')
 class ExceptionTest(LTITestCase):
-    """Test raising exception."""
-
+    """
+    Test raising exception.
+    """
     @data(oauth2.MissingSignature, oauth2.Error, KeyError, AttributeError)
     def test_exceptions(self, exception, mocked):
         mocked.return_value.is_valid_request.side_effect = exception()
@@ -219,8 +229,9 @@ class ExceptionTest(LTITestCase):
 
 
 class ModelTest(LTITestCase):
-    """Test model LTIUser."""
-
+    """
+    Test model LTIUser.
+    """
     def test_lti_user(self):
         """Test enrollment process"""
         lti_user = LTIUser(user_id=1,
@@ -254,7 +265,9 @@ class ModelTest(LTITestCase):
 @ddt
 @patch('lti.views.DjangoToolProvider')
 class TestCourseRef(LTITestCase):
-    """Testing CourseRef object"""
+    """
+    Testing CourseRef object.
+    """
     @unpack
     @data(('Instructor', 'lti/choice-course-source.html'), ('Student', 'ct/index.html'))
     def test_course_ref_roles(self, role, page, mocked):
@@ -283,7 +296,9 @@ class TestCourseRef(LTITestCase):
         self.assertEqual(cloned_course.courseunit_set.first().unit, self.unit)
 
     def test_create_courseref_only_lti(self, mocked):
-        """Test that only LTI is assowed"""
+        """
+        Test that only LTI is assowed.
+        """
         request = Mock()
         request.session = {}
         res = create_courseref(request)
@@ -292,7 +307,9 @@ class TestCourseRef(LTITestCase):
     @unpack
     @data(('1', 1), ('1111', 2))
     def test_create_courseref_existence(self, context_id, _id, mocked):
-        """Test for existence/non-existence of CourseRef"""
+        """
+        Test for existence/non-existence of CourseRef.
+        """
         lti_post = {'context_id': context_id,
                     'context_title': 'test title',
                     'tool_consumer_instance_guid': 'test.dot.com',
@@ -307,7 +324,9 @@ class TestCourseRef(LTITestCase):
 
 @patch('lti.views.DjangoToolProvider')
 class TestUnit(LTITestCase):
-    """Testing Unit template rendering"""
+    """
+    Testing Unit template rendering.
+    """
     def test_unit_render(self, mocked):
         mocked.return_value.is_valid_request.return_value = True
         response = self.client.post(
@@ -317,14 +336,20 @@ class TestUnit(LTITestCase):
 
 
 class TestChoiceCourseSourceForm(LTITestCase):
-    """Testing render ChoiceCourseForm"""
+    """
+    Testing render ChoiceCourseForm.
+    """
     def test_get_fail(self):
-        """GET must fail due to @login_required decorator"""
+        """
+        GET must fail due to @login_required decorator.
+        """
         res = self.client.get(reverse('lti:choice_course_source'))
         self.assertRedirects(res, '/login/?next=' + reverse('lti:choice_course_source'))
 
     def test_get_success(self):
-        """GET must be success"""
+        """
+        GET must be success.
+        """
         lti_post = {'context_id': '1111',
                     'context_title': 'test title',
                     'tool_consumer_instance_guid': 'test.dot.com'}
@@ -338,7 +363,9 @@ class TestChoiceCourseSourceForm(LTITestCase):
         self.assertIn('for="id_source"', res.content)
 
     def test_post_fail_only_lti(self):
-        """POST must fail due to @only_lti decorator"""
+        """
+        POST must fail due to @only_lti decorator.
+        """
         self.client.login(username='test', password='test')
         res = self.client.post(
             reverse('lti:choice_course_source'),
@@ -347,7 +374,9 @@ class TestChoiceCourseSourceForm(LTITestCase):
         self.assertEqual(res.content, 'Only LTI allowed')
 
     def test_post_fail_no_courseref(self):
-        """POST must fail because of no CourseRef is availabe"""
+        """
+        POST must fail because of no CourseRef is availabe.
+        """
         lti_post = {'context_id': '1111',
                     'context_title': 'test title',
                     'tool_consumer_instance_guid': 'test.dot.com'}

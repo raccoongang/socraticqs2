@@ -12,7 +12,9 @@ from psa.models import SecondaryEmail
 
 
 def context(**extra):
-    """Adding default context to rendered page"""
+    """
+    Adding default context to rendered page.
+    """
     return dict({
         'available_backends': load_backends(settings.AUTHENTICATION_BACKENDS),
     }, **extra)
@@ -20,7 +22,9 @@ def context(**extra):
 
 @render_to('psa/custom_login.html')
 def validation_sent(request):
-    """View to handle validation_send action"""
+    """
+    View to handle validation_send action.
+    """
     user = request.user
     social_list = []
     email = request.session.get('email_validation_address')
@@ -49,7 +53,9 @@ def validation_sent(request):
 
 
 def custom_login(request):
-    """Custom login to integrate social auth and default login"""
+    """
+    Custom login to integrate social auth and default login.
+    """
     username = password = ''
     logout(request)
     if request.POST:
@@ -61,32 +67,42 @@ def custom_login(request):
             if user.is_active:
                 login(request, user)
                 return redirect('/ct/')
-    return render_to_response('psa/custom_login.html',
-                              context_instance=RequestContext(request,
-                                                              {
-                                                                  'available_backends': load_backends(
-                                                                      settings.AUTHENTICATION_BACKENDS),
-                                                              }))
+    return render_to_response(
+        'psa/custom_login.html',
+        context_instance=RequestContext(
+            request,
+            {
+              'available_backends': load_backends(
+                  settings.AUTHENTICATION_BACKENDS),
+            }
+        )
+    )
 
 
 @login_required
 @render_to('ct/person.html')
 def done(request):
-    """Login complete view, displays user data"""
+    """
+    Login complete view, displays user data.
+    """
     return context(person=request.user)
 
 
 @login_required
 @render_to('ct/index.html')
 def ask_stranger(request):
-    """View to handle stranger whend asking email"""
+    """
+    View to handle stranger whend asking email.
+    """
     return context(tmp_email_ask=True)
 
 
 @login_required
 @render_to('ct/person.html')
 def set_pass(request):
-    """View to handle password set / change action"""
+    """
+    View to handle password set / change action.
+    """
     changed = False
     user = request.user
     if user.is_authenticated():

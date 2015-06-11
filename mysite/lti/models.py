@@ -52,7 +52,9 @@ class LTIUser(models.Model):
         unique_together = ('user_id', 'consumer', 'course_id')
 
     def create_links(self):
-        """Create all needed links to Django and/or UserSocialAuth"""
+        """
+        Create all needed links to Django and/or UserSocialAuth.
+        """
         extra_data = json.loads(self.extra_data)
         username = extra_data.get(
             'lis_person_name_full',
@@ -85,13 +87,16 @@ class LTIUser(models.Model):
                                         extra_data=extra_data)
                 social.save()
         else:
-            django_user, created = User.objects.get_or_create(username=username,
-                                                              defaults=defaults)
+            django_user, created = User.objects.get_or_create(
+                username=username, defaults=defaults
+            )
         self.django_user = django_user
         self.save()
 
     def login(self, request):
-        """Login linked Django user"""
+        """
+        Login linked Django user.
+        """
         if self.django_user:
             self.django_user.backend = 'django.contrib.auth.backends.ModelBackend'
             login(request, self.django_user)
@@ -111,9 +116,11 @@ class LTIUser(models.Model):
         course = Course.objects.filter(id=course_id).first()
         if course:
             for role in roles:
-                Role.objects.get_or_create(course=course,
-                                           user=self.django_user,
-                                           role=role)
+                Role.objects.get_or_create(
+                    role=role,
+                    course=course,
+                    user=self.django_user
+                )
 
     def is_enrolled(self, roles, course_id):
         """Check enroll status
@@ -126,9 +133,11 @@ class LTIUser(models.Model):
             roles = roles.split(',')
         course = Course.objects.filter(id=course_id).first()
         if course:
-            return Role.objects.filter(course=course,
-                                       user=self.django_user,
-                                       role=roles[0]).exists()
+            return Role.objects.filter(
+                role=roles[0],
+                course=course,
+                user=self.django_user
+            ).exists()
 
     @property
     def is_linked(self):
@@ -153,7 +162,9 @@ class CourseRef(models.Model):  # pragma: no cover
         tc_guid - > LTI tool_consumer_instance_guid
     """
     parent = models.ForeignKey(
-        'self', blank=True, null=True,
+        'self',
+        null=True,
+        blank=True,
         verbose_name='Previous generation of Course'
     )
     course = models.OneToOneField(Course, verbose_name='Courslet Course')
