@@ -82,7 +82,7 @@ CHECKED=""
   <tr>
   <td><a href="{{ actionTarget |get_object_url:r }}errors/">Assess</a>
     </td>
-  <td>{{ r.text|md2html }}</td>
+  <td>{{ r.text_html|safe }}</td>
   </tr>
 {% endfor %}
 </tbody>

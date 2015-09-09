@@ -129,7 +129,7 @@ class BaseTask(Task):
             local('dropdb %s --username=%s -w ' % (self.db_cfg['NAME'], self.db_cfg['USER']))
             local('createdb %s encoding="UTF8" --username=%s -w' % (self.db_cfg['NAME'], self.db_cfg['USER']))
             local('%s/bin/python mysite/manage.py migrate' % env.venv_name)
-            local('%s/bin/python mysite/manage.py loaddata mysite/dumpdata/debug-wo-fsm.json' % env.venv_name)
+            local('%s/bin/python mysite/manage.py loaddata mysite/dumpdata/debug-w-compiled-html.json' % env.venv_name)
             local('%s/bin/python mysite/manage.py fsm_deploy' % env.venv_name)
 
     def init_db_sqlite(self, *args, **kwargs):
@@ -139,7 +139,7 @@ class BaseTask(Task):
         with lcd(self.base_path), settings(hide('warnings'), warn_only=True):
             local('rm %s/mysite.db' % dj_settings.BASE_DIR)
             local('%s/bin/python mysite/manage.py migrate' % env.venv_name)
-            local('%s/bin/python mysite/manage.py loaddata mysite/dumpdata/debug-wo-fsm.json' % env.venv_name)
+            local('%s/bin/python mysite/manage.py loaddata mysite/dumpdata/debug-w-compiled-html.json' % env.venv_name)
             local('%s/bin/python mysite/manage.py fsm_deploy' % env.venv_name)
 
     @postgres

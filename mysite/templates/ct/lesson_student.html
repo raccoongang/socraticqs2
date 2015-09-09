@@ -25,7 +25,7 @@
 <div class="tab-content">
   <div class="tab-pane active" id="LessonsTabDiv">
 
-{{ unitLesson.lesson.text |md2html }}
+{{ unitLesson.lesson.text_html|safe }}
 {% if unitLesson.lesson.sourceDB == 'youtube' %}
 <iframe width="560" height="315"
         src="http://www.youtube.com/embed/{{ unitLesson.lesson.sourceID }}?rel=0"

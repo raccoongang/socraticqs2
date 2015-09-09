@@ -13,13 +13,13 @@ from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
+from django.utils.safestring import mark_safe
 from social.backends.utils import load_backends
 
 from ct.forms import *
 from ct.models import *
 from ct.ct_util import reverse_path_args, cache_this
-from ct.templatetags.ct_extras import (md2html,
-                                       get_base_url,
+from ct.templatetags.ct_extras import (get_base_url,
                                        get_object_url,
                                        is_teacher_url,
                                        display_datetime,
@@ -261,7 +261,7 @@ def ul_page_data(request, unit_id, ul_id, currentTab, includeText=True,
     if includeNavTabs:
         pageData.navTabs = tabFunc(request.path, currentTab, ul)
     if includeText:
-        pageData.headText = md2html(ul.lesson.text)
+        pageData.headText = mark_safe(ul.lesson.text_html)
         ulType = ul.get_type()
         if ulType == IS_ERROR:
             pageData.headLabel = 'error model'
@@ -329,7 +329,7 @@ def course_view(request, course_id):
         unitTable = course.get_course_units()
     pageData = PageData(request, title=course.title,
                         headLabel='course description',
-                        headText=md2html(course.description), navTabs=navTabs)
+                        headText=mark_safe(course.description_html), navTabs=navTabs)
     if request.method == 'POST': # create new courselet
         if 'oldOrder' in request.POST and not notInstructor:
             reorderForm = ReorderForm(0, len(unitTable), request.POST)
@@ -1458,7 +1458,7 @@ def ul_respond(request, course_id, unit_id, ul_id):
         form = ResponseForm()
     set_crispy_action(request.path, form)
     return pageData.render(request, 'ct/ask.html',
-                  dict(unitLesson=ul, qtext=md2html(ul.lesson.text), form=form))
+                  dict(unitLesson=ul, qtext=mark_safe(ul.lesson.text_html), form=form))
 
 def get_answer_html(unitLesson):
     'get HTML text for answer associated with this lesson, if any'
@@ -1467,7 +1467,7 @@ def get_answer_html(unitLesson):
     except IndexError:
         return '(author has not provided an answer)'
     else:
-        return md2html(answer.lesson.text)
+        return mark_safe(answer.lesson.text_html)
 
 
 @login_required

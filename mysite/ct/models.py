@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max
 
+from ct.templatetags.ct_extras import md2html
 
 ########################################################
 # Concept ID and graph -- not version controlled
@@ -214,6 +215,7 @@ class Lesson(models.Model):
     _sourceDBdict = {}
     title = models.CharField(max_length=200)
     text = models.TextField(null=True)
+    text_html = models.TextField(null=True)
     data = models.TextField(null=True) # JSON DATA
     url = models.CharField(max_length=256, null=True)
     kind = models.CharField(max_length=50, choices=KIND_CHOICES,
@@ -349,7 +351,15 @@ class Lesson(models.Model):
                                        relationship=relationship).count() == 0:
             return self.conceptlink_set.create(concept=concept, addedBy=addedBy,
                                                relationship=relationship)
-        
+
+    def save(self, *args, **kwargs):
+        """
+        Update text_html field by compiling rst text into html
+        using md2html templatetag
+        """
+        self.text_html = md2html(self.text)
+        super(Lesson, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.title
     ## def get_url(self):
@@ -905,6 +915,7 @@ class Response(models.Model):
                             default=ORCT_RESPONSE)
     title = models.CharField(max_length=200, null=True)
     text = models.TextField()
+    text_html = models.TextField(null=True)
     confidence = models.CharField(max_length=10, choices=CONF_CHOICES, 
                                   blank=False, null=False)
     atime = models.DateTimeField('time submitted', default=timezone.now)
@@ -972,7 +983,14 @@ class Response(models.Model):
             if self.studenterror_set.count() == 0:
                 return self.CLASSIFY_STEP, 'classify your error(s)'
 
-        
+    def save(self, *args, **kwargs):
+        """
+        Update text_html field by compiling rst text into html
+        using md2html templatetag
+        """
+        self.text_html = md2html(self.text)
+        super(Response, self).save(*args, **kwargs)
+
 
 class StudentError(models.Model):
     'identification of a specific error model made by a student'
@@ -1046,6 +1064,7 @@ class Course(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField()
+    description_html = models.TextField(null=True)
     access = models.CharField(max_length=10, choices=ACCESS_CHOICES, 
                               default=PUBLIC_ACCESS)
     enrollCode = models.CharField(max_length=64, null=True)
@@ -1084,6 +1103,15 @@ class Course(models.Model):
         if not role:
             role = Role.INSTRUCTOR
         return User.objects.filter(role__role=role, role__course=self)
+
+    def save(self, *args, **kwargs):
+        """
+        Update description_html field by compiling rst description into html
+        using md2html templatetag
+        """
+        self.description_html = md2html(self.description)
+        super(Course, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.title
 

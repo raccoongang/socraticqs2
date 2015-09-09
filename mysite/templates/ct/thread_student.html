@@ -63,7 +63,7 @@ all FAQs for this lesson</a>)<br>
   </tr></thead>
   <tbody>
   <tr class="active"><td>
-    {{ inquiry.text|md2html }}
+    {{ inquiry.text_html|safe }}
   <a href="{{ actionTarget|get_object_url:inquiry }}assess/">
   (Assess errors)</a>
   </td></tr>
@@ -83,7 +83,7 @@ all FAQs for this lesson</a>)<br>
   <tbody>
   <tr class="warning"><td>
     Were you falling into the following error model?
-    {{ se.errorModel.lesson.text|md2html }}
+    {{ se.errorModel.lesson.text_html|safe }}
     (Click here to 
     <a href="{{ actionTarget |get_object_url:se.errorModel }}">
     learn more about this issue</a>).
@@ -125,7 +125,7 @@ all FAQs for this lesson</a>)<br>
   <tbody>
 
   <tr class="active"><td>
-    {{ r.text|md2html }}
+    {{ r.text_html|safe }}
     <a href="{{ actionTarget|get_object_url:r }}assess/">(Assess errors)</a>
   </td></tr>
 
@@ -137,7 +137,7 @@ all FAQs for this lesson</a>)<br>
         {{ se.author.get_full_name }}</a>,
         {{ se.atime|display_datetime }})</b><br>
         Were you falling into the following error model?
-        {{ se.errorModel.lesson.text|md2html }}
+        {{ se.errorModel.lesson.text_html|safe }}
         (Click here to 
         <a href="{{ actionTarget |get_object_url:se.errorModel }}">
         learn more about this issue</a>).

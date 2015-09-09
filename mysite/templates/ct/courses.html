@@ -25,7 +25,7 @@ concept), or a whole course.  Click any course to get started!</p>
     (Instructor: {{ course.addedBy.get_full_name }}).
     <input type="checkbox" id="desctoggle{{ course.id }}"/>Show description
     <div id="descdiv{{ course.id }}" style="display: none">
-      <p>{{ course.description |md2html}}</p>
+      <p>{{ course.description_html|safe }}</p>
     </div>
 
     <script>

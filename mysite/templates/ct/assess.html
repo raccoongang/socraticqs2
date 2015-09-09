@@ -56,7 +56,7 @@ $( "#anstoggle" ).click(function() {
 </script>
 
 <h3>Submitted answer</h3> 
-{{ response.text |md2html }}
+{{ response.text_html|safe }}
 
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}

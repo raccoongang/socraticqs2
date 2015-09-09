@@ -41,7 +41,7 @@
   <div id="headdiv" style="display: none">
 {% endif %}
 
-{{ unitLesson.lesson.text |md2html }}
+{{ unitLesson.lesson.text_html|safe }}
 
 {% if unitLesson.lesson.sourceDB == 'youtube' %}
 <iframe width="560" height="315"
@@ -69,7 +69,7 @@ $( "#headtoggle" ).click(function() {
 </script>
 
   <h3>Answer</h3>
-  {{ answer.lesson.text |md2html }}
+  {{ answer.lesson.text_html|safe }}
 {% endif %}
 
 {% if elapsedTime %}
