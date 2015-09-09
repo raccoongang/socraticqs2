@@ -1,5 +1,5 @@
 {% extends "ct/portal.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags cache %}
 {% load ct_extras %}
 {% comment %}
   Assess a student answer
@@ -56,7 +56,9 @@ $( "#anstoggle" ).click(function() {
 </script>
 
 <h3>Submitted answer</h3> 
-{{ response.text |md2html }}
+{% cache 2592000 md2html "response_text" response.id using="localcache" %}
+  {{ response.text | md2html }}
+{% endcache %}
 
 
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}

@@ -2,9 +2,12 @@ import hashlib
 from functools import wraps
 
 from django.core.urlresolvers import reverse
-from django.core.cache import cache
+from django.core.cache import cache, caches
 from django.utils.encoding import force_bytes
 from django.utils.http import urlquote
+from django.core.cache.utils import make_template_fragment_key
+
+from ct.templatetags.ct_extras import md2html
 
 
 CACHE_KEY_TEMPLATE = 'views.cache.%s.%s'
@@ -109,3 +112,26 @@ def cache_this(fn):
             cache.add(cache_key, result)
         return result
     return wrapped
+
+
+def get_cached(tag_name, param_name, obj, target_text):
+    """
+    Get data from cache.
+    If not found - generate and add to cache.
+
+    Params:
+      tag_name: name of templatetag
+      param_name: param as sub key for generating key
+      obj: obj as a sub key to generate key
+      target_text: text to convert
+
+    Return value - converted text
+    """
+    local_cache = caches['localcache']
+    key = make_template_fragment_key(tag_name, [param_name, obj.id])
+    text = local_cache.get(key)
+    if not text:
+        text = md2html(target_text)
+        local_cache.add(key, text, None)
+
+    return text

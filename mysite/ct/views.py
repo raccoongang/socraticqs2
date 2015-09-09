@@ -17,9 +17,8 @@ from social.backends.utils import load_backends
 
 from ct.forms import *
 from ct.models import *
-from ct.ct_util import reverse_path_args, cache_this
-from ct.templatetags.ct_extras import (md2html,
-                                       get_base_url,
+from ct.ct_util import reverse_path_args, cache_this, get_cached
+from ct.templatetags.ct_extras import (get_base_url,
                                        get_object_url,
                                        is_teacher_url,
                                        display_datetime,
@@ -261,7 +260,7 @@ def ul_page_data(request, unit_id, ul_id, currentTab, includeText=True,
     if includeNavTabs:
         pageData.navTabs = tabFunc(request.path, currentTab, ul)
     if includeText:
-        pageData.headText = md2html(ul.lesson.text)
+        pageData.headText = get_cached('md2html', 'lesson_text', ul.lesson, ul.lesson.text)
         ulType = ul.get_type()
         if ulType == IS_ERROR:
             pageData.headLabel = 'error model'
@@ -329,7 +328,8 @@ def course_view(request, course_id):
         unitTable = course.get_course_units()
     pageData = PageData(request, title=course.title,
                         headLabel='course description',
-                        headText=md2html(course.description), navTabs=navTabs)
+                        headText=get_cached('md2html', 'course_description', course, course.description),
+                        navTabs=navTabs)
     if request.method == 'POST': # create new courselet
         if 'oldOrder' in request.POST and not notInstructor:
             reorderForm = ReorderForm(0, len(unitTable), request.POST)
@@ -1458,7 +1458,7 @@ def ul_respond(request, course_id, unit_id, ul_id):
         form = ResponseForm()
     set_crispy_action(request.path, form)
     return pageData.render(request, 'ct/ask.html',
-                  dict(unitLesson=ul, qtext=md2html(ul.lesson.text), form=form))
+                  dict(unitLesson=ul, qtext=get_cached('md2html', 'lesson_text', ul.lesson, ul.lesson.text), form=form))
 
 def get_answer_html(unitLesson):
     'get HTML text for answer associated with this lesson, if any'
@@ -1467,7 +1467,7 @@ def get_answer_html(unitLesson):
     except IndexError:
         return '(author has not provided an answer)'
     else:
-        return md2html(answer.lesson.text)
+        return get_cached('md2html', 'lesson_text', answer.lesson, answer.lesson.text)
 
 
 @login_required

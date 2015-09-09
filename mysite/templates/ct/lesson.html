@@ -1,5 +1,5 @@
 {% extends "ct/portal.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags cache %}
 {% load ct_extras %}
 
 {% comment %}
@@ -41,8 +41,9 @@
   <div id="headdiv" style="display: none">
 {% endif %}
 
-{{ unitLesson.lesson.text |md2html }}
-
+{% cache 2592000 md2html "lesson_text" unitLesson.lesson.id using="localcache" %}
+  {{ unitLesson.lesson.text | md2html }}
+{% endcache %}
 {% if unitLesson.lesson.sourceDB == 'youtube' %}
 <iframe width="560" height="315"
         src="http://www.youtube.com/embed/{{ unitLesson.lesson.sourceID }}?rel=0"
@@ -69,7 +70,9 @@ $( "#headtoggle" ).click(function() {
 </script>
 
   <h3>Answer</h3>
-  {{ answer.lesson.text |md2html }}
+  {% cache 600 md2html "lesson_text" answer.lesson.id using="localcache" %}
+      {{ answer.lesson.text | md2html }}
+  {% endcache %}
 {% endif %}
 
 {% if elapsedTime %}

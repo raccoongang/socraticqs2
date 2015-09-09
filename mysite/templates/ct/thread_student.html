@@ -1,5 +1,5 @@
 {% extends "ct/portal.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags cache %}
 {% load ct_extras %}
 {% comment %}
   View or edit a course
@@ -63,7 +63,9 @@ all FAQs for this lesson</a>)<br>
   </tr></thead>
   <tbody>
   <tr class="active"><td>
-    {{ inquiry.text|md2html }}
+  {% cache 2592000 md2html "response_text" inquiry.id using="localcache" %}
+    {{ inquiry.text | md2html }}
+  {% endcache %}
   <a href="{{ actionTarget|get_object_url:inquiry }}assess/">
   (Assess errors)</a>
   </td></tr>
@@ -83,7 +85,9 @@ all FAQs for this lesson</a>)<br>
   <tbody>
   <tr class="warning"><td>
     Were you falling into the following error model?
-    {{ se.errorModel.lesson.text|md2html }}
+    {% cache 2592000 md2html "lesson_text" se.errorModel.lesson.id using="localcache" %}
+      {{ se.errorModel.lesson.text | md2html }}
+    {% endcache %}
     (Click here to 
     <a href="{{ actionTarget |get_object_url:se.errorModel }}">
     learn more about this issue</a>).
@@ -125,7 +129,9 @@ all FAQs for this lesson</a>)<br>
   <tbody>
 
   <tr class="active"><td>
-    {{ r.text|md2html }}
+    {% cache 2592000 md2html "response_text" r.id using="localcache" %}
+      {{ r.text | md2html }}
+    {% endcache %}
     <a href="{{ actionTarget|get_object_url:r }}assess/">(Assess errors)</a>
   </td></tr>
 
@@ -137,7 +143,9 @@ all FAQs for this lesson</a>)<br>
         {{ se.author.get_full_name }}</a>,
         {{ se.atime|display_datetime }})</b><br>
         Were you falling into the following error model?
-        {{ se.errorModel.lesson.text|md2html }}
+        {% cache 2592000 md2html "lesson_text" se.errorModel.lesson.id using="localcache" %}
+            {{ se.errorModel.lesson.text | md2html }}
+        {% end cache %}
         (Click here to 
         <a href="{{ actionTarget |get_object_url:se.errorModel }}">
         learn more about this issue</a>).

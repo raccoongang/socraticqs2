@@ -1,5 +1,5 @@
 {% extends "ct/portal.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags cache %}
 {% load ct_extras %}
 
 {% comment %}
@@ -25,7 +25,9 @@
 <div class="tab-content">
   <div class="tab-pane active" id="StudyTabDiv">
 
-{{ unitLesson.lesson.text |md2html }}
+{% cache 2592000 md2html "lesson_text" unitLesson.lesson.id using="localcache" %}
+  {{ unitLesson.lesson.text | md2html }}
+{% endcache %}
 {% if unitLesson.lesson.sourceDB == 'youtube' %}
 <iframe width="560" height="315"
         src="http://www.youtube.com/embed/{{ unitLesson.lesson.sourceID }}?rel=0"

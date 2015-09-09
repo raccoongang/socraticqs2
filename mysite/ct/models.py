@@ -4,7 +4,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max
+from django.core.cache import caches
+from django.core.cache.utils import make_template_fragment_key
 
+from ct.templatetags.ct_extras import md2html
 
 ########################################################
 # Concept ID and graph -- not version controlled
@@ -349,7 +352,17 @@ class Lesson(models.Model):
                                        relationship=relationship).count() == 0:
             return self.conceptlink_set.create(concept=concept, addedBy=addedBy,
                                                relationship=relationship)
-        
+
+    def save(self, *args, **kwargs):
+        """
+        Update cache to transform changed text from rst
+        into html format via md2html templatetag and update the cache.
+        """
+        cache = caches['localcache']
+        key = make_template_fragment_key('md2html', ['lesson_text', self.id])
+        cache.set(key, md2html(self.text), None)
+        super(Lesson, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.title
     ## def get_url(self):
@@ -972,7 +985,16 @@ class Response(models.Model):
             if self.studenterror_set.count() == 0:
                 return self.CLASSIFY_STEP, 'classify your error(s)'
 
-        
+    def save(self, *args, **kwargs):
+        """
+        Update cache to transform changed text from rst
+        into html format via md2html templatetag and update the cache.
+        """
+        cache = caches['localcache']
+        key = make_template_fragment_key('md2html', ['response_text', self.id])
+        cache.set(key, md2html(self.text), None)
+        super(Response, self).save(*args, **kwargs)
+
 
 class StudentError(models.Model):
     'identification of a specific error model made by a student'
@@ -1084,6 +1106,17 @@ class Course(models.Model):
         if not role:
             role = Role.INSTRUCTOR
         return User.objects.filter(role__role=role, role__course=self)
+
+    def save(self, *args, **kwargs):
+        """
+        Update cache to transform changed description from rst
+        into html format via md2html templatetag and update the cache.
+        """
+        cache = caches['localcache']
+        key = make_template_fragment_key('md2html', ['course_description', self.id])
+        cache.set(key, md2html(self.description), None)
+        super(Course, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return self.title
 

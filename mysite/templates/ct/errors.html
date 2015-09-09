@@ -1,5 +1,5 @@
 {% extends "ct/portal.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags cache %}
 {% load ct_extras %}
 {% comment %}
   View or edit a course
@@ -82,7 +82,9 @@ CHECKED=""
   <tr>
   <td><a href="{{ actionTarget |get_object_url:r }}errors/">Assess</a>
     </td>
-  <td>{{ r.text|md2html }}</td>
+  {% cache 2592000 md2html "response_text" r.id using="localcache" %}
+    <td>{{ r.text | md2html }}</td>
+  {% endcache %}
   </tr>
 {% endfor %}
 </tbody>
