@@ -134,6 +134,10 @@ urlpatterns = patterns('',
         assess_errors, name='assess_errors'),
     # Public courses page for anonymous users
     url(r'^courses/$', courses, name='courses'),
-    # Subscribe to course with particular id
-    url(r'^courses/(?P<course_id>\d+)/subscribe/$', courses_subscribe, name='subscribe'),
+    # Enroll to course, using POST Ajax request
+    url(
+        r'^courses/(?P<course_id>\d+)/enroll-action/(?P<action>enroll|unenroll)/$',
+        EnrollView.as_view(),
+        name='enroll'
+    ),
 )

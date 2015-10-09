@@ -5,6 +5,7 @@ from datetime import datetime
 from django.db.models import Q
 from django.conf import settings
 from django.utils import timezone
+from django.views.generic import View
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
@@ -12,7 +13,7 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from social.backends.utils import load_backends
 
 from ct.forms import *
@@ -308,7 +309,6 @@ def about(request):
 
 # course views
 
-@login_required
 def course_view(request, course_id):
     'show courselets in a course'
     course = get_object_or_404(Course, pk=course_id)
@@ -431,6 +431,40 @@ def courses_subscribe(request, course_id):
     return HttpResponseRedirect(
         reverse('ct:course_student', args=(course_id,))
     )
+
+
+class EnrollView(View):
+    """
+    Handler for Ajax Enroll request.
+    """
+    ROLES = [i[0] for i in Role.ROLE_CHOICES]
+
+    def post(self, request, course_id, action, *args, **kwargs):
+        if request.is_ajax():
+            if request.POST.get('role') not in self.ROLES:
+                return HttpResponseBadRequest('Improperly configured request')
+            else:
+                if request.user.is_authenticated():
+                    try:
+                        course = Course.objects.filter(id=course_id).first()
+                        if not course:
+                            raise ValueError('No such Course')
+                        # Next two methods have the same signature
+                        dispatch_action = {
+                            'enroll': 'get_or_enroll',
+                            'unenroll': 'discard_role'
+                        }
+                        getattr(Role, dispatch_action.get(action))(
+                            course=course, user=request.user, role=request.POST.get('role')
+                        )
+                    except ValueError as e:
+                        return HttpResponseBadRequest(e)
+                    else:
+                        return HttpResponse(status=200)
+                else:
+                    return HttpResponseBadRequest('User is not authenticated')
+        else:
+            return HttpResponseForbidden('Only Ajax Allowed')
 
 
 @login_required

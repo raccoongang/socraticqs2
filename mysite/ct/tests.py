@@ -7,11 +7,15 @@ Replace this with more appropriate tests for your application.
 
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.core.urlresolvers import NoReverseMatch
 from ct.models import *
 from fsm.models import *
 from ct import views, ct_util
 import time
 import urllib
+
+from ddt import ddt, data, unpack
+from mock import patch
 
 
 class OurTestCase(TestCase):
@@ -291,3 +295,202 @@ class PageDataTests(TestCase):
         s = pageData.get_refresh_timer(request)
         self.assertNotEqual(s, '0:00')
         self.assertEqual(s[:3], '0:0')
+
+
+@ddt
+class EnrollTests(TestCase):
+    """
+    Enroll/Unenroll tests for Course enrollment actions.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(username='test', password='test')
+        self.client.login(username='test', password='test')
+        self.course = Course(title='test title', description='test descr', addedBy=self.user)
+        self.course.save()
+
+    def test_only_post_allowed(self):
+        """
+        Test for POST checking.
+        """
+        result = self.client.get(
+            reverse('ct:enroll', kwargs={'course_id': self.course.id, 'action': 'enroll'})
+        )
+        self.assertEqual(result.status_code, 405)
+
+    def test_check_not_ajax(self):
+        """
+        View should return HttpResponseForbidden('Only Ajax Allowed')
+        for non Ajax requests.
+        """
+        result = self.client.post(
+            reverse('ct:enroll', kwargs={'course_id': self.course.id, 'action': 'enroll'}),
+            {'role': 'test_role'}
+        )
+        self.assertContains(result, 'Only Ajax Allowed', status_code=403)
+
+    @data(
+        {},
+        {'course_id': 1},
+        {'action': 'enroll'},
+        {'course_id': 'String'},
+        {'action': 'wrong_action'}
+    )
+    def test_improperly_configured_url(self, url_data):
+        """
+        Test for incorrect url reversing.
+        """
+        with self.assertRaises(NoReverseMatch):
+            self.client.post(
+                reverse('ct:enroll', kwargs=url_data),
+                {'role': 'test_role'},
+                HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+            )
+
+    @data({}, {'role': 'wrong_role'})
+    def test_improperly_configured_post_data(self, post_data):
+        """
+        Check for improperly configured request.
+        """
+        result = self.client.post(
+            reverse('ct:enroll', kwargs={'course_id': self.course.id, 'action': 'enroll'}),
+            post_data,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertContains(result, 'Improperly configured request', status_code=400)
+
+    def test_request_on_non_existent_course(self):
+        """
+        Test case where Course does not exists.
+        """
+        url_data = {'course_id': self.course.id, 'action': 'enroll'}
+        self.course.delete()
+        result = self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(result.status_code, 400)
+
+    def test_not_authenticated_user(self):
+        self.client.logout()
+        url_data = {'course_id': self.course.id, 'action': 'enroll'}
+        result = self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertContains(result, 'User is not authenticated', status_code=400)
+
+    @patch('ct.views.Role.get_or_enroll')
+    def test_call_enroll(self, get_or_enroll):
+        """
+        Check that on POST and Ajax get_or_enroll will be called when action is `enroll`.
+        """
+        url_data = {'course_id': self.course.id, 'action': 'enroll'}
+        result = self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(get_or_enroll.call_count, 1)
+
+    @patch('ct.views.Role.discard_role')
+    def test_call_unenroll(self, discard_role):
+        """
+        Check that on POST and Ajax discard_role will be called when action is `unenroll`.
+        """
+        url_data = {'course_id': self.course.id, 'action': 'unenroll'}
+        result = self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(discard_role.call_count, 1)
+
+
+@ddt
+class GetOrEnrollTest(TestCase):
+    """
+    Tests for get_or_enroll Role classmethod.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(username='test', password='test')
+        self.course = Course(title='test title', description='test descr', addedBy=self.user)
+        self.course.save()
+
+    def test_no_previous_roles(self):
+        """
+        Check that role successfully added as is because no previous roles being found.
+        """
+        role = Role.get_or_enroll(course=self.course, user=self.user, role=Role.ENROLLED)
+        self.assertIsInstance(role, Role)
+        self.assertEqual(role.user, self.user)
+        self.assertEqual(role.course, self.course)
+        self.assertEqual(role.role, Role.ENROLLED)
+        self.assertTrue(
+            Role.objects.filter(course=self.course, user=self.user, role=Role.ENROLLED).exists()
+        )
+
+    @data(Role.ENROLLED, Role.SELFSTUDY)
+    def test_return_role_if_exists(self, role):
+        """
+        Chech that classmethod return role is one exists.
+        """
+        old_role = Role.get_or_enroll(course=self.course, user=self.user, role=role)
+        new_role = Role.get_or_enroll(course=self.course, user=self.user, role=role)
+        self.assertEqual(old_role.id, new_role.id)
+
+    def test_change_self_if_student(self):
+        """
+        Check that existent SELFSTUDY role will change into ENROLLED on commint from LTI.
+        """
+        old_role = Role.get_or_enroll(course=self.course, user=self.user, role=Role.SELFSTUDY)
+        lti_role = Role.get_or_enroll(course=self.course, user=self.user, role=Role.ENROLLED)
+        self.assertEqual(old_role.id, lti_role.id)
+        self.assertEqual(lti_role.role, Role.ENROLLED)
+
+    def test_return_stundent_as_is(self):
+        """
+        Check that student role will return if one exists and we enrolling as SELFSTUDY.
+        """
+        old_role = Role.get_or_enroll(course=self.course, user=self.user, role=Role.ENROLLED)
+        new_role = Role.get_or_enroll(course=self.course, user=self.user, role=Role.SELFSTUDY)
+        self.assertEqual(old_role.id, new_role.id)
+        self.assertEqual(new_role.role, Role.ENROLLED)
+
+
+@ddt
+class DiscardRoleTest(TestCase):
+    """
+    Tests for discard_role Role classmetod.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(username='test', password='test')
+        self.course = Course(title='test title', description='test descr', addedBy=self.user)
+        self.course.save()
+
+    def test_discard_non_existant_role(self):
+        """
+        Method should return Boolean flag about action result.
+        """
+        result = Role.discard_role(course=self.course, user=self.user, role=Role.ENROLLED)
+        self.assertFalse(result)
+
+        Role.get_or_enroll(course=self.course, user=self.user, role=Role.ENROLLED)
+        result = Role.discard_role(course=self.course, user=self.user, role=Role.ENROLLED)
+        self.assertTrue(result)
+
+    @unpack
+    @data((Role.ENROLLED, Role.SELFSTUDY), (Role.SELFSTUDY, Role.ENROLLED))
+    def test_discard_student_and_self(self, created_role, discarding_role):
+        """
+        Check discard ENROLLED role if one exists and SELFSTUDY in params and vise versa.
+        """
+        Role.get_or_enroll(course=self.course, user=self.user, role=created_role)
+        result = Role.discard_role(course=self.course, user=self.user, role=discarding_role)
+        self.assertTrue(result)
+        self.assertFalse(
+            Role.objects.filter(course=self.course, user=self.user, role=created_role).exists()
+        )
