@@ -1117,6 +1117,70 @@ class Role(models.Model):
     user = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
 
+    @classmethod
+    def get_or_enroll(cls, course, user, role):
+        """Get required Role objects or create one.
+
+        If required role is ENROLLED then method trying to
+        find SELFSTUDY role and change role field to ENROLLED
+
+        :param course: Course instance
+        :param user: Django User
+        :param role: Role ROLE_CHOICES
+        :return: Role object
+        """
+        if role == Role.ENROLLED:
+            student_role = cls.objects.filter(course=course, user=user, role=role).first()
+            if not student_role:
+                self_role = cls.objects.filter(
+                    course=course, user=user, role=Role.SELFSTUDY
+                ).first()
+                if self_role:
+                    self_role.role = Role.ENROLLED
+                    self_role.save()
+                    return self_role
+                else:
+                    student_role = cls(course=course, user=user, role=role)
+                    student_role.save()
+                    return student_role
+            else:
+                return student_role
+        elif role == Role.SELFSTUDY:
+            student_role = cls.objects.filter(course=course, user=user, role=Role.ENROLLED).first()
+            if student_role:
+                return student_role
+            else:
+                self_role, created = cls.objects.get_or_create(course=course, user=user, role=role)
+                return self_role
+
+        instance, created = cls.objects.get_or_create(course=course, user=user, role=role)
+        return instance
+
+    @classmethod
+    def discard_role(cls, course, user, role):
+        """Delete Roles.
+
+        Deleting all Roles with role attr.
+        Return Boolean to note if roles was not found.
+
+        :param course: Course instance
+        :param user: Django User
+        :param role: Role ROLE_CHOICES
+        :return: Boolean
+        """
+        qs = cls.objects.filter(course=course, user=user)
+
+        if role == Role.ENROLLED or role == Role.SELFSTUDY:
+            qs = qs.filter(Q(role=Role.ENROLLED) | Q(role=Role.SELFSTUDY))
+        else:
+            qs = qs.filter(Q(role=role))
+        if len(qs) > 0:
+            qs.delete()
+            return True
+        else:
+            return False
+
+
 class UnitStatus(models.Model):
     'records what user has completed in a unit lesson sequence'
     unit = models.ForeignKey(Unit)
