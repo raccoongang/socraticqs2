@@ -7,6 +7,10 @@
 
 {% block title %}
   {{ course.title }}
+  <a class="btn btn-default" id="enroll"
+  {% if enrolled %}enroll_url="{% url "ct:enroll" course_id=course.id action='unenroll' %}"
+  {% else %}enroll_url="{% url "ct:enroll" course_id=course.id action='enroll' %}"{% endif %} href="#"
+  status="{% if enrolled %}enrolled">Enrolled{% else %}not-enrolled">Enroll{% endif %}</a>
 {% endblock %}
 
 {% block content %}
@@ -29,6 +33,8 @@ $( "#headtoggle" ).click(function() {
 });
 </script>
 {% endif %}
+
+{% include "ct/enroll.js.html" %}
 
 <ul class="nav nav-tabs">
   {% for tabLabel,tabURL in pageData.navTabs %}

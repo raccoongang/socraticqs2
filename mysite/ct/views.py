@@ -355,9 +355,18 @@ def course_view(request, course_id):
     if showReorderForm:
         for cu in unitTable:
             cu.reorderForm = ReorderForm(cu.order, len(unitTable))
-    return pageData.render(request, 'ct/course.html',
-                  dict(course=course, courseletform=courseletform,
-                       unitTable=unitTable, showReorderForm=showReorderForm))
+    return pageData.render(
+        request,
+        'ct/course.html',
+        dict(
+            course=course,
+            courseletform=courseletform,
+            unitTable=unitTable,
+            showReorderForm=showReorderForm,
+            enrolled=Role.objects.filter(
+                course=course, user=request.user
+            ).filter(Q(role=Role.ENROLLED) | Q(role=Role.SELFSTUDY)))
+    )
 
 @login_required
 def edit_course(request, course_id):

@@ -1,0 +1,65 @@
+<script type="text/javascript">
+    (function(){
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        $.ajaxSetup({
+            crossDomain: false,
+            beforeSend: function(xhr, settings) {
+                var csrfSafeMethod = function(method) {
+                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                };
+                var csrftoken = getCookie('csrftoken');
+                if (!csrfSafeMethod(settings.type)) {
+                   xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                }
+            }
+        });
+    })();
+
+    (function () {
+        $('#enroll').on('click', function (e) {
+            e.preventDefault();
+            var self = this;
+
+            $.ajax({
+                url: $(self).attr('enroll_url'),
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded',
+                data: {'role': 'self'},
+                statusCode: {
+                    200: function () {
+                        if ($.trim($(self).attr('status')) == 'not-enrolled') {
+                            $(self).attr('status', 'enrolled');
+                            $(self).html('Enrolled');
+                            var tmp_url = $(self).attr('enroll_url').split('/');
+                            tmp_url[5] = 'unenroll';
+                            $(self).attr('enroll_url', tmp_url.join('/'));
+                        }
+                        else if ($.trim($(self).attr('status')) == 'enrolled') {
+                            $(self).attr('status', 'not-enrolled');
+                            $(self).html('Enroll');
+                            var tmp_url = $(self).attr('enroll_url').split('/');
+                            tmp_url[5] = 'enroll';
+                            $(self).attr('enroll_url', tmp_url.join('/'));
+                        }
+                    }
+                }
+            });
+            return false;
+        });
+    })();
+</script>
