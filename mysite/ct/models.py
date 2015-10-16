@@ -1229,3 +1229,18 @@ class UnitStatus(models.Model):
         except UnitLesson.DoesNotExist:
             self.done()
             return None
+
+
+class PartialHashTable(models.Model):
+    """
+    Table to store temporary data for enrollment process.
+    """
+    token = models.CharField(max_length=64)
+    params = models.TextField()  # If will be better to use JSONField in future
+
+    class Meta:
+        verbose_name = "PartialHashTable"
+        verbose_name_plural = "PartialHashTables"
+
+    def __str__(self):
+        return self.token

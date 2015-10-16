@@ -56,6 +56,10 @@
                             tmp_url[5] = 'enroll';
                             $(self).attr('enroll_url', tmp_url.join('/'));
                         }
+                    },
+
+                    401: function (data) {
+                        console.log(data.responseJSON.partial_url);
                     }
                 }
             });

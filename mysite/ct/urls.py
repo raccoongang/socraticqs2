@@ -140,4 +140,5 @@ urlpatterns = patterns('',
         EnrollView.as_view(),
         name='enroll'
     ),
+    url(r'^partial_enrollment/continue/(?P<token>\w+)/$', PartialEnroll.as_view(), name='enroll_continue')
 )
