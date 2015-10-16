@@ -1,4 +1,6 @@
+import uuid
 import time
+import pickle
 import urllib
 from datetime import datetime
 
@@ -13,7 +15,13 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import (
+    HttpResponseRedirect,
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseBadRequest,
+    JsonResponse
+)
 from social.backends.utils import load_backends
 
 from ct.forms import *
@@ -355,6 +363,13 @@ def course_view(request, course_id):
     if showReorderForm:
         for cu in unitTable:
             cu.reorderForm = ReorderForm(cu.order, len(unitTable))
+
+    if request.user.is_authenticated():
+        enrolled = Role.objects.filter(
+            course=course, user=request.user
+        ).filter(Q(role=Role.ENROLLED) | Q(role=Role.SELFSTUDY))
+    else:
+        enrolled = False
     return pageData.render(
         request,
         'ct/course.html',
@@ -363,9 +378,8 @@ def course_view(request, course_id):
             courseletform=courseletform,
             unitTable=unitTable,
             showReorderForm=showReorderForm,
-            enrolled=Role.objects.filter(
-                course=course, user=request.user
-            ).filter(Q(role=Role.ENROLLED) | Q(role=Role.SELFSTUDY)))
+            enrolled=enrolled
+        )
     )
 
 @login_required
@@ -471,9 +485,55 @@ class EnrollView(View):
                     else:
                         return HttpResponse(status=200)
                 else:
-                    return HttpResponseBadRequest('User is not authenticated')
+                    # TODO check that Course is exists
+                    course = Course.objects.filter(id=course_id).first()
+                    # Anonymous user can only enroll to a Course
+                    partial_params = pickle.dumps({'course': course, 'role': Role.ENROLLED})
+                    token = PartialEnroll.add_partial(partial_params)
+                    partial_url = reverse('ct:enroll_continue', kwargs={'token': token})
+                    return JsonResponse({'partial_url': partial_url}, status=401)
         else:
             return HttpResponseForbidden('Only Ajax Allowed')
+
+
+class PartialEnroll(View):
+    """
+    Class to handle partial enrollment from Anonymous users.
+    """
+    @staticmethod
+    def add_partial(partial_params):
+        token = uuid.uuid1().hex
+        partial_hash = PartialHashTable(token=token, params=partial_params)
+        partial_hash.save()
+        return token
+
+    @staticmethod
+    def remove_partial(partial_hash):
+        """
+        Move removing logic to staticmethod
+        for a future generalization.
+        """
+        partial_hash.delete()
+
+    def get(self, request, token):
+        """
+        Retrieve partial_params from DB and add request.user
+        to call Role.get_or_enroll if user.is_authenticated.
+        """
+        if request.user.is_authenticated():
+            partial_hash = PartialHashTable.objects.filter(token=token).first()
+            if partial_hash:
+                partial_params = pickle.loads(partial_hash.params)
+                partial_params['user'] = request.user
+                role = Role.get_or_enroll(**partial_params)
+                self.remove_partial(partial_hash)
+                return HttpResponseRedirect(
+                    reverse('ct:course_student', kwargs={'course_id': role.course.id})
+                )
+            else:
+                return HttpResponseRedirect(reverse('ct:courses'))
+        else:
+            return HttpResponseBadRequest('User is not authenticated')
 
 
 @login_required

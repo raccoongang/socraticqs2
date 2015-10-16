@@ -4,6 +4,8 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+import json
+import pickle
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -15,7 +17,7 @@ import time
 import urllib
 
 from ddt import ddt, data, unpack
-from mock import patch
+from mock import patch, Mock
 
 
 class OurTestCase(TestCase):
@@ -371,7 +373,11 @@ class EnrollTests(TestCase):
         )
         self.assertEqual(result.status_code, 400)
 
-    def test_not_authenticated_user(self):
+    @patch('ct.views.PartialEnroll.add_partial', return_value='test_token')
+    def test_not_authenticated_user(self, add_partial):
+        """
+        Check that view return status 401 and partial_url to complete enrollment.
+        """
         self.client.logout()
         url_data = {'course_id': self.course.id, 'action': 'enroll'}
         result = self.client.post(
@@ -379,7 +385,10 @@ class EnrollTests(TestCase):
             {'role': Role.ENROLLED},
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
-        self.assertContains(result, 'User is not authenticated', status_code=400)
+        data = json.loads(result.content)
+        self.assertEqual(result.status_code, 401)
+        self.assertEqual(add_partial.call_count, 1)
+        self.assertIn(add_partial.return_value, data.get('partial_url'))
 
     @patch('ct.views.Role.get_or_enroll')
     def test_call_enroll(self, get_or_enroll):
@@ -494,3 +503,90 @@ class DiscardRoleTest(TestCase):
         self.assertFalse(
             Role.objects.filter(course=self.course, user=self.user, role=created_role).exists()
         )
+
+
+class PartialEnrollTest(TestCase):
+    """
+    Tests for PartialEnroll view.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(username='test', password='test')
+        self.course = Course(title='test title', description='test descr', addedBy=self.user)
+        self.course.save()
+
+    @patch('ct.views.uuid.uuid1')
+    def test_add_partial_return_token_and_insert_into_table(self, uuid1):
+        """
+        Check that partial_hash successfully saved into DB.
+        """
+        hex_moked = Mock(hex='test_token')
+        uuid1.return_value = hex_moked
+        partial_params = 'Pickle dumped DICT with params'
+        result = views.PartialEnroll.add_partial(partial_params)
+        self.assertEqual(result, hex_moked.hex)
+        self.assertEqual(uuid1.call_count, 1)
+        self.assertEqual(
+            PartialHashTable.objects.get(token=hex_moked.hex).params, partial_params
+        )
+
+    def test_continue_enroll(self):
+        """
+        Test continue on partial_params - saved partial data should be deleted.
+        """
+        token = 'test_token'
+        partial_params = pickle.dumps({'course': self.course, 'role': Role.ENROLLED})
+        self.client.login(username='test', password='test')
+        partial_hash = PartialHashTable(token=token, params=partial_params)
+        partial_hash.save()
+        self.client.get(reverse('ct:enroll_continue', kwargs={'token': token}))
+        self.assertFalse(PartialHashTable.objects.filter(token=token).exists())
+
+    def test_redirects_to_course(self):
+        """
+        Test for redirection to correct url - main integration test.
+        """
+        url_data = {'course_id': self.course.id, 'action': 'enroll'}
+        partial_result = self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(partial_result.status_code, 401)
+        self.client.login(username='test', password='test')
+        data = json.loads(partial_result.content)
+        result = self.client.get(data.get('partial_url'))
+        self.assertRedirects(result, reverse('ct:course_student', kwargs={'course_id': self.course.id}))
+
+    def test_redirects_on_acident_absense_of_token(self):
+        """
+        Test for redirection to 'ct:courses' if there is no token in HASH_TABLE.
+        """
+        self.client.login(username='test', password='test')
+        result = self.client.get(reverse('ct:enroll_continue', kwargs={'token': 'test_token'}))
+        self.assertRedirects(result, reverse('ct:courses'))
+
+    @patch('ct.views.PartialEnroll.remove_partial')
+    def test_remove_partial(self, remove_partial):
+        """
+        Test that remove_partial called on enroll_continue action.
+        """
+        token = 'test_token'
+        partial_params = pickle.dumps({'course': self.course, 'role': Role.ENROLLED})
+        self.client.login(username='test', password='test')
+        partial_hash = PartialHashTable(token=token, params=partial_params)
+        partial_hash.save()
+        self.client.get(reverse('ct:enroll_continue', kwargs={'token': token}))
+        remove_partial.called_once_with(token)
+
+    @patch('ct.views.PartialEnroll.add_partial', return_value='test_token')
+    def test_add_partial(self, add_partial):
+        """
+        Test that add_partial called on anonymous enrollment action.
+        """
+        url_data = {'course_id': self.course.id, 'action': 'enroll'}
+        self.client.post(
+            reverse('ct:enroll', kwargs=url_data),
+            {'role': Role.ENROLLED},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        add_partial.called_once_with({'course_id': self.course.id, 'role': Role.ENROLLED})
