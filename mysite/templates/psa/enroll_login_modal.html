@@ -1,0 +1,47 @@
+{% load social_tags %}
+
+<div id="enroll-login-modal" class="modal fade">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        <div class="buttons">
+          <div class="row">
+            {% for sublist in available_backends|social_backends %}
+              {% for name, backend in sublist %}
+                {% associated backend %}
+                {% if not association %}
+                  <a class="col-md-2 btn btn-default js-enroll-modal" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}?next=">
+                    <i class="fa fa-{{ name|icon_name }}"></i>
+                  </a>
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          </div>
+        </div>
+        <form name="LoginForm" action="/login/" method="post" role="form">{% csrf_token %}
+          <input type="hidden" name="next" value="" />
+          <div class="control-group">
+              <label class="control-label" for="username">Username</label>
+              <div class="controls">
+                  <input type="text" id="username" name="username"  placeholder="Username">
+              </div>
+          </div>
+          <div class="control-group">
+              <label class="control-label" for="password">Password</label>
+              <div class="controls">
+                  <input type="password" name="password" id="password" placeholder="Password">
+              </div>
+          </div>
+          <br>
+        </div>
+        <div class="modal-footer">
+          <div class="control-group">
+            <div class="controls">
+              <button type="submit" class="btn">Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </form>
+</div>
