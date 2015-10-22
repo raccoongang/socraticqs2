@@ -59,7 +59,16 @@
                     },
 
                     401: function (data) {
-                        console.log(data.responseJSON.partial_url);
+                        var next = data.responseJSON.partial_url;
+                        $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
+
+                        $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
+                            var href = $(this).attr('href');
+                            $(this).attr('href', href + next);
+                        });
+
+                        var $loginModal = modalDialog('#enroll-login-modal');
+                        $loginModal.modal('show');
                     }
                 }
             });

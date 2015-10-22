@@ -391,7 +391,8 @@ def course_view(request, course_id):
             courseletform=courseletform,
             unitTable=unitTable,
             showReorderForm=showReorderForm,
-            enrolled=enrolled
+            enrolled=enrolled,
+            available_backends=load_backends(settings.AUTHENTICATION_BACKENDS)
         )
     )
 
