@@ -1,4 +1,6 @@
+import re
 import mock
+
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.test import TestCase, Client
@@ -22,6 +24,7 @@ from psa.pipeline import (social_user,
                           custom_mail_validation)
 from psa.mail import send_validation
 from psa.custom_backends import EmailAuth
+from psa.utils import make_temporary
 
 
 class ViewsUnitTest(TestCase):
@@ -735,3 +738,53 @@ class EmailAuthTest(TestCase):
         code.objects.filter.return_value = self.first
         self.email_auth.auth_complete()
         self.assertEqual(self.email_auth.data.get('email'), self.test_email)
+
+
+class TemporaryTest(TestCase):
+    """
+    Tests for utility function that can create Temporary User.
+    """
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('/login/')
+        self.client = Client()
+        self.client.get('/login/')
+        self.request.session = self.client.session
+        anonymous = AnonymousUser()
+        self.request.user = anonymous
+
+    def test_create_tmp_user(self):
+        """
+        Chech that func creates User with anonymous in username and
+        with timestamp at the end of username.
+        """
+        result = make_temporary(self.request)
+        self.assertIsInstance(result, User)
+        self.assertIn('anonymous', result.username)
+        self.assertTrue(re.search(r'^anonymous\d+$', result.username))
+        self.assertTrue(result.first_name, 'Temporary User')
+
+    def test_group_creation(self):
+        """
+        Check that func creates Temporary Group and add it to user groups.
+        """
+        make_temporary(self.request)
+        self.assertTrue(User.objects.filter(groups__name='Temporary').exists())
+
+    def test_user_is_authenticate(self):
+        """
+        Check that user is authenticated and session set_expiry was called.
+        """
+        self.request.session.set_expiry = mock.Mock()
+        user = make_temporary(self.request)
+        self.assertTrue(user.is_authenticated())
+        self.request.session.set_expiry.assert_called_once_with(31536000)
+
+    def test_optional_expiry_interval_param(self):
+        """
+        Check that func can accept optional expiry_interval param.
+        """
+        self.request.session.set_expiry = mock.Mock()
+        interval = mock.Mock()
+        make_temporary(self.request, interval)
+        self.request.session.set_expiry.assert_called_once_with(interval)
