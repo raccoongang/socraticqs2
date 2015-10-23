@@ -12,6 +12,7 @@
                 {% if not association %}
                   <a class="col-md-2 btn btn-default js-enroll-modal" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}?next=">
                     <i class="fa fa-{{ name|icon_name }}"></i>
+                    {{ backend|backend_name }}
                   </a>
                 {% endif %}
               {% endfor %}

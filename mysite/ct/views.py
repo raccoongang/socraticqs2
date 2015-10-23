@@ -42,6 +42,9 @@ from fsm.models import FSM, FSMState, KLASS_NAME_DICT
 
 def check_instructor_auth(course, request):
     'return 403 if not course instructor, else None'
+    if not request.user.is_authenticated():
+        return HttpResponse("Only the instructor can access this",
+                            status=403)
     role = course.get_user_role(request.user, justOne=False)
     if not isinstance(role, list):
         role = [role]
