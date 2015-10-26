@@ -10,7 +10,7 @@
               {% for name, backend in sublist %}
                 {% associated backend %}
                 {% if not association %}
-                  <a class="col-md-2 btn btn-default js-enroll-modal" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}?next=">
+                  <a class="btn btn-default js-enroll-modal" name="{{ backend|backend_class }}" href="{% url "social:begin" backend=name %}?next=">
                     <i class="fa fa-{{ name|icon_name }}"></i>
                     {{ backend|backend_name }}
                   </a>
@@ -33,7 +33,6 @@
                   <input type="password" name="password" id="password" placeholder="Password">
               </div>
           </div>
-          <br>
         </div>
         <div class="modal-footer">
           <div class="control-group">
