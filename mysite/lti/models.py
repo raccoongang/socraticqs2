@@ -119,7 +119,7 @@ class LTIUser(models.Model):
         course = Course.objects.filter(id=course_id).first()
         if course:
             for role in roles:
-                Role.objects.get_or_create(
+                Role.get_or_enroll(
                     role=role,
                     course=course,
                     user=self.django_user
