@@ -36,6 +36,8 @@ from ct.templatetags.ct_extras import (md2html,
 from fsm.fsm_base import FSMStack
 from fsm.models import FSM, FSMState, KLASS_NAME_DICT
 
+from psa.utils import preview_access
+
 
 ###########################################################
 # WelcomeMat refactored utilities
@@ -1287,7 +1289,8 @@ def error_resources(request, course_id, unit_id, ul_id):
 ###########################################################
 # welcome mat refactored student UI for courses
 
-@login_required
+
+@preview_access
 def study_unit(request, course_id, unit_id):
     course = get_object_or_404(Course, pk=course_id)
     unit = get_object_or_404(Unit, pk=unit_id)
@@ -1357,7 +1360,8 @@ def unit_resources_student(request, course_id, unit_id):
     return unit_lessons_student(request, course_id, unit_id, lessonTable,
                                 'Resources')
 
-@login_required
+
+@preview_access
 def unit_concepts_student(request, course_id, unit_id):
     'student concept glossary for  this courselet'
     unit = get_object_or_404(Unit, pk=unit_id)
@@ -1438,7 +1442,8 @@ def ul_tasks_student(request, course_id, unit_id, ul_id):
 def ul_errors_student(request, course_id, unit_id, ul_id):
     return ul_errors(request, course_id, unit_id, ul_id, showNETable=False)
 
-@login_required
+
+@preview_access
 def study_concept(request, course_id, unit_id, ul_id):
     unit, ul, concept, pageData = ul_page_data(request, unit_id, ul_id,
                                                'Study')
@@ -1447,7 +1452,8 @@ def study_concept(request, course_id, unit_id, ul_id):
     return pageData.render(request, 'ct/concept_student.html',
                            dict(unitLesson=ul, defsTable=defsTable))
 
-@login_required
+
+@preview_access
 def concept_lessons_student(request, course_id, unit_id, ul_id):
     unit, ul, concept, pageData = ul_page_data(request, unit_id, ul_id,
                                                'Lessons')
@@ -1557,7 +1563,8 @@ def save_response(form, ul, user, course_id, **kwargs):
     r.save()
     return r
 
-@login_required
+
+@preview_access
 def ul_respond(request, course_id, unit_id, ul_id):
     'ask student a question'
     includeNavTabs = Response.objects.filter(unitLesson_id=ul_id, author=request.user).exists()

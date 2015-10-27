@@ -24,7 +24,7 @@ from psa.pipeline import (social_user,
                           custom_mail_validation)
 from psa.mail import send_validation
 from psa.custom_backends import EmailAuth
-from psa.utils import make_temporary
+from psa.utils import preview_access
 
 
 class ViewsUnitTest(TestCase):
@@ -740,9 +740,16 @@ class EmailAuthTest(TestCase):
         self.assertEqual(self.email_auth.data.get('email'), self.test_email)
 
 
-class TemporaryTest(TestCase):
+def decorated_view(request):
     """
-    Tests for utility function that can create Temporary User.
+    View for testing decorator.
+    """
+    pass
+
+
+class PreviewAccessDecoratorTest(TestCase):
+    """
+    Tests for decorator that can create Temporary User under the hood.
     """
     def setUp(self):
         self.factory = RequestFactory()
@@ -752,23 +759,31 @@ class TemporaryTest(TestCase):
         self.request.session = self.client.session
         anonymous = AnonymousUser()
         self.request.user = anonymous
+        self._wrapped_view = preview_access(decorated_view)
+
+    def test_calling_derotaror_wo_function(self):
+        """
+        Calling decorator w/o function - should return actual_decorator (callable function).
+        """
+        result = preview_access()
+        self.assertTrue(callable(result))
 
     def test_create_tmp_user(self):
         """
-        Chech that func creates User with anonymous in username and
+        Chech that decorator creates User with `anonymous` in username and
         with timestamp at the end of username.
         """
-        result = make_temporary(self.request)
-        self.assertIsInstance(result, User)
-        self.assertIn('anonymous', result.username)
-        self.assertTrue(re.search(r'^anonymous\d+$', result.username))
-        self.assertTrue(result.first_name, 'Temporary User')
+        self._wrapped_view(self.request)
+        user = User.objects.filter(username__startswith='anonymous').first()
+        self.assertIn('anonymous', user.username)
+        self.assertTrue(re.search(r'^anonymous\d+$', user.username))
+        self.assertTrue(user.first_name, 'Temporary User')
 
     def test_group_creation(self):
         """
         Check that func creates Temporary Group and add it to user groups.
         """
-        make_temporary(self.request)
+        self._wrapped_view(self.request)
         self.assertTrue(User.objects.filter(groups__name='Temporary').exists())
 
     def test_user_is_authenticate(self):
@@ -776,7 +791,8 @@ class TemporaryTest(TestCase):
         Check that user is authenticated and session set_expiry was called.
         """
         self.request.session.set_expiry = mock.Mock()
-        user = make_temporary(self.request)
+        self._wrapped_view(self.request)
+        user = User.objects.filter(username__startswith='anonymous').first()
         self.assertTrue(user.is_authenticated())
         self.request.session.set_expiry.assert_called_once_with(31536000)
 
@@ -786,5 +802,6 @@ class TemporaryTest(TestCase):
         """
         self.request.session.set_expiry = mock.Mock()
         interval = mock.Mock()
-        make_temporary(self.request, interval)
+        _wrapped_view = preview_access(decorated_view, expiry_interval=interval)
+        _wrapped_view(self.request)
         self.request.session.set_expiry.assert_called_once_with(interval)
