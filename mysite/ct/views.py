@@ -6,8 +6,10 @@ from datetime import datetime
 
 from django.db.models import Q
 from django.conf import settings
+from django.http import QueryDict
 from django.utils import timezone
 from django.views.generic import View
+from django.core.urlresolvers import resolve
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Group
 from django.contrib.sites.models import Site
@@ -15,6 +17,7 @@ from django.contrib.auth import logout, login
 from django.contrib.auth.models import AnonymousUser
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+
 from django.http import (
     HttpResponseRedirect,
     HttpResponse,
@@ -553,6 +556,48 @@ class PartialEnroll(View):
                 return HttpResponseRedirect(reverse('ct:courses'))
         else:
             return HttpResponseBadRequest('User is not authenticated')
+
+
+# TODO need to unify partial handlers to handle both enroll and user answering actions
+class PartialAction(View):
+    """
+    Class to handle POST's from Temporary users.
+    """
+    @staticmethod
+    def add_partial(partial_params):
+        token = uuid.uuid1().hex
+        partial_hash = PartialHashTable(token=token, params=partial_params)
+        partial_hash.save()
+        return token
+
+    @staticmethod
+    def remove_partial(partial_hash):
+        """
+        Move removing logic to staticmethod
+        for a future generalization.
+        """
+        partial_hash.delete()
+
+    def post(self, request):
+        partial_params = pickle.dumps(request.POST)
+        token = self.add_partial(partial_params)
+        partial_url = reverse('ct:partial_continue', kwargs={'token': token})
+        return JsonResponse({'partial_url': partial_url}, status=200)
+
+    def get(self, request, token):
+        partial_hash = get_object_or_404(PartialHashTable, token=token)
+
+        partial_params = pickle.loads(partial_hash.params)
+        request.POST = QueryDict(partial_params.get('POST'))
+        request.method = 'POST'
+        request.path = partial_params.get('url')
+        myfunc, myargs, mykwargs = resolve(request.path)
+        result = myfunc(request, **mykwargs)
+        self.remove_partial(partial_hash)
+        if not isinstance(result, HttpResponseRedirect):
+            return HttpResponseRedirect(request.path)
+        else:
+            return result
 
 
 @login_required
@@ -1509,7 +1554,7 @@ def resolutions_student(request, course_id, unit_id, ul_id):
                   dict(unitLesson=ul, unit=unit,
                        lessonTable=lessonTable, statusForm=form))
 
-@login_required
+@preview_access
 def ul_faq_student(request, course_id, unit_id, ul_id):
     'UI for student to view or write inquiry about this lesson'
     unit, ul, _, pageData = ul_page_data(request, unit_id, ul_id,
@@ -1531,9 +1576,18 @@ def ul_faq_student(request, course_id, unit_id, ul_id):
     faqTable = []
     for r in faqs:
         faqTable.append((r, r.inquirycount_set.count()))
-    return pageData.render(request, 'ct/faq_student.html',
-                           dict(unitLesson=ul, unit=unit,
-                                faqTable=faqTable, form=form))
+    return pageData.render(
+        request,
+        'ct/faq_student.html',
+        dict(
+            unitLesson=ul,
+            unit=unit,
+            faqTable=faqTable,
+            form=form,
+            available_backends=load_backends(settings.AUTHENTICATION_BACKENDS)
+        )
+    )
+
 
 @login_required
 def ul_thread_student(request, course_id, unit_id, ul_id, resp_id):
@@ -1599,8 +1653,17 @@ def ul_respond(request, course_id, unit_id, ul_id):
     else:
         form = ResponseForm()
     set_crispy_action(request.path, form)
-    return pageData.render(request, 'ct/ask.html',
-                  dict(unitLesson=ul, qtext=md2html(ul.lesson.text), form=form))
+    return pageData.render(
+        request,
+        'ct/ask.html',
+        dict(
+            unitLesson=ul,
+            qtext=md2html(ul.lesson.text),
+            form=form,
+            available_backends=load_backends(settings.AUTHENTICATION_BACKENDS)
+        )
+    )
+
 
 def get_answer_html(unitLesson):
     'get HTML text for answer associated with this lesson, if any'

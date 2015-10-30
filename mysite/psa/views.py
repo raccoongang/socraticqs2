@@ -9,6 +9,7 @@ from social.backends.utils import load_backends
 
 from psa.utils import render_to
 from psa.models import SecondaryEmail
+from psa.pipeline import union_merge
 
 
 def context(**extra):
@@ -57,6 +58,7 @@ def custom_login(request):
     Custom login to integrate social auth and default login.
     """
     username = password = ''
+    tmp_user = request.user
     logout(request)
     kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
     if request.POST:
@@ -67,6 +69,8 @@ def custom_login(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
+                if tmp_user.groups.filter(name='Temporary').exists():
+                    union_merge(tmp_user, user)
                 login(request, user)
                 return redirect(request.POST.get('next', '/ct/'))
     else:

@@ -140,5 +140,9 @@ urlpatterns = patterns('',
         EnrollView.as_view(),
         name='enroll'
     ),
-    url(r'^partial_enrollment/continue/(?P<token>\w+)/$', PartialEnroll.as_view(), name='enroll_continue')
+    # TODO may be need to unify urls for enrollment and user answering actions
+    url(r'^partial_enrollment/continue/(?P<token>\w+)/$', PartialEnroll.as_view(), name='enroll_continue'),
+    # TODO unify this urls
+    url(r'^partial_pause/$', PartialAction.as_view(), name='partial_pause'),
+    url(r'^partial_continue/(?P<token>\w+)/$', PartialAction.as_view(), name='partial_continue')
 )
