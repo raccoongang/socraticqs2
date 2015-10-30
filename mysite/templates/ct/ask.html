@@ -41,10 +41,13 @@
    c^2=a^2+b^2</pre>
     <br>
 
-<div class="container-fluid">
+<div class="container-fluid" {% if 'anonymous' in user.username %}id="js--partial"{% endif %}>
 {% crispy form %}
 </div>
 
   </div><!-- @end #StudyTabDiv -->
 </div>
+
+{% include "psa/partial_login_modal.html" %}
+{% include "ct/partial_actions.js.html" %}
 {% endblock %}

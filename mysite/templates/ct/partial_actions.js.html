@@ -1,4 +1,41 @@
 <script type="text/javascript">
+    (function () {
+        $('#js--partial').find("form").on('submit', function(e){
+            var self = this;
+            var url = $(self).attr('action');
+            if (url === undefined) {
+                url = window.location.pathname;
+            }
+            var data = {};
+            data['url'] = url;
+            data['POST'] = $(self).serialize();
+
+            $.ajax({
+                url: '/ct/partial_pause/',
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/x-www-form-urlencoded',
+                data: data,
+                statusCode: {
+                    200: function (data) {
+                        console.log(data);
+                        var next = data.partial_url;
+                        $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
+
+                        $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
+                            var href = $(this).attr('href');
+                            $(this).attr('href', href + next);
+                        });
+
+                        var $loginModal = modalDialog('#enroll-login-modal');
+                        $loginModal.modal('show');
+                    },
+                }
+            });
+            return false;
+        });
+    })();
+    
     (function(){
         function getCookie(name) {
             var cookieValue = null;
@@ -31,7 +68,6 @@
 
     (function () {
         $('#enroll').on('click', function (e) {
-            e.preventDefault();
             var self = this;
 
             $.ajax({

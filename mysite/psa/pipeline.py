@@ -2,50 +2,27 @@
 
 custom_mail_validation - > implement code obj inspect
 """
-from django.template import RequestContext
-from django.shortcuts import render_to_response
-from django.contrib.auth import login, logout
-# from django.core.mail import send_mail
-from django.conf import settings
-from django.db import IntegrityError
-from django.contrib.auth.models import User
 import time
 from datetime import datetime
 
+from django.template import RequestContext
+from django.shortcuts import render_to_response
+from django.contrib.auth import login, logout
+from django.conf import settings
+from django.db import IntegrityError
+from django.contrib.auth.models import User
+
+
 from social.pipeline.partial import partial
-from social.exceptions import (InvalidEmail,
-                               AuthException,
-                               AuthAlreadyAssociated)
+from social.exceptions import (
+    InvalidEmail,
+    AuthException,
+    AuthAlreadyAssociated
+)
 from social.backends.utils import load_backends
 from social.apps.django_app.default.models import UserSocialAuth
 
 from psa.models import AnonymEmail, SecondaryEmail
-
-
-# @partial
-# def password_ask(strategy, details, user=None, is_new=False, *args, **kwargs):
-# if is_new and kwargs.get('backend').name == 'email':
-#         email = user.email or details.get('email')
-#         if strategy.request.POST.get('password'):
-#             if user.groups.filter(name='Temporary').exists():
-#                 user.username = details.get('username')
-#                 user.first_name = ''
-#             username = user.username
-#             password = strategy.request.POST.get('password')
-#             user.set_password(password)
-#             user.save()
-#             if email:
-#                 send_mail('Account is created',
-#                           'Account is created.\nUsername: {0}\nPassword: {1}'.format(username,
-#                                                                                      password),
-#                           settings.EMAIL_FROM,
-#                           [email],
-#                           fail_silently=False)
-#         else:
-#             return render_to_response('psa/require_password.html', {
-#                 'request': strategy.request,
-#                 'next': strategy.request.POST.get('next') or ''
-#             }, RequestContext(strategy.request))
 
 
 @partial
@@ -106,19 +83,31 @@ def union_merge(tmp_user, user):
     Also we reassigning UnitStatuses, FSMStates, Responses and
     StudentErrors here.
     """
-    roles_to_reset = (role for role in tmp_user.role_set.all()
-                      if not user.role_set.filter(course=role.course, role=role.role))
+    # TODO add smart student Role checking
+    roles_to_reset = (
+        role for role in tmp_user.role_set.all()
+        if not user.role_set.filter(course=role.course, role=role.role)
+    )
     for role in roles_to_reset:
         role.user = user
         role.save()
 
-    unitstatus_to_reset = (us for us in tmp_user.unitstatus_set.all())
-    for unitstatus in unitstatus_to_reset:
-        unitstatus.user = user
-        unitstatus.save()
+    # TODO rewrite as XOR
+    studylist_to_reassign = (
+        studylist for studylist in tmp_user.studylist_set.all()
+        if not user.studylist_set.filter(lesson=studylist.lesson)
+    )
+    for studylist in studylist_to_reassign:
+        studylist.user = user
+        studylist.save()
+
+    tmp_user.unitstatus_set.all().update(user=user)
     tmp_user.fsmstate_set.all().update(user=user)
     tmp_user.response_set.all().update(author=user)
     tmp_user.studenterror_set.all().update(author=user)
+    tmp_user.faq_set.all().update(addedBy=user)
+    tmp_user.liked_set.all().update(addedBy=user)
+    tmp_user.inquirycount_set.all().update(addedBy=user)
 
 
 def social_merge(tmp_user, user):
@@ -202,6 +191,17 @@ def validated_user_details(strategy, backend, details, user=None, *args, **kwarg
             social.user = user
             return {'user': user,
                     'social': social}
+    if user and social and social.user == user and strategy.request.user.is_authenticated():
+        union_merge(strategy.request.user, user)
+        next_url = strategy.request.session.get('next')
+        logout(strategy.request)
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(strategy.request, user)
+        backend.strategy.session_set('next', next_url)
+        return {
+            'user': user,
+            'social': social
+        }
 
 
 def not_allowed_to_merge(user, user_social):

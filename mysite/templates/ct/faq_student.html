@@ -66,11 +66,14 @@ $( "#headtoggle" ).click(function() {
 
 {% if form %}
 <h3>Post a new question or comment</h3>
-<div class="container-fluid">
+<div class="container-fluid" {% if 'anonymous' in user.username %}id="js--partial"{% endif %}>
 {% crispy form %}
 </div>
 {% endif %}
 
   </div><!-- @end #FAQTabDiv -->
 </div>
+
+{% include "psa/partial_login_modal.html" %}
+{% include "ct/partial_actions.js.html" %}
 {% endblock %}
