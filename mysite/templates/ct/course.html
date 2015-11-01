@@ -34,8 +34,8 @@ $( "#headtoggle" ).click(function() {
 </script>
 {% endif %}
 
-{% include "psa/enroll_login_modal.html" %}
-{% include "ct/enroll.js.html" %}
+{% include "psa/partial_login_modal.html" %}
+{% include "ct/partial_actions.js.html" %}
 
 <ul class="nav nav-tabs">
   {% for tabLabel,tabURL in pageData.navTabs %}
