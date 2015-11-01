@@ -54,6 +54,8 @@ class ViewsUnitTest(TestCase):
         self.assertTrue('test@test.com' in response.content)
 
     def test_custom_login_get(self):
+        anonymous = AnonymousUser()
+        self.request.user = anonymous
         response = custom_login(self.request)
         self.assertIsInstance(response, HttpResponse)
         self.assertTrue('LoginForm' in response.content)
@@ -385,7 +387,7 @@ class UnionMergeTest(TestCase):
             role.course = mock.Mock()
             role.save = save
         tmp_user, user = (mock.Mock(), mock.Mock())
-        tmp_user.role_set.all = mock.Mock(return_value=(role1, role2, role3,))
+        tmp_user.role_set.all = mock.Mock(return_value=(role1, role2, role3))
         user.role_set.filter = mock.Mock(return_value=None)
 
         unitstatus1, unitstatus2 = (mock.Mock(), mock.Mock())
@@ -394,18 +396,27 @@ class UnionMergeTest(TestCase):
         tmp_user.unitstatus_set.all = mock.Mock(return_value=(unitstatus1,
                                                               unitstatus2))
 
+        studylist1, studylist2, studylist3 = (mock.Mock(), mock.Mock(), mock.Mock())
+        for studylist in (studylist1, studylist2, studylist3):
+            studylist.lesson = mock.Mock()
+            studylist.save = save
+        tmp_user.studylist_set.all = mock.Mock(return_value=(studylist1, studylist2, studylist3))
+        user.studylist_set.filter = mock.Mock(return_value=None)
+
         update = mock.Mock()
         update.update = mock.Mock()
         tmp_user.fsmstate_set.all = mock.Mock(return_value=update)
         tmp_user.response_set.all = mock.Mock(return_value=update)
         tmp_user.studenterror_set.all = mock.Mock(return_value=update)
+        tmp_user.unitstatus_set.all = mock.Mock(return_value=update)
 
         union_merge(tmp_user, user)
         self.assertEqual(tmp_user.role_set.all.call_count, 1)
         self.assertEqual(user.role_set.filter.call_count, 3)
-        self.assertEqual(save.call_count, 5)
+        self.assertEqual(user.studylist_set.filter.call_count, 3)
+        self.assertEqual(save.call_count, 6)
 
-        self.assertEqual(update.update.call_count, 3)
+        self.assertEqual(update.update.call_count, 4)
         calls = [mock.call(user=user),
                  mock.call(author=user),
                  mock.call(author=user)]

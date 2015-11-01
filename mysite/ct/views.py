@@ -580,6 +580,7 @@ class PartialAction(View):
 
     def post(self, request):
         partial_params = pickle.dumps(request.POST)
+        # TODO implement Form's validation here
         token = self.add_partial(partial_params)
         partial_url = reverse('ct:partial_continue', kwargs={'token': token})
         return JsonResponse({'partial_url': partial_url}, status=200)

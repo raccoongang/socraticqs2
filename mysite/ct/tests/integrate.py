@@ -10,6 +10,7 @@ import pickle
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.urlresolvers import NoReverseMatch
+from django.http.response import JsonResponse, HttpResponseRedirect
 
 from ct.models import *
 from ct import views, ct_util
@@ -737,3 +738,103 @@ class PartialEnrollTest(TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         add_partial.called_once_with({'course_id': self.course.id, 'role': Role.ENROLLED})
+
+
+@ddt
+class PartialIntegrationTest(TestCase):
+    """
+    General tests for posting actions from Temporary users.
+    """
+    def setUp(self):
+        self.user = User.objects.create_user(username='test', password='test')
+        self.course = Course(title='test title', description='test descr', addedBy=self.user)
+        self.course.save()
+        self.ul = create_question_unit(self.user)
+        concept = Concept.new_concept('bad', 'idea', self.ul.unit, self.user)
+        self.ul.lesson.concept = concept
+        self.ul.lesson.save()
+
+    def test_make_temporary_in_decorator(self):
+        """
+        Test that Anonymous user is transformed into
+        Temporary by preview_access decorator.
+        """
+        response = self.client.get(
+            reverse(
+                'ct:ul_respond',
+                kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
+            )
+        )
+        self.assertIn('id="js--partial"', response.content)
+        self.assertTrue(User.objects.filter(username__startswith='anonymous').exists())
+        user = User.objects.filter(username__startswith='anonymous').first()
+        self.assertTrue(user.groups.filter(name='Temporary').exists())
+        self.assertIn('available_backends', response.context)
+
+    def test_post_partial_pause(self):
+        """
+        Test POST request checking from Temporary user.
+        """
+        url = reverse(
+            'ct:ul_respond',
+            kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
+        )
+        self.client.get(url)
+        result = self.client.post(
+            reverse('ct:partial_pause'),
+            data={'POST': 'text=test+answer&confidence=sure', 'url': url}
+        )
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(result, JsonResponse)
+
+    def __need_to_implement_this__post_partial_pause_improperly_configured(self):
+        """
+        Test checking for improperly configured request.
+        """
+        url = reverse(
+            'ct:ul_respond',
+            kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
+        )
+        self.client.get(url)
+        result = self.client.post(
+            reverse('ct:partial_pause'),
+            data={'POST': '', 'url': url}
+        )
+        self.assertContains(result, 'Improperly configured request', status_code=400)
+        self.assertIsInstance(result, JsonResponse)
+
+    @unpack
+    @data(
+        (
+            'ct:ul_respond',
+            'text=test+answer&confidence=sure'
+        ),
+        (
+            'ct:ul_faq',
+            'title=test+title&text=test+quiestion&confidence=sure'
+        )
+    )
+    def test_continue_partial(self, url_name, url_post_data):
+        """
+        Test that GET to 'ct:partial_continue' with correct token
+        will continue partial.
+        """
+        url = reverse(
+            url_name,
+            kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
+        )
+        self.client.get(url)
+        response = self.client.post(
+            reverse('ct:partial_pause'),
+            data={'POST': url_post_data, 'url': url}
+        )
+        continue_url = json.loads(response.content).get('partial_url')
+        self.assertIn('partial_continue', continue_url)
+        token = continue_url.split('/')[-2]
+        self.assertTrue(PartialHashTable.objects.filter(token=token).exists())
+        result = self.client.get(continue_url)
+        self.assertIsInstance(result, HttpResponseRedirect)
+        # post data should be deleted from storage
+        self.assertFalse(PartialHashTable.objects.filter(token=token).exists())
+        result = self.client.get(continue_url)
+        self.assertEqual(result.status_code, 404)
