@@ -4,6 +4,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
+        <p id="js--title">Create an account to continue</p>
         <div class="buttons">
           <div class="row">
             {% for sublist in available_backends|social_backends %}
@@ -19,27 +20,28 @@
             {% endfor %}
           </div>
         </div>
-        <form name="LoginForm" action="/login/" method="post" role="form">{% csrf_token %}
+        <form name="LoginForm" id="js--login-register-form" action="/register/" method="post" role="form">{% csrf_token %}
           <input type="hidden" name="next" value="" />
           <div class="control-group">
               <label class="control-label" for="username">Username</label>
               <div class="controls">
-                  <input type="text" id="username" name="username"  placeholder="Username">
+                  <input type="text" id="username" name="username" placeholder="Username" data-validation="required" data-validation-error-msg="Please enter your username">
               </div>
           </div>
           <div class="control-group">
               <label class="control-label" for="password">Password</label>
               <div class="controls">
-                  <input type="password" name="password" id="password" placeholder="Password">
+                  <input type="password" name="password" id="password" placeholder="Password" data-validation="required" data-validation-error-msg="Please enter your password">
               </div>
           </div>
         </div>
         <div class="modal-footer">
           <div class="control-group">
             <div class="controls">
-              <button type="submit" class="btn">Login</button>
+              <button type="submit" class="btn" id="js--login-register-btn">Create account</button>
             </div>
           </div>
+          <i id="js--link-pretext">Already have an account? </i><a id="js--link" href="#">Sign in</a>
         </div>
       </div>
     </div>
