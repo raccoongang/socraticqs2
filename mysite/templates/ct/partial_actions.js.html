@@ -1,5 +1,47 @@
 <script type="text/javascript">
     (function () {
+        window.flags = {
+            register_mode: true
+        };
+        $('#js--login-register-btn').on('click', function () {
+            var login_form = $('#js--login-register-form');
+            if (!($(login_form).isValid({}, {scrollToTopOnError: false}))) {
+                return false;
+            }
+        })
+        $('#js--link').on('click', function (){
+            var form = $('#js--login-register-form');
+            var modal = $('#enroll-login-modal');
+            if (window.flags.register_mode == true) {
+                // Changing modal window to `Sign in` mode
+                window.flags.register_mode = false;
+                $(modal).find('#js--title').text('Use following methods to Sign in');
+                $(modal).find('#js--login-register-btn').text('Login');
+                $(modal).find('#js--link-pretext').text('Want to register? ');
+                $(modal).find('#js--link').text('Register');
+                $(form).attr('action', '/login/')
+            }
+            else {
+                // Changing modal window to `Register` mode
+                window.flags.register_mode = true;
+                $(modal).find('#js--title').text('Create an account to continue');
+                $(modal).find('#js--login-register-btn').text('Create account');
+                $(modal).find('#js--link-pretext').text('Already have an account? ');
+                $(modal).find('#js--link').text('Sign in');
+                $(form).attr('action', '/register/')
+            }
+            $(form).find('.form-error').remove();
+            var div_elements = $(form).find('.has-error');
+            var input_elements = $(form).find('.error');
+            $(div_elements).removeClass('has-error');
+            $(input_elements).removeAttr('current_error');
+            $(input_elements).removeAttr('class');
+            $(input_elements).removeAttr('style');
+            return false;
+        })
+    })();
+
+    (function () {
         $('#js--partial').find("form").on('submit', function(e){
             var self = this;
             var url = $(self).attr('action');
@@ -35,7 +77,7 @@
             return false;
         });
     })();
-    
+
     (function(){
         function getCookie(name) {
             var cookieValue = null;
@@ -112,3 +154,4 @@
         });
     })();
 </script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.2.8/jquery.form-validator.min.js"></script>
