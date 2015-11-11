@@ -1,3 +1,5 @@
+from json import dumps
+
 from django.db.models import Q
 from django.conf import settings
 from django.template import RequestContext
@@ -5,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.contrib.auth import logout, login, authenticate
+from django.http import HttpResponse
 from social.backends.utils import load_backends
 
 from psa.utils import render_to
@@ -80,6 +83,26 @@ def custom_login(request):
     return render_to_response(
         'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
     )
+
+
+def custom_add_user(request):
+    """
+    Create new django user
+    """
+    name = request.POST.get('name')
+    password = request.POST.get('password')
+    next = request.POST.get('next')
+    (user, create) = User.objects.get_or_create(username=name)
+    if not create:
+        return HttpResponse(dumps({'message':'Such user is already exist'}),
+                            status = 400)
+    if len(password) == 0:
+        return HttpResponse(dumps({'message':'Password field required'}),
+                            status = 400)
+    user.password = password
+    user.save()
+    authenticate(username=user.username, password=user.password)
+    return redirect(next)
 
 
 @login_required
