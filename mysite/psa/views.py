@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.contrib.auth import logout, login, authenticate
+from django.http import HttpResponseBadRequest
+from django.views.generic import View
+
 from social.backends.utils import load_backends
 
 from psa.utils import render_to
@@ -80,6 +83,39 @@ def custom_login(request):
     return render_to_response(
         'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
     )
+
+
+class RegisterView(View):
+    """
+    View for registering new user.
+    """
+    def post(self, request):
+        """
+        Create new django user.
+        """
+        logged = False
+        tmp_user = request.user
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if not username or not password:
+            return HttpResponseBadRequest('Improperly configured request')
+
+        if not User.objects.filter(username=username).first():
+            User.objects.create_user(username=username, password=password)
+
+        auth_user = authenticate(username=username, password=password)
+        if auth_user is not None:
+            if auth_user.is_active:
+                if tmp_user.groups.filter(name='Temporary').exists():
+                    union_merge(tmp_user, auth_user)
+                login(request, auth_user)
+                logged = True
+
+        if logged:
+            return redirect(request.POST.get('next', '/ct/'))
+        else:
+            return redirect('/ct/')
 
 
 @login_required
