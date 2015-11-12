@@ -476,7 +476,8 @@ class EnrollView(View):
             if request.POST.get('role') not in self.ROLES:
                 return HttpResponseBadRequest('Improperly configured request')
             else:
-                if request.user.is_authenticated():
+                user = request.user
+                if user.is_authenticated() and not user.groups.filter(name='Temporary').exists():
                     try:
                         course = Course.objects.filter(id=course_id).first()
                         if not course:
@@ -487,7 +488,7 @@ class EnrollView(View):
                             'unenroll': 'discard_role'
                         }
                         getattr(Role, dispatch_action.get(action))(
-                            course=course, user=request.user, role=request.POST.get('role')
+                            course=course, user=user, role=request.POST.get('role')
                         )
                     except ValueError as e:
                         return HttpResponseBadRequest(e)
