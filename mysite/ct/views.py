@@ -586,19 +586,23 @@ class PartialAction(View):
         return JsonResponse({'partial_url': partial_url}, status=200)
 
     def get(self, request, token):
-        partial_hash = get_object_or_404(PartialHashTable, token=token)
+        if request.user.is_authenticated():
+            partial_hash = get_object_or_404(PartialHashTable, token=token)
 
-        partial_params = pickle.loads(partial_hash.params)
-        request.POST = QueryDict(partial_params.get('POST'))
-        request.method = 'POST'
-        request.path = partial_params.get('url')
-        myfunc, myargs, mykwargs = resolve(request.path)
-        result = myfunc(request, **mykwargs)
-        self.remove_partial(partial_hash)
-        if not isinstance(result, HttpResponseRedirect):
-            return HttpResponseRedirect(request.path)
+            partial_params = pickle.loads(partial_hash.params)
+            request.POST = QueryDict(partial_params.get('POST'))
+            request.method = 'POST'
+            request.path = partial_params.get('url')
+            myfunc, myargs, mykwargs = resolve(request.path)
+            result = myfunc(request, **mykwargs)
+            self.remove_partial(partial_hash)
+            if not isinstance(result, HttpResponseRedirect):
+                return HttpResponseRedirect(request.path)
+            else:
+                return result
         else:
-            return result
+            return HttpResponseBadRequest('User is not authenticated',
+                                          status = 401)
 
 
 @login_required

@@ -9,7 +9,7 @@ import pickle
 
 from django.test import TestCase
 from django.contrib.auth.models import User
-from django.core.urlresolvers import NoReverseMatch
+from django.core.urlresolvers import NoReverseMatch, reverse
 from django.http.response import JsonResponse, HttpResponseRedirect
 
 from ct.models import *
@@ -838,3 +838,22 @@ class PartialIntegrationTest(TestCase):
         self.assertFalse(PartialHashTable.objects.filter(token=token).exists())
         result = self.client.get(continue_url)
         self.assertEqual(result.status_code, 404)
+
+    def test_get_on_anonymous_user(self):
+        """
+        Test for PartialAction for anonymous user.
+        """
+        response = self.client.post(
+            reverse('ct:partial_pause'),
+        )
+        continue_url = json.loads(response.content).get('partial_url')
+        self.client.logout()
+        result = self.client.get(continue_url)
+        self.assertContains(result, 'User is not authenticated', status_code=401)
+
+
+
+
+
+
+
