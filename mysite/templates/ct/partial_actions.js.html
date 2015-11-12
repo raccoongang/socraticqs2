@@ -66,7 +66,9 @@
 
                         $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
                             var href = $(this).attr('href');
-                            $(this).attr('href', href + next);
+                            if (href.indexOf('/ct/partial_continue/') == -1) {
+                                $(this).attr('href', href + next);
+                            }
                         });
 
                         var $loginModal = modalDialog('#enroll-login-modal');
@@ -142,7 +144,9 @@
 
                         $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
                             var href = $(this).attr('href');
-                            $(this).attr('href', href + next);
+                            if (href.indexOf('/ct/partial_enrollment/continue/') == -1) {
+                                $(this).attr('href', href + next);
+                            }
                         });
 
                         var $loginModal = modalDialog('#enroll-login-modal');

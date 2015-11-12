@@ -62,7 +62,10 @@ def custom_login(request):
     """
     username = password = ''
     tmp_user = request.user
-    logout(request)
+    user_is_temporary = tmp_user.groups.filter(name='Temporary').exists()
+    if not user_is_temporary:
+        logout(request)
+
     kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
     if request.POST:
         params = request.POST
@@ -72,7 +75,7 @@ def custom_login(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             if user.is_active:
-                if tmp_user.groups.filter(name='Temporary').exists():
+                if user_is_temporary:
                     union_merge(tmp_user, user)
                 login(request, user)
                 return redirect(request.POST.get('next', '/ct/'))
@@ -80,6 +83,11 @@ def custom_login(request):
         params = request.GET
     if 'next' in params:  # must pass through for both GET or POST
         kwargs['next'] = params['next']
+
+    if user_is_temporary:
+        kwargs['temporary_user_message'] = '''You have accessed to a Courses without signing in.
+                                              You can login using following methods and your progress
+                                              will be saved.'''
     return render_to_response(
         'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
     )
