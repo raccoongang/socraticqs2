@@ -97,7 +97,7 @@ function toggleInterest(o, targeturl, csrftoken)
           {% block navbar %}{% endblock %}
         </ul>
         <ul class="nav navbar-right">
-          {% if user and user.is_authenticated %}
+          {% if user and user.is_authenticated and 'anonymous' not in user.username %}
             <li><a href="/ct/people/{{ user.pk }}/" target="{{ target }}">
             {% if user.get_full_name %}
                 {{ user.get_full_name }}
