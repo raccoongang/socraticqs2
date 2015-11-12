@@ -506,9 +506,9 @@ class EnrollView(View):
             return HttpResponseForbidden('Only Ajax Allowed')
 
 
-class PartialEnroll(View):
+class PartialMixin(object):
     """
-    Class to handle partial enrollment from Anonymous users.
+    Mixin adds partial actions.
     """
     @staticmethod
     def add_partial(partial_params):
@@ -525,6 +525,11 @@ class PartialEnroll(View):
         """
         partial_hash.delete()
 
+
+class PartialEnroll(PartialMixin, View):
+    """
+    Class to handle partial enrollment from Anonymous users.
+    """
     def get(self, request, token):
         """
         Retrieve partial_params from DB and add request.user
@@ -546,26 +551,10 @@ class PartialEnroll(View):
             return HttpResponseBadRequest('User is not authenticated')
 
 
-# TODO need to unify partial handlers to handle both enroll and user answering actions
-class PartialAction(View):
+class PartialAction(PartialMixin, View):
     """
     Class to handle POST's from Temporary users.
     """
-    @staticmethod
-    def add_partial(partial_params):
-        token = uuid.uuid1().hex
-        partial_hash = PartialHashTable(token=token, params=partial_params)
-        partial_hash.save()
-        return token
-
-    @staticmethod
-    def remove_partial(partial_hash):
-        """
-        Move removing logic to staticmethod
-        for a future generalization.
-        """
-        partial_hash.delete()
-
     def post(self, request):
         partial_params = pickle.dumps(request.POST)
         # TODO implement Form's validation here

@@ -3,159 +3,180 @@
         window.flags = {
             register_mode: true
         };
-        $('#js--login-register-btn').on('click', function () {
-            var login_form = $('#js--login-register-form');
-            if (!($(login_form).isValid({}, {scrollToTopOnError: false}))) {
-                return false;
-            }
-        })
-        $('#js--link').on('click', function (){
-            var form = $('#js--login-register-form');
-            var modal = $('#enroll-login-modal');
-            if (window.flags.register_mode == true) {
-                // Changing modal window to `Sign in` mode
-                window.flags.register_mode = false;
-                $(modal).find('#js--title').text('Use following methods to Sign in');
-                $(modal).find('#js--login-register-btn').text('Login');
-                $(modal).find('#js--link-pretext').text('Want to register? ');
-                $(modal).find('#js--link').text('Register');
-                $(form).attr('action', '/login/')
-            }
-            else {
-                // Changing modal window to `Register` mode
-                window.flags.register_mode = true;
-                $(modal).find('#js--title').text('Create an account to continue');
-                $(modal).find('#js--login-register-btn').text('Create account');
-                $(modal).find('#js--link-pretext').text('Already have an account? ');
-                $(modal).find('#js--link').text('Sign in');
-                $(form).attr('action', '/register/')
-            }
-            $(form).find('.form-error').remove();
-            var div_elements = $(form).find('.has-error');
-            var input_elements = $(form).find('.error');
-            $(div_elements).removeClass('has-error');
-            $(input_elements).removeAttr('current_error');
-            $(input_elements).removeAttr('class');
-            $(input_elements).removeAttr('style');
-            return false;
-        })
-    })();
 
-    (function () {
-        $('#js--partial').find("form").on('submit', function(e){
-            var self = this;
-            var url = $(self).attr('action');
-            if (url === undefined) {
-                url = window.location.pathname;
-            }
-            var data = {};
-            data['url'] = url;
-            data['POST'] = $(self).serialize();
+        window.Partial = {
+            init: function () {
+              this.bindModalLogin();
+              this.bindModalChangeLink();
+              this.bindPartial();
+              this.bindEnroll();
+              this.ajaxSetup();
+            },
 
-            $.ajax({
-                url: '/ct/partial_pause/',
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/x-www-form-urlencoded',
-                data: data,
-                statusCode: {
-                    200: function (data) {
-                        console.log(data);
-                        var next = data.partial_url;
-                        $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
+            bindModalLogin: function () {
+                $('#js--login-register-btn').on('click', function () {
+                    var login_form = $('#js--login-register-form');
+                    if (!($(login_form).isValid({}, {scrollToTopOnError: false}))) {
+                        return false;
+                    }
+                })
+            },
 
-                        $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
-                            var href = $(this).attr('href');
-                            if (href.indexOf('/ct/partial_continue/') == -1) {
-                                $(this).attr('href', href + next);
+            bindModalChangeLink: function () {
+                $('#js--link').on('click', function () {
+                    var form = $('#js--login-register-form');
+                    var modal = $('#enroll-login-modal');
+                    if (window.flags.register_mode == true) {
+                        // Changing modal window to `Sign in` mode
+                        window.flags.register_mode = false;
+                        $(modal).find('#js--title').text('Use following methods to Sign in');
+                        $(modal).find('#js--login-register-btn').text('Login');
+                        $(modal).find('#js--link-pretext').text('Want to register? ');
+                        $(modal).find('#js--link').text('Register');
+                        $(form).attr('action', '/login/')
+                    }
+                    else {
+                        // Changing modal window to `Register` mode
+                        window.flags.register_mode = true;
+                        $(modal).find('#js--title').text('Create an account to continue');
+                        $(modal).find('#js--login-register-btn').text('Create account');
+                        $(modal).find('#js--link-pretext').text('Already have an account? ');
+                        $(modal).find('#js--link').text('Sign in');
+                        $(form).attr('action', '/register/')
+                    }
+                    $(form).find('.form-error').remove();
+                    var div_elements = $(form).find('.has-error');
+                    var input_elements = $(form).find('.error');
+                    $(div_elements).removeClass('has-error');
+                    $(input_elements).removeAttr('current_error');
+                    $(input_elements).removeAttr('class');
+                    $(input_elements).removeAttr('style');
+                    return false;
+                })
+            },
+
+            bindPartial: function () {
+                $('#js--partial').find("form").on('submit', function () {
+                    var url = $(this).attr('action');
+                    if (url === undefined) {
+                        url = window.location.pathname;
+                    }
+                    var data = {};
+                    data['url'] = url;
+                    data['POST'] = $(this).serialize();
+
+                    $.ajax({
+                        url: '/ct/partial_pause/',
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded',
+                        data: data,
+                        statusCode: {
+                            200: function (data) {
+                                var next = data.partial_url;
+                                $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
+
+                                $('#enroll-login-modal').find('.js-enroll-modal').each(function (index) {
+                                    var href = $(this).attr('href');
+                                    if (href.indexOf('/ct/partial_continue/') == -1) {
+                                        $(this).attr('href', href + next);
+                                    }
+                                });
+
+                                var $loginModal = modalDialog('#enroll-login-modal');
+                                $loginModal.modal('show');
+                            },
+                        }
+                    });
+                    return false;
+                })
+            },
+
+            bindEnroll: function () {
+                $('#enroll').on('click', function () {
+                    var self = this;
+
+                    $.ajax({
+                        url: $(self).attr('enroll_url'),
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded',
+                        data: {'role': 'self'},
+                        statusCode: {
+                            200: function () {
+                                if ($.trim($(self).attr('status')) == 'not-enrolled') {
+                                    $(self).attr('status', 'enrolled');
+                                    $(self).html('Enrolled');
+                                    var tmp_url = $(self).attr('enroll_url').split('/');
+                                    tmp_url[5] = 'unenroll';
+                                    $(self).attr('enroll_url', tmp_url.join('/'));
+                                }
+                                else if ($.trim($(self).attr('status')) == 'enrolled') {
+                                    $(self).attr('status', 'not-enrolled');
+                                    $(self).html('Enroll');
+                                    var tmp_url = $(self).attr('enroll_url').split('/');
+                                    tmp_url[5] = 'enroll';
+                                    $(self).attr('enroll_url', tmp_url.join('/'));
+                                }
+                            },
+
+                            401: function (data) {
+                                var next = data.responseJSON.partial_url;
+                                $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
+
+                                $('#enroll-login-modal').find('.js-enroll-modal').each(function (index) {
+                                    var href = $(this).attr('href');
+                                    if (href.indexOf('/ct/partial_enrollment/continue/') == -1) {
+                                        $(this).attr('href', href + next);
+                                    }
+                                });
+
+                                var $loginModal = modalDialog('#enroll-login-modal');
+                                $loginModal.modal('show');
                             }
-                        });
+                        }
+                    });
+                    return false;
+                });
+            },
 
-                        var $loginModal = modalDialog('#enroll-login-modal');
-                        $loginModal.modal('show');
-                    },
-                }
-            });
-            return false;
-        });
-    })();
+            ajaxSetup: function () {
+                var self = this;
 
-    (function(){
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
+                $.ajaxSetup({
+                    crossDomain: false,
+                    beforeSend: function(xhr, settings) {
+                        var csrfSafeMethod = function(method) {
+                            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+                        };
+                        var csrftoken = self.getCookie('csrftoken');
+                        if (!csrfSafeMethod(settings.type)) {
+                           xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                        }
+                    }
+                });
+            },
+
+            getCookie: function (name) {
+                var cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    var cookies = document.cookie.split(';');
+                    for (var i = 0; i < cookies.length; i++) {
+                        var cookie = jQuery.trim(cookies[i]);
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
                     }
                 }
-            }
-            return cookieValue;
-        }
+                return cookieValue; 
+            },
+        };
 
-        $.ajaxSetup({
-            crossDomain: false,
-            beforeSend: function(xhr, settings) {
-                var csrfSafeMethod = function(method) {
-                    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-                };
-                var csrftoken = getCookie('csrftoken');
-                if (!csrfSafeMethod(settings.type)) {
-                   xhr.setRequestHeader('X-CSRFToken', csrftoken);
-                }
-            }
+        $(function () {
+            Partial.init();
         });
     })();
 
-    (function () {
-        $('#enroll').on('click', function (e) {
-            var self = this;
-
-            $.ajax({
-                url: $(self).attr('enroll_url'),
-                type: 'POST',
-                dataType: 'json',
-                contentType: 'application/x-www-form-urlencoded',
-                data: {'role': 'self'},
-                statusCode: {
-                    200: function () {
-                        if ($.trim($(self).attr('status')) == 'not-enrolled') {
-                            $(self).attr('status', 'enrolled');
-                            $(self).html('Enrolled');
-                            var tmp_url = $(self).attr('enroll_url').split('/');
-                            tmp_url[5] = 'unenroll';
-                            $(self).attr('enroll_url', tmp_url.join('/'));
-                        }
-                        else if ($.trim($(self).attr('status')) == 'enrolled') {
-                            $(self).attr('status', 'not-enrolled');
-                            $(self).html('Enroll');
-                            var tmp_url = $(self).attr('enroll_url').split('/');
-                            tmp_url[5] = 'enroll';
-                            $(self).attr('enroll_url', tmp_url.join('/'));
-                        }
-                    },
-
-                    401: function (data) {
-                        var next = data.responseJSON.partial_url;
-                        $('#enroll-login-modal').find(':input[name="next"]').attr('value', next)
-
-                        $('#enroll-login-modal').find('.js-enroll-modal').each(function(index) {
-                            var href = $(this).attr('href');
-                            if (href.indexOf('/ct/partial_enrollment/continue/') == -1) {
-                                $(this).attr('href', href + next);
-                            }
-                        });
-
-                        var $loginModal = modalDialog('#enroll-login-modal');
-                        $loginModal.modal('show');
-                    }
-                }
-            });
-            return false;
-        });
-    })();
 </script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.2.8/jquery.form-validator.min.js"></script>
