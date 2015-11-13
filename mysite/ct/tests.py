@@ -692,20 +692,28 @@ class PartialIntegrationTest(TestCase):
         result = self.client.get(continue_url)
         self.assertEqual(result.status_code, 404)
 
-    def test_get_on_anonymous_user(self):
+
+    def test_get_on_anonymous_user(self, *args):
         """
         Test for PartialAction for anonymous user.
         """
+
         response = self.client.post(
             reverse('ct:partial_pause'),
         )
         continue_url = json.loads(response.content).get('partial_url')
-        self.client.logout()
         result = self.client.get(continue_url)
         self.assertContains(result, 'User is not authenticated', status_code=401)
 
 
-
+    @patch('ct.views.get_object_or_404')
+    def test_get_on_anonymous_user_wrong_token(self, get_object_or_404):
+        """
+        Test that checking for Anonymous is started before query to DB.
+        """
+        result = self.client.get(reverse('ct:partial_continue', kwargs={'token': 'wrong_token'}))
+        self.assertContains(result, 'User is not authenticated', status_code=401)
+        self.assertEqual(get_object_or_404.call_count, 0)
 
 
 
