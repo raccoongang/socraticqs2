@@ -548,7 +548,8 @@ class PartialEnroll(PartialMixin, View):
         Retrieve partial_params from DB and add request.user
         to call Role.get_or_enroll if user.is_authenticated.
         """
-        if request.user.is_authenticated():
+        user = request.user
+        if user.is_authenticated() and not user.groups.filter(name='Temporary').exists():
             partial_hash = PartialHashTable.objects.filter(token=token).first()
             if partial_hash:
                 partial_params = pickle.loads(partial_hash.params)
@@ -561,7 +562,7 @@ class PartialEnroll(PartialMixin, View):
             else:
                 return HttpResponseRedirect(reverse('ct:courses'))
         else:
-            return HttpResponseBadRequest('User is not authenticated')
+            return HttpResponseBadRequest('User is not authenticated', status=401)
 
 
 class PartialAction(PartialMixin, View):
