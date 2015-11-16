@@ -514,6 +514,10 @@ class PartialEnrollTest(TestCase):
         self.user = User.objects.create_user(username='test', password='test')
         self.course = Course(title='test title', description='test descr', addedBy=self.user)
         self.course.save()
+        self.ul = create_question_unit(self.user)
+        concept = Concept.new_concept('bad', 'idea', self.ul.unit, self.user)
+        self.ul.lesson.concept = concept
+        self.ul.lesson.save()
 
     @patch('ct.views.uuid.uuid1')
     def test_add_partial_return_token_and_insert_into_table(self, uuid1):
@@ -591,6 +595,23 @@ class PartialEnrollTest(TestCase):
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
         )
         add_partial.called_once_with({'course_id': self.course.id, 'role': Role.ENROLLED})
+
+    def test_bad_request(self):
+        """
+        Test that we fall in HttpBadRequest wher anonymous or Temporary.
+        """
+        response = self.client.get(reverse('ct:enroll_continue', kwargs={'token': 'token'}))
+        self.assertContains(response, 'User is not authenticated', status_code=401)
+        # Get Responde url to became a Temporary
+        url = reverse(
+            'ct:ul_respond',
+            kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
+        )
+        self.assertFalse(User.objects.filter(groups__name='Temporary').exists())
+        self.client.get(url)
+        self.assertTrue(User.objects.filter(groups__name='Temporary').exists())
+        response = self.client.get(reverse('ct:enroll_continue', kwargs={'token': 'token'}))
+        self.assertContains(response, 'User is not authenticated', status_code=401)
 
 
 @ddt
