@@ -573,7 +573,8 @@ class PartialAction(View):
         return JsonResponse({'partial_url': partial_url}, status=200)
 
     def get(self, request, token):
-        if request.user.is_authenticated():
+        user = request.user
+        if request.user.is_authenticated() and not user.groups.filter(name='Temporary').exists():
             partial_hash = get_object_or_404(PartialHashTable, token=token)
 
             partial_params = pickle.loads(partial_hash.params)

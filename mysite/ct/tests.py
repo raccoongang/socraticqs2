@@ -676,6 +676,7 @@ class PartialIntegrationTest(TestCase):
             url_name,
             kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
         )
+        self.client.login(username='test', password='test')
         self.client.get(url)
         response = self.client.post(
             reverse('ct:partial_pause'),
@@ -693,7 +694,7 @@ class PartialIntegrationTest(TestCase):
         self.assertEqual(result.status_code, 404)
 
 
-    def test_get_on_anonymous_user(self, *args):
+    def test_get_on_anonymous_user(self):
         """
         Test for PartialAction for anonymous user.
         """
