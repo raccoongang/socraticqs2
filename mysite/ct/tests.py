@@ -9,7 +9,7 @@ import pickle
 
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.core.urlresolvers import NoReverseMatch
+from django.core.urlresolvers import NoReverseMatch, reverse
 from django.http.response import JsonResponse, HttpResponseRedirect
 from ct.models import *
 from fsm.models import *
@@ -697,7 +697,7 @@ class PartialIntegrationTest(TestCase):
             url_name,
             kwargs={'course_id': self.course.id, 'unit_id': self.ul.unit.id, 'ul_id': self.ul.id}
         )
-        self.client.get(url)
+        self.client.login(username='test', password='test')
         response = self.client.post(
             reverse('ct:partial_pause'),
             data={'POST': url_post_data, 'url': url}
@@ -712,3 +712,23 @@ class PartialIntegrationTest(TestCase):
         self.assertFalse(PartialHashTable.objects.filter(token=token).exists())
         result = self.client.get(continue_url)
         self.assertEqual(result.status_code, 404)
+
+    def test_get_on_anonymous_user(self):
+        """
+        Test for PartialAction for anonymous user.
+        """
+        response = self.client.post(
+            reverse('ct:partial_pause'),
+        )
+        continue_url = json.loads(response.content).get('partial_url')
+        result = self.client.get(continue_url)
+        self.assertContains(result, 'User is not authenticated', status_code=401)
+
+    @patch('ct.views.get_object_or_404')
+    def test_get_on_anonymous_user_wrong_token(self, get_object_or_404):
+        """
+        Test that checking for Anonymous is started before query to DB.
+        """
+        result = self.client.get(reverse('ct:partial_continue', kwargs={'token': 'wrong_token'}))
+        self.assertContains(result, 'User is not authenticated', status_code=401)
+        self.assertEqual(get_object_or_404.call_count, 0)
