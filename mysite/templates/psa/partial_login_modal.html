@@ -4,7 +4,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-        <p id="js--title">Create an account to continue</p>
+        <h3 id="js--title">Create an account to continue</h3>
         <div class="buttons">
           <div class="row">
             {% for sublist in available_backends|social_backends %}
@@ -23,9 +23,9 @@
         <form name="LoginForm" id="js--login-register-form" action="/register/" method="post" role="form">{% csrf_token %}
           <input type="hidden" name="next" value="" />
           <div class="control-group">
-              <label class="control-label" for="username">Username</label>
+              <label class="control-label" for="username" id="js--login-username-label">Email or username</label>
               <div class="controls">
-                  <input type="text" id="username" name="username" placeholder="Username" data-validation="required" data-validation-error-msg="Please enter your username">
+                  <input type="text" id="username" name="username" placeholder="Email or username" data-validation="required" data-validation-error-msg="Please enter your username">
               </div>
           </div>
           <div class="control-group">
@@ -41,6 +41,7 @@
               <button type="submit" class="btn" id="js--login-register-btn">Create account</button>
             </div>
           </div>
+            <a id="js--forgot" class="pull-left"  href="#">Forgot passwod</a>
           <i id="js--link-pretext">Already have an account? </i><a id="js--link" href="#">Sign in</a>
         </div>
       </div>
