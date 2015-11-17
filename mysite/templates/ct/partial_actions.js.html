@@ -6,11 +6,12 @@
 
         window.Partial = {
             init: function () {
-              this.bindModalLogin();
-              this.bindModalChangeLink();
-              this.bindPartial();
-              this.bindEnroll();
-              this.ajaxSetup();
+                this.bindModalLogin();
+                this.bindModalChangeLink();
+                this.bindPartial();
+                this.bindEnroll();
+                this.ajaxSetup();
+                this.hoverEnrolled();
             },
 
             bindModalLogin: function () {
@@ -20,6 +21,7 @@
                         return false;
                     }
                 })
+                $('#enroll-login-modal').find('#js--forgot').hide();
             },
 
             bindModalChangeLink: function () {
@@ -29,11 +31,14 @@
                     if (window.flags.register_mode == true) {
                         // Changing modal window to `Sign in` mode
                         window.flags.register_mode = false;
-                        $(modal).find('#js--title').text('Use following methods to Sign in');
+                        $(modal).find('#js--title').text('Use following methods to Log in');
                         $(modal).find('#js--login-register-btn').text('Login');
-                        $(modal).find('#js--link-pretext').text('Want to register? ');
-                        $(modal).find('#js--link').text('Register');
-                        $(form).attr('action', '/login/')
+                        $(modal).find('#js--link-pretext').text('I don’t have an account. ');
+                        $(modal).find('#js--link').text('Sign up​');
+                        $(modal).find('#js--login-username-label').text('Email');
+                        $(modal).find('#username').attr('placeholder', 'Email');
+                        $(modal).find('#js--forgot').show();
+                        $(form).attr('action', '/login/');
                     }
                     else {
                         // Changing modal window to `Register` mode
@@ -41,7 +46,10 @@
                         $(modal).find('#js--title').text('Create an account to continue');
                         $(modal).find('#js--login-register-btn').text('Create account');
                         $(modal).find('#js--link-pretext').text('Already have an account? ');
+                        $(modal).find('#js--login-username-label').text('Email or username');
+                        $(modal).find('#username').attr('placeholder', 'Email or username');
                         $(modal).find('#js--link').text('Sign in');
+                        $(modal).find('#js--forgot').hide();
                         $(form).attr('action', '/register/')
                     }
                     $(form).find('.form-error').remove();
@@ -95,7 +103,6 @@
             bindEnroll: function () {
                 $('#enroll').on('click', function () {
                     var self = this;
-
                     $.ajax({
                         url: $(self).attr('enroll_url'),
                         type: 'POST',
@@ -145,13 +152,13 @@
 
                 $.ajaxSetup({
                     crossDomain: false,
-                    beforeSend: function(xhr, settings) {
-                        var csrfSafeMethod = function(method) {
+                    beforeSend: function (xhr, settings) {
+                        var csrfSafeMethod = function (method) {
                             return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
                         };
                         var csrftoken = self.getCookie('csrftoken');
                         if (!csrfSafeMethod(settings.type)) {
-                           xhr.setRequestHeader('X-CSRFToken', csrftoken);
+                            xhr.setRequestHeader('X-CSRFToken', csrftoken);
                         }
                     }
                 });
@@ -169,10 +176,23 @@
                         }
                     }
                 }
-                return cookieValue; 
+                return cookieValue;
             },
-        };
-
+            hoverEnrolled: function () {
+                var self = $('#enroll');
+                self.hover(
+                        function () {
+                            if ($(self).attr('status') == 'enrolled') {
+                                $(self).html('Leave');
+                            }
+                        }, function () {
+                            if ($(self).attr('status') == 'enrolled') {
+                                $(self).html('Enrolled');
+                            }
+                        }
+                );
+            }
+    }
         $(function () {
             Partial.init();
         });
