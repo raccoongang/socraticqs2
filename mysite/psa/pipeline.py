@@ -2,6 +2,7 @@
 
 custom_mail_validation - > implement code obj inspect
 """
+import re
 import time
 from datetime import datetime
 
@@ -300,10 +301,15 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
             return {'user': users[0]}
 
 
-def check_username(backend, details, *args, **kwargs):
+def check_username(details, strategy, user, *args, **kwargs):
     """
     Check username and change it to email if email is available and
     username is not fit an email regex.
     """
-    import pdb; pdb.set_trace()  # breakpoint d78748dc //
-    pass
+    if user and not re.match(r'.+@.+\..+', user.username) and details.get('email'):
+        email_as_username = strategy.setting('USERNAME_IS_FULL_EMAIL', False)
+
+        if email_as_username:
+            username = details['email']
+            user.username = username
+            user.save()
