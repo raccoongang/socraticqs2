@@ -298,3 +298,12 @@ def associate_by_email(backend, details, user=None, *args, **kwargs):
             )
         else:
             return {'user': users[0]}
+
+
+def check_username(backend, details, *args, **kwargs):
+    """
+    Check username and change it to email if email is available and
+    username is not fit an email regex.
+    """
+    import pdb; pdb.set_trace()  # breakpoint d78748dc //
+    pass

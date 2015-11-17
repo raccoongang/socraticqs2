@@ -179,6 +179,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.auth_allowed',
     'psa.pipeline.social_user',
     'social.pipeline.user.get_username',
+    'psa.pipeline.check_username',
     'psa.pipeline.custom_mail_validation',
     'psa.pipeline.associate_by_email',
     'social.pipeline.user.create_user',
@@ -201,6 +202,8 @@ PROTECTED_USER_FIELDS = ['first_name', 'last_name', 'email']
 
 FORCE_EMAIL_VALIDATION = True
 PASSWORDLESS = True
+
+USERNAME_IS_FULL_EMAIL = True
 
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = 'psa.mail.send_validation'
 SOCIAL_AUTH_EMAIL_VALIDATION_URL = '/email-sent/'
