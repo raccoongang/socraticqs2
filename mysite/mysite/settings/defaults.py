@@ -179,7 +179,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social.pipeline.social_auth.auth_allowed',
     'psa.pipeline.social_user',
     'social.pipeline.user.get_username',
-    'psa.pipeline.check_username',
     'psa.pipeline.custom_mail_validation',
     'psa.pipeline.associate_by_email',
     'social.pipeline.user.create_user',
@@ -188,6 +187,7 @@ SOCIAL_AUTH_PIPELINE = (
     'psa.pipeline.associate_user',
     'social.pipeline.social_auth.load_extra_data',
     'social.pipeline.user.user_details',
+    'psa.pipeline.check_username',
 )
 
 SOCIAL_AUTH_DISCONNECT_PIPELINE = (
