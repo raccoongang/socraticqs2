@@ -227,3 +227,46 @@
     </div>
   </form>
 </div>
+<div id="forgot-pass" class="modal fade">
+  <form action="/forgot-pass/" method="post" role="form">{% csrf_token %}
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Forgot password</h4>
+      </div>
+
+      <div class="modal-body">
+        <p>Enter your email:</p>
+        <input type="email" name="username" maxlength="120">
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">reset password</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+  </form>
+</div>
+<div id="send-pass" class="modal fade">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title">Send email reset password</h4>
+      </div>
+
+      <div class="modal-body">
+        <p>Email with link for reset password send to you</p>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

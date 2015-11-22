@@ -7,12 +7,17 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.contrib.auth import logout, login, authenticate
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.views.generic import View
+from django.http import JsonResponse
+from django.template import RequestContext
+
 from social.backends.utils import load_backends
 
 from psa.utils import render_to
-from psa.models import SecondaryEmail
+from psa.models import SecondaryEmail, TokenForgotPassword
 from psa.pipeline import union_merge
+from psa.mail import send_forgot_password
 
 
 def context(**extra):
@@ -151,3 +156,58 @@ def set_pass(request):
         return context(changed=True, person=user)
     else:
         return context(exception='Something goes wrong...', person=user)
+
+
+def forgot_pass(request):
+    email = request.POST['username']
+    next_url = request.POST.get('next', '/')
+    user = User.objects.filter(email=email).first()
+    if user:
+        token = TokenForgotPassword(
+            user=user,
+            next_url=next_url,
+        )
+        token.save()
+        url = request.build_absolute_uri(token.get_absolute_url())
+        send_forgot_password(user, url)
+        response = {
+            "success": True,
+            "msg": "Email with link for reset password send to you"
+        }
+    else:
+        response = {
+            "success": False,
+            "msg": 'User with email {0} not found'.format(email)
+        }
+
+    if request.is_ajax():
+        return JsonResponse(response)
+    else:
+        cntx = RequestContext(request)
+        cntx.update(response)
+        return render_to_response('psa/reset_password.html', cntx)
+
+
+@render_to('psa/reset_password.html')
+def reset_pass(request, reset_token):
+    token = TokenForgotPassword.objects.filter(token=reset_token).first()
+    if request.method == 'GET':
+        if token:
+            return context(reset_token=reset_token)
+        else:
+            return context(msg="Token has expired")
+    elif request.method == 'POST':
+        password = request.POST['password']
+        if password == request.POST['password1']:
+            if token:
+                next_url = token.next_url
+                user = token.user
+                user.set_password(password)
+                token.delete()
+                user.backend = 'django.contrib.auth.backends.ModelBackend'
+                login(request, user)
+                return context(next_url=next_url)
+            else:
+                return context(msg="Token has expired")
+        else:
+            return context(reset_token=reset_token, msg="Password mismatch, enter again")

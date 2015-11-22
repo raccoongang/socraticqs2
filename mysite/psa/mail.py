@@ -1,8 +1,9 @@
 """
 Module defined send_validation function to verify emails.
+And send email forgot password
 """
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.core.urlresolvers import reverse
 
 
@@ -21,3 +22,20 @@ def send_validation(strategy, backend, code):
         [code.email],
         fail_silently=False
     )
+
+
+def send_forgot_password(user, url):
+    """
+    Send email with reset link to user
+    :param user:
+    :param url:
+    :return:
+    """
+    msg = EmailMultiAlternatives(
+        "Reset your password",
+        "Click on link to reset password",
+        settings.EMAIL_FROM,
+        [user.email,],)
+    msg.attach_alternative("<html><body><a href='{1}'>"
+                           "reset password</a></body></html>".format(user, url), "text/html")
+    msg.send()

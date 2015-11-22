@@ -12,6 +12,7 @@
                 this.bindEnroll();
                 this.ajaxSetup();
                 this.hoverEnrolled();
+                this.bindModalForgotPassword();
             },
 
             bindModalLogin: function () {
@@ -31,6 +32,7 @@
                     if (window.flags.register_mode == true) {
                         // Changing modal window to `Sign in` mode
                         window.flags.register_mode = false;
+                        $("#password").closest('.control-group').show();
                         $(modal).find('#js--title').text('Use following methods to Log in');
                         $(modal).find('#js--login-register-btn').text('Login');
                         $(modal).find('#js--link-pretext').text('I don’t have an account. ');
@@ -43,6 +45,7 @@
                     else {
                         // Changing modal window to `Register` mode
                         window.flags.register_mode = true;
+                        $("#password").closest('.control-group').show();
                         $(modal).find('#js--title').text('Create an account to continue');
                         $(modal).find('#js--login-register-btn').text('Create account');
                         $(modal).find('#js--link-pretext').text('Already have an account? ');
@@ -191,8 +194,22 @@
                             }
                         }
                 );
+            },
+            bindModalForgotPassword: function () {
+              $("#js--forgot").on('click', function () {
+                var form = $('#js--login-register-form');
+                var modal = $('#enroll-login-modal');
+                $("#password").closest('.control-group').hide();
+                $(modal).find('#js--title').text('Reset password');
+                $(modal).find('#js--login-register-btn').text('reset');
+                //$(modal).find('#js--link-pretext').text('Forgot password? ');
+                //$(modal).find('#js--link').text('Reset password');
+                $(form).attr('action', '/forgot-pass/')
+                window.flags.register_mode = -1;
+              });
+
             }
-    }
+        }
         $(function () {
             Partial.init();
         });

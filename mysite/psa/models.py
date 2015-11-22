@@ -1,3 +1,5 @@
+from uuid import uuid4
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -61,3 +63,18 @@ def user_logged_in_handler(sender, request, user, **kwargs):
 
 
 user_logged_in.connect(user_logged_in_handler)
+
+
+def create_token():
+    return str(uuid4().get_hex())
+
+
+class TokenForgotPassword(models.Model):
+    user = models.ForeignKey(User)
+    created = models.DateTimeField(auto_now_add=True)
+    token = models.CharField(default=create_token, max_length=32)
+    next_url = models.CharField(max_length=200)
+
+    def get_absolute_url(self):
+
+        return reverse('reset-password', kwargs={'reset_token': self.token})
