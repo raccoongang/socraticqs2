@@ -38,6 +38,22 @@
         modalDialog('#email-required-modal_2', 'email-required-modal_2');
         modalDialog('#username-modal', 'username');
         modalDialog('#set-pass', 'set-pass');
+        modalDialog('#forgot-pass', 'forgot-pass', function(e){
+          e.preventDefault();
+          $modal = $(this).closest('.modal');
+          $form = $modal.find('form');
+          $modal.find('.btn-primary').prop('disabled', true);
+          $.post("/forgot-pass/", $form.serialize(), function(data, textStatus){
+              if(data.success==true){
+                $modal.modal('toggle');
+                $('#send-pass').modal({show:true});
+              }else if(data.success==false){
+                alert(data.msg);
+              }
+            $modal.find('.btn-primary').prop('disabled', false);
+
+          });
+        });
         $mergeConfirm = modalDialog('#merge-confirm');
         $validationModal = modalDialog('#validation-sent-modal');
         $passChanged = modalDialog('#password-changed');

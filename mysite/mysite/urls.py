@@ -36,6 +36,10 @@ urlpatterns = patterns(
 
     url(r'^tmp-email-ask/$', 'psa.views.ask_stranger'),
     url(r'^set-pass/$', 'psa.views.set_pass'),
+    url(r'^forgot-pass/$', 'psa.views.forgot_pass'),
+    url(r'^reset-pass/(?P<reset_token>[^/]+)/$', 'psa.views.reset_pass', name='reset-password'),
+
+
 
     url(r'^done/$', 'psa.views.done'),
 )
