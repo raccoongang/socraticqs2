@@ -13,6 +13,7 @@
                 this.ajaxSetup();
                 this.hoverEnrolled();
                 this.bindModalForgotPassword();
+                this.bindSubmitRegisterForm();
             },
 
             bindModalLogin: function () {
@@ -26,6 +27,7 @@
             },
 
             bindModalChangeLink: function () {
+                var self = this;
                 $('#js--link').on('click', function () {
                     var form = $('#js--login-register-form');
                     var modal = $('#enroll-login-modal');
@@ -37,10 +39,14 @@
                         $(modal).find('#js--login-register-btn').text('Login');
                         $(modal).find('#js--link-pretext').text('I don’t have an account. ');
                         $(modal).find('#js--link').text('Sign up​');
-                        $(modal).find('#js--login-username-label').text('Email');
-                        $(modal).find('#username').attr('placeholder', 'Email');
+                        $(modal).find('#js--login-username-label').text('Email or username');
+                        $(modal).find('#username').attr('placeholder', 'Email or username');
+                        $(modal).find('#username').attr('validation-error-msg', 'Please enter your username or email');
+                        $(modal).find('#username').attr('data-validation-error-msg', 'Please enter your username or email');
                         $(modal).find('#js--forgot').show();
                         $(form).attr('action', '/login/');
+                        $('#js--login-register-form').off('submit');
+                        self.bindSubmitLoginForm();
                     }
                     else {
                         // Changing modal window to `Register` mode
@@ -49,17 +55,21 @@
                         $(modal).find('#js--title').text('Create an account to continue');
                         $(modal).find('#js--login-register-btn').text('Create account');
                         $(modal).find('#js--link-pretext').text('Already have an account? ');
-                        $(modal).find('#js--login-username-label').text('Email or username');
-                        $(modal).find('#username').attr('placeholder', 'Email or username');
+                        $(modal).find('#js--login-username-label').text('Email');
+                        $(modal).find('#username').attr('placeholder', 'Email');
+                        $(modal).find('#username').attr('validation-error-msg', 'Please enter your email');
+                        $(modal).find('#username').attr('data-validation-error-msg', 'Please enter your email');
                         $(modal).find('#js--link').text('Sign in');
                         $(modal).find('#js--forgot').hide();
-                        $(form).attr('action', '/register/')
+                        $(form).attr('action', '/register/');
+                        $('#js--login-register-form').off('submit');
+                        self.bindSubmitRegisterForm();
                     }
                     $(form).find('.form-error').remove();
                     var div_elements = $(form).find('.has-error');
                     var input_elements = $(form).find('.error');
                     $(div_elements).removeClass('has-error');
-                    $(input_elements).removeAttr('current_error');
+                    $(input_elements).removeAttr('current-error');
                     $(input_elements).removeAttr('class');
                     $(input_elements).removeAttr('style');
                     return false;
@@ -181,6 +191,7 @@
                 }
                 return cookieValue;
             },
+
             hoverEnrolled: function () {
                 var self = $('#enroll');
                 self.hover(
@@ -195,20 +206,87 @@
                         }
                 );
             },
+
             bindModalForgotPassword: function () {
               $("#js--forgot").on('click', function () {
+                $('#js--login-register-form').off('submit');
                 var form = $('#js--login-register-form');
                 var modal = $('#enroll-login-modal');
                 $("#password").closest('.control-group').hide();
                 $(modal).find('#js--title').text('Reset password');
                 $(modal).find('#js--login-register-btn').text('Reset');
-                //$(modal).find('#js--link-pretext').text('Forgot password? ');
-                //$(modal).find('#js--link').text('Reset password');
-                $(form).attr('action', '/forgot-pass/')
+                $(modal).find('#js--login-username-label').text('Email');
+                $(modal).find('#username').attr('placeholder', 'Email');
+                $(modal).find('#username').attr('validation-error-msg', 'Please enter your email');
+                $(modal).find('#username').attr('data-validation-error-msg', 'Please enter your email');
+
+                $(form).find('.form-error').remove();
+                var div_elements = $(form).find('.has-error');
+                var input_elements = $(form).find('.error');
+                $(div_elements).removeClass('has-error');
+                $(input_elements).removeAttr('current-error');
+                $(input_elements).removeAttr('class');
+                $(input_elements).removeAttr('style');
+                $(form).attr('action', '/forgot-pass/');
+
                 window.flags.register_mode = -1;
               });
 
-            }
+            },
+
+            bindSubmitRegisterForm: function () {
+                var error_div = $('#js--user-exists');
+                error_div.hide()
+
+                $('#js--login-register-form').on('submit', function () {
+                    var self = this;
+
+                    $.ajax({
+                        url: '/register/',
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded',
+                        data: $(self).serialize(),
+                        statusCode: {
+                            200: function (data) {
+                                window.location = data.next_url;
+                            },
+                            400: function (data) {
+                                error_div.text(data.responseJSON.user_exists_msg)
+                                error_div.show();
+                            }
+                        }
+                    });
+                    return false;
+                })
+            },
+
+            bindSubmitLoginForm: function () {
+                var error_div = $('#js--user-exists');
+                error_div.hide()
+
+                $('#js--login-register-form').on('submit', function () {
+                    var self = this;
+
+                    $.ajax({
+                        url: '/login/',
+                        type: 'POST',
+                        dataType: 'json',
+                        contentType: 'application/x-www-form-urlencoded',
+                        data: $(self).serialize(),
+                        statusCode: {
+                            200: function (data) {
+                                window.location = data.next_url;
+                            },
+                            400: function (data) {
+                                error_div.text(data.responseJSON.login_error)
+                                error_div.show();
+                            }
+                        }
+                    });
+                    return false;
+                })
+            },
         }
         $(function () {
             Partial.init();

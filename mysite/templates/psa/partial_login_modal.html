@@ -23,9 +23,9 @@
         <form name="LoginForm" id="js--login-register-form" action="/register/" method="post" role="form">{% csrf_token %}
           <input type="hidden" name="next" value="" />
           <div class="control-group">
-              <label class="control-label" for="username" id="js--login-username-label">Email or username</label>
+              <label class="control-label" for="username" id="js--login-username-label">Email</label>
               <div class="controls">
-                  <input type="text" id="username" name="username" placeholder="Email or username" data-validation="required" data-validation-error-msg="Please enter your username">
+                  <input type="text" id="username" name="username" placeholder="Email" data-validation="required" data-validation-error-msg="Please enter your email">
               </div>
           </div>
           <div class="control-group">
@@ -34,6 +34,10 @@
                   <input type="password" name="password" id="password" placeholder="Password" data-validation="required" data-validation-error-msg="Please enter your password">
               </div>
           </div>
+        </div>
+        <div class="alert alert-danger" role="alert" id="js--user-exists">
+          <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+          <span class="sr-only">Error:</span>
         </div>
         <div class="modal-footer">
           <div class="control-group">

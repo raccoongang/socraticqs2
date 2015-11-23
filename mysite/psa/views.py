@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response
 from django.contrib.auth import logout, login, authenticate
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseBadRequest
 from django.views.generic import View
 from django.http import JsonResponse
 from django.template import RequestContext
@@ -83,7 +83,18 @@ def custom_login(request):
                 if user_is_temporary:
                     union_merge(tmp_user, user)
                 login(request, user)
-                return redirect(request.POST.get('next', '/ct/'))
+                if request.is_ajax():
+                    return JsonResponse({'next_url': request.POST.get('next', '/ct/')}, status=200)
+                else:
+                    return redirect(request.POST.get('next', '/ct/'))
+        else:
+            if request.is_ajax():
+                return JsonResponse({'login_error': 'Username|email or password is incorrect.'}, status=400)
+            else:
+                kwargs['login_error'] = 'Username|email or password is incorrect.'
+                return render_to_response(
+                    'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
+                )
     else:
         params = request.GET
     if 'next' in params:  # must pass through for both GET or POST
@@ -98,24 +109,51 @@ def custom_login(request):
     )
 
 
-def custom_add_user(request):
+class RegisterView(View):
     """
-    Create new django user
+    View for registering new user.
     """
-    name = request.POST.get('name')
-    password = request.POST.get('password')
-    next = request.POST.get('next')
-    (user, create) = User.objects.get_or_create(username=name)
-    if not create:
-        return HttpResponse(dumps({'message':'Such user is already exist'}),
-                            status = 400)
-    if len(password) == 0:
-        return HttpResponse(dumps({'message':'Password field required'}),
-                            status = 400)
-    user.password = password
-    user.save()
-    authenticate(username=user.username, password=user.password)
-    return redirect(next)
+    def post(self, request):
+        """
+        Create new django user.
+        """
+        logged = False
+        tmp_user = request.user
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if not username or not password:
+            return HttpResponseBadRequest('Improperly configured request')
+
+        if User.objects.filter(username=username).first():
+            if request.is_ajax():
+                return JsonResponse(
+                    {'user_exists_msg': 'User {} is already exists.'.format(username)},
+                    status=400
+                )
+            else:
+                kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
+                kwargs['login_error'] = 'User {} is already exists.'.format(username)
+                return render_to_response(
+                    'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
+                )
+
+        User.objects.create_user(username=username, password=password)
+        auth_user = authenticate(username=username, password=password)
+        if auth_user is not None:
+            if auth_user.is_active:
+                if tmp_user.groups.filter(name='Temporary').exists():
+                    union_merge(tmp_user, auth_user)
+                login(request, auth_user)
+                logged = True
+
+        if logged:
+            if request.is_ajax():
+                return JsonResponse({'next_url': request.POST.get('next', '/ct/')}, status=200)
+            else:
+                return redirect(request.POST.get('next', '/ct/'))
+        else:
+            return redirect('/ct/')
 
 
 @login_required
