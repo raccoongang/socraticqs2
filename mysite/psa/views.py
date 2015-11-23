@@ -81,7 +81,18 @@ def custom_login(request):
                 if user_is_temporary:
                     union_merge(tmp_user, user)
                 login(request, user)
-                return redirect(request.POST.get('next', '/ct/'))
+                if request.is_ajax():
+                    return JsonResponse({'next_url': request.POST.get('next', '/ct/')}, status=200)
+                else:
+                    return redirect(request.POST.get('next', '/ct/'))
+        else:
+            if request.is_ajax():
+                return JsonResponse({'login_error': 'Username|email or password is incorrect.'}, status=400)
+            else:
+                kwargs['login_error'] = 'Username|email or password is incorrect.'
+                return render_to_response(
+                    'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
+                )
     else:
         params = request.GET
     if 'next' in params:  # must pass through for both GET or POST
@@ -112,9 +123,20 @@ class RegisterView(View):
         if not username or not password:
             return HttpResponseBadRequest('Improperly configured request')
 
-        if not User.objects.filter(username=username).first():
-            User.objects.create_user(username=username, password=password)
+        if User.objects.filter(username=username).first():
+            if request.is_ajax():
+                return JsonResponse(
+                    {'user_exists_msg': 'User {} is already exists.'.format(username)},
+                    status=400
+                )
+            else:
+                kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
+                kwargs['login_error'] = 'User {} is already exists.'.format(username)
+                return render_to_response(
+                    'psa/custom_login.html', context_instance=RequestContext(request, kwargs)
+                )
 
+        User.objects.create_user(username=username, password=password)
         auth_user = authenticate(username=username, password=password)
         if auth_user is not None:
             if auth_user.is_active:
@@ -124,7 +146,10 @@ class RegisterView(View):
                 logged = True
 
         if logged:
-            return redirect(request.POST.get('next', '/ct/'))
+            if request.is_ajax():
+                return JsonResponse({'next_url': request.POST.get('next', '/ct/')}, status=200)
+            else:
+                return redirect(request.POST.get('next', '/ct/'))
         else:
             return redirect('/ct/')
 
