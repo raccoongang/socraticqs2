@@ -172,12 +172,12 @@ def forgot_pass(request):
         send_forgot_password(user, url)
         response = {
             "success": True,
-            "msg": "Email with link for reset password send to you"
+            "msg": "Password reset link has been sent for you"
         }
     else:
         response = {
             "success": False,
-            "msg": 'User with email {0} not found'.format(email)
+            "msg": 'User with email {0} was not found'.format(email)
         }
 
     if request.is_ajax():
