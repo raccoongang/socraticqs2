@@ -11,7 +11,7 @@ from django.shortcuts import render_to_response
 from django.contrib.auth import login, logout
 from django.conf import settings
 from django.db import IntegrityError
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 
 from social.pipeline.partial import partial
@@ -153,6 +153,8 @@ def validated_user_details(strategy, backend, details, user=None, *args, **kwarg
                 try:
                     user.username = details.get('username')
                     user.first_name = ''
+                    group = Group.objects.filter(name='Temporary').first()
+                    user.groups.remove(group)
                     user.save()
                 except IntegrityError:
                     _id = int(time.mktime(datetime.now().timetuple()))
