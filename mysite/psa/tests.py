@@ -13,7 +13,8 @@ from social.exceptions import (AuthAlreadyAssociated,
 from psa.views import (context,
                        validation_sent,
                        custom_login,
-                       done)
+                       done,
+                       reset_pass)
 from psa.pipeline import (social_user,
                           not_allowed_to_merge,
                           associate_user,
@@ -25,6 +26,7 @@ from psa.pipeline import (social_user,
 from psa.mail import send_validation
 from psa.custom_backends import EmailAuth
 from psa.utils import preview_access
+from psa.models import TokenForgotPassword
 
 
 class ViewsUnitTest(TestCase):
@@ -816,3 +818,57 @@ class PreviewAccessDecoratorTest(TestCase):
         _wrapped_view = preview_access(decorated_view, expiry_interval=interval)
         _wrapped_view(self.request)
         self.request.session.set_expiry.assert_called_once_with(interval)
+
+
+class ForgotPasswordTest(TestCase):
+    """
+    Functional test reset password
+    """
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='user', password='top_secret')
+        self.token = TokenForgotPassword(user=self.user, next_url='/')
+        self.token.save()
+
+    def test_reset_password(self):
+        test_password = 'new_pass'
+        post_data = {
+            'password': test_password,
+            'password1': test_password
+        }
+        old_pass = User.objects.get(id=self.user.id).password
+        test_url = '/reset-pass/{0}/'.format(self.token.token)
+        res = self.client.post(test_url, post_data)
+        self.assertIsInstance(res, HttpResponse)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue('Your password has been changed' in res.content)
+        self.assertIn('next_url', res.context)
+        new_pass = User.objects.get(id=self.user.id).password
+        self.assertNotEquals(old_pass, new_pass)
+
+    def test_different_password(self):
+        test_password = 'new_pass'
+        post_data = {
+            'password': test_password,
+            'password1': "".join(reversed(test_password))
+        }
+        old_pass = User.objects.get(id=self.user.id).password
+        test_url = '/reset-pass/{0}/'.format(self.token.token)
+        res = self.client.post(test_url, post_data)
+        self.assertIsInstance(res, HttpResponse)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue('Password mismatch, enter again' in res.content)
+        new_pass = User.objects.get(id=self.user.id).password
+        self.assertEquals(old_pass, new_pass)
+
+    def test_token_expired(self):
+        test_password = 'new_pass'
+        post_data = {
+            'password': test_password,
+            'password1': test_password
+        }
+        test_url = '/reset-pass/invalidtoken/'
+        res = self.client.post(test_url, post_data)
+        self.assertIsInstance(res, HttpResponse)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue('Token has expired' in res.content)
