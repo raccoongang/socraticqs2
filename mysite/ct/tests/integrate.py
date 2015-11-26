@@ -4,7 +4,11 @@ Tests Wikipedia api.
 Tests branching behaviour of core app.
 """
 import time
+import requests
+from django.middleware.csrf import _get_new_csrf_key
 
+
+from mock import patch, Mock
 from django.test import TestCase
 from django.contrib.auth.models import User
 
@@ -13,6 +17,8 @@ from ct import views, ct_util
 from ct.fsm_plugin import live, livestudent, add_lesson
 from fsm.models import *
 from fsm.fsm_base import FSMStack
+import urllib
+import smtplib
 
 
 class OurTestCase(TestCase):
@@ -438,3 +444,15 @@ class AddLessonTest(SetUpMixin, OurTestCase):
             reverse('ct:unit_concepts', args=(self.course.id, self.unit.id)),
             'The first step of writing a new Lesson'
         )
+
+
+class SMTPerrorTest(TestCase):
+
+    @patch('psa.mail.send_mail')
+    def smtp_error(self, mocked):
+        mocked.side_effect = smtplib.SMTPServerDisconnected
+        post_data = {'csrfmiddlewaretoken': _get_new_csrf_key(),
+                     'email':'some@mail.com'}
+        response = requests.post('/complete/email/?next=/ct/', data=post_data)
+        content = response.content
+        self.assertEqual(content.message, 'Something goes wrong with email sending. Please try again later.')
