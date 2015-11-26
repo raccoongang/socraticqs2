@@ -228,7 +228,7 @@ def forgot_pass(request):
 
 @render_to('psa/reset_password.html')
 def reset_pass(request, reset_token):
-    token = TokenForgotPassword.objects.filter(token=reset_token).first()
+    token = TokenForgotPassword.objects.filter(token=reset_token).last()
     if request.method == 'GET':
         if token:
             return context(reset_token=reset_token)
@@ -241,6 +241,7 @@ def reset_pass(request, reset_token):
                 next_url = token.next_url
                 user = token.user
                 user.set_password(password)
+                user.save()
                 token.delete()
                 user.backend = 'django.contrib.auth.backends.ModelBackend'
                 login(request, user)
