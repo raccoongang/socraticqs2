@@ -7,6 +7,7 @@ from psa.models import UserSession, AnonymEmail, SecondaryEmail, TokenForgotPass
 class SecondaryEmailAdmin(admin.ModelAdmin):
     list_display = ('user', 'email', 'provider')
 
+
 @admin.register(TokenForgotPassword)
 class TokenForgotPasswordAdmin(admin.ModelAdmin):
     list_display = ('user', 'next_url', 'created')

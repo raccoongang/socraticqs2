@@ -35,7 +35,8 @@ def send_forgot_password(user, url):
         "Reset your password",
         "Click on link to reset password",
         settings.EMAIL_FROM,
-        [user.email,],)
+        [user.email]
+    )
     msg.attach_alternative("<html><body><a href='{1}'>"
                            "Reset password</a></body></html>".format(user, url), "text/html")
     msg.send()
