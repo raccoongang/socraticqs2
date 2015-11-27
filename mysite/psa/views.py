@@ -10,7 +10,6 @@ from django.contrib.auth import logout, login, authenticate
 from django.http import HttpResponseBadRequest
 from django.views.generic import View
 from django.http import JsonResponse
-from django.template import RequestContext
 
 from social.backends.utils import load_backends
 
