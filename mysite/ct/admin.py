@@ -4,16 +4,53 @@ import ct.models
 
 @admin.register(ct.models.Role)
 class AdminRole(admin.ModelAdmin):
-    list_display = ('role', 'course', 'user')
+    list_display = ('role', 'course', 'user', 'atime')
 
 
-admin.site.register(ct.models.Concept)
-admin.site.register(ct.models.ConceptGraph)
-admin.site.register(ct.models.Lesson)
-admin.site.register(ct.models.ConceptLink)
-admin.site.register(ct.models.UnitLesson)
-admin.site.register(ct.models.Unit)
-admin.site.register(ct.models.Response)
+@admin.register(ct.models.ConceptGraph)
+class AdminConceptGraph(admin.ModelAdmin):
+    list_display = ('fromConcept', 'toConcept', 'relationship', 'addedBy', 'approvedBy' , 'atime')
+
+
+@admin.register(ct.models.ConceptLink)
+class AdminConceptLink(admin.ModelAdmin):
+    list_display = ('concept', 'lesson', 'relationship', 'addedBy', 'atime')
+
+
+@admin.register(ct.models.Concept)
+class AdminConcept(admin.ModelAdmin):
+    list_display = ('title', 'addedBy', 'approvedBy', 'atime', 'isError', 'isAbort', 'isFail', 'isPuzzled')
+
+
+@admin.register(ct.models.CourseUnit)
+class AdminCourseUnit(admin.ModelAdmin):
+    list_display = ('unit', 'course', 'order', 'addedBy', 'atime', 'releaseTime')
+
+
+@admin.register(ct.models.Course)
+class AdminCourse(admin.ModelAdmin):
+    list_display = ('title', 'description', 'access', 'addedBy', 'atime')
+
+
+@admin.register(ct.models.Lesson)
+class AdminLesson(admin.ModelAdmin):
+    list_display = ('title', 'kind', 'medium', 'access', 'sourceDB', 'sourceID', 'addedBy', 'atime')
+
+
+@admin.register(ct.models.Response)
+class AdminResponse(admin.ModelAdmin):
+    list_display = ('lesson', 'unitLesson', 'course', 'confidence', 'atime', 'selfeval', 'status', 'author',
+                    'needsEval', 'parent')
+
+
+@admin.register(ct.models.UnitLesson)
+class AdminUnitLesson(admin.ModelAdmin):
+    list_display = ('unit', 'kind', 'lesson', 'parent', 'order', 'atime', 'addedBy', 'treeID', 'branch')
+
+
+@admin.register(ct.models.Unit)
+class AdminUnit(admin.ModelAdmin):
+    list_display = ('title', 'kind', 'atime', 'addedBy')
+
+
 admin.site.register(ct.models.StudentError)
-admin.site.register(ct.models.Course)
-admin.site.register(ct.models.CourseUnit)

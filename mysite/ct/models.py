@@ -677,6 +677,10 @@ class UnitLesson(models.Model):
         'is this a question?'
         return self.lesson.kind == Lesson.ORCT_QUESTION
 
+    def __unicode__(self):
+        return 'Branch %s from tree %s added by %s' % (self.branch, self.treeID, self.addedBy)
+
+
 def reorder_exercise(self, old=0, new=0, l=()):
     'renumber exercises to move an exercise from old -> new position'
     if not l:
@@ -917,8 +921,10 @@ class Response(models.Model):
     needsEval = models.BooleanField(default=False)
     parent = models.ForeignKey('Response', null=True) # reply-to
     activity = models.ForeignKey('fsm.ActivityLog', null=True)
+
     def __unicode__(self):
-        return 'answer by ' + self.author.username
+        return 'Title "%s" answer by %s' % (self.title, self.author.username)
+
     @classmethod
     def get_counts(klass, query, fmt_count=fmt_count, n=0, tableKey='status',
                    simpleTable=False,
@@ -1116,6 +1122,10 @@ class Role(models.Model):
     course = models.ForeignKey(Course)
     user = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
+
+    def __unicode__(self):
+        return "%s in %s" % (dict(self.ROLE_CHOICES)[self.role], self.course.title)
+
 
 class UnitStatus(models.Model):
     'records what user has completed in a unit lesson sequence'
