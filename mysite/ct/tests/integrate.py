@@ -445,11 +445,13 @@ class AddLessonTest(SetUpMixin, OurTestCase):
 
 
 class SMTPerrorTest(TestCase):
-
+    """
+    Test that SMTP errors are handling.
+    """
     @patch('psa.mail.send_mail')
     def smtp_error(self, mocked):
         mocked.side_effect = smtplib.SMTPServerDisconnected
-        post_data = {'email':'some@mail.com'}
+        post_data = {'email': 'some@mail.com'}
         response = requests.post('/complete/email/?next=/ct/', data=post_data)
         content = response.content
         self.assertEqual(content.message, 'Something goes wrong with email sending. Please try again later.')
