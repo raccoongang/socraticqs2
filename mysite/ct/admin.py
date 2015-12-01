@@ -9,7 +9,7 @@ class AdminRole(admin.ModelAdmin):
 
 @admin.register(ct.models.ConceptGraph)
 class AdminConceptGraph(admin.ModelAdmin):
-    list_display = ('fromConcept', 'toConcept', 'relationship', 'addedBy', 'approvedBy' , 'atime')
+    list_display = ('fromConcept', 'toConcept', 'relationship', 'addedBy', 'approvedBy', 'atime')
 
 
 @admin.register(ct.models.ConceptLink)
@@ -53,4 +53,6 @@ class AdminUnit(admin.ModelAdmin):
     list_display = ('title', 'kind', 'atime', 'addedBy')
 
 
-admin.site.register(ct.models.StudentError)
+@admin.register(ct.models.StudentError)
+class AdminStudentError(admin.ModelAdmin):
+    list_display = ('response', 'errorModel', 'status', 'author', 'activity', 'atime')

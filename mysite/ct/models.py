@@ -678,7 +678,7 @@ class UnitLesson(models.Model):
         return self.lesson.kind == Lesson.ORCT_QUESTION
 
     def __unicode__(self):
-        return 'Branch %s from tree %s added by %s' % (self.branch, self.treeID, self.addedBy)
+        return 'Branch "%s" with treeID "%s" added by %s' % (self.branch, self.treeID, self.addedBy)
 
 
 def reorder_exercise(self, old=0, new=0, l=()):
@@ -923,7 +923,7 @@ class Response(models.Model):
     activity = models.ForeignKey('fsm.ActivityLog', null=True)
 
     def __unicode__(self):
-        return 'Title "%s" answer by %s' % (self.title, self.author.username)
+        return '"%s" answered by %s' % (self.title, self.author.username)
 
     @classmethod
     def get_counts(klass, query, fmt_count=fmt_count, n=0, tableKey='status',
