@@ -9,7 +9,7 @@ class AdminRole(admin.ModelAdmin):
 
 @admin.register(ct.models.ConceptGraph)
 class AdminConceptGraph(admin.ModelAdmin):
-    list_display = ('fromConcept', 'toConcept', 'relationship', 'addedBy', 'approvedBy', 'atime')
+    list_display = ('fromConcept', 'toConcept', 'relationship', 'atime')
 
 
 @admin.register(ct.models.ConceptLink)
