@@ -5,7 +5,7 @@ Tests branching behaviour of core app.
 """
 import time
 import requests
-from mock import patch, Mock
+from mock import patch
 
 from django.test import TestCase
 from django.contrib.auth.models import User
@@ -15,7 +15,6 @@ from ct import views, ct_util
 from ct.fsm_plugin import live, livestudent, add_lesson
 from fsm.models import *
 from fsm.fsm_base import FSMStack
-import urllib
 import smtplib
 
 
