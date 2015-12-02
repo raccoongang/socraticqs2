@@ -1,5 +1,3 @@
-from json import dumps
-
 from django.db.models import Q
 from django.conf import settings
 from django.template import RequestContext

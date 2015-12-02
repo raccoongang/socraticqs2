@@ -530,31 +530,6 @@ class EditCourseTest(TestCase):
         self.assertEqual(course.access, 'enroll')
 
 
-class SubscribeTest(TestCase):
-    @patch('ct.views.time')
-    def test_course_subscribe_tmp_user(self, time):
-        time.mktime.return_value = '11011972'
-        self.user = User.objects.create_user(username='test', password='test')
-        self.course = Course(title='test_title', addedBy=self.user)
-        self.course.save()
-        response = self.client.get(reverse('ct:subscribe', kwargs={'course_id': self.course.id}))
-        self.tmp_user = User.objects.filter(username='anonymous'+time.mktime()).first()
-        self.assertIsNotNone(self.tmp_user)
-        self.assertEqual(self.tmp_user.first_name, 'Temporary User')
-        self.assertTrue(Role.objects.filter(course=self.course, user=self.tmp_user, role=Role.SELFSTUDY).exists())
-        self.assertTrue(self.tmp_user.groups.filter(name='Temporary').exists())
-        self.assertRedirects(response, '/tmp-email-ask/')
-
-    def test_course_subscribe(self):
-        self.user = User.objects.create_user(username='test', password='test')
-        self.client.login(username='test', password='test')
-        self.course = Course(title='test_title', addedBy=self.user)
-        self.course.save()
-        response = self.client.get(reverse('ct:subscribe', kwargs={'course_id': self.course.id}))
-        self.assertEqual(response.status_code, 302)
-        self.assertRedirects(response, reverse('ct:course_student', args=(self.course.id,)))
-
-
 class EditUnitTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username='test', password='test')
