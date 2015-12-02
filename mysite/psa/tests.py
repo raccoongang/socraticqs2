@@ -6,23 +6,28 @@ from django.http import HttpResponse
 from django.test import TestCase, Client
 from django.test.client import RequestFactory
 from django.contrib.auth.models import User, AnonymousUser
-from social.exceptions import (AuthAlreadyAssociated,
-                               AuthException,
-                               InvalidEmail)
+from social.exceptions import (
+    AuthAlreadyAssociated,
+    AuthException,
+    InvalidEmail
+)
 
-from psa.views import (context,
-                       validation_sent,
-                       custom_login,
-                       done,
-                       reset_pass)
-from psa.pipeline import (social_user,
-                          not_allowed_to_merge,
-                          associate_user,
-                          associate_by_email,
-                          social_merge,
-                          union_merge,
-                          validated_user_details,
-                          custom_mail_validation)
+from psa.views import (
+    context,
+    validation_sent,
+    custom_login,
+    done
+)
+from psa.pipeline import (
+    social_user,
+    not_allowed_to_merge,
+    associate_user,
+    associate_by_email,
+    social_merge,
+    union_merge,
+    validated_user_details,
+    custom_mail_validation
+)
 from psa.mail import send_validation
 from psa.custom_backends import EmailAuth
 from psa.utils import preview_access

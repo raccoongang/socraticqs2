@@ -2,6 +2,8 @@ from django.conf.urls import patterns, include, url
 from django.apps import apps
 from mysite.views import *
 
+from psa.views import RegisterView
+
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
@@ -19,6 +21,7 @@ urlpatterns = patterns(
     # Login / logout.
     (r'^login/$', 'psa.views.custom_login'),
     (r'^logout/$', logout_page, {'next_page': '/login/'}),
+    (r'^register/$', RegisterView.as_view()),
 
 
     # Uncomment the admin/doc line below to enable admin documentation:

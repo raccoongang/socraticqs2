@@ -593,8 +593,7 @@ class PartialAction(PartialMixin, View):
             else:
                 return result
         else:
-            return HttpResponseBadRequest('User is not authenticated',
-                                          status = 401)
+            return HttpResponseBadRequest('User is not authenticated', status=401)
 
 
 @login_required
