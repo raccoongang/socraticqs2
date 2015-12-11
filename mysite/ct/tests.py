@@ -291,3 +291,27 @@ class PageDataTests(TestCase):
         s = pageData.get_refresh_timer(request)
         self.assertNotEqual(s, '0:00')
         self.assertEqual(s[:3], '0:0')
+
+
+class AltVersionsOfLessonsUITests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='jacob', email='jacob@_',
+                                             password='top_secret')
+        self.client.login(username='jacob', password='top_secret')
+        self.unit = Unit(title='test', addedBy=self.user)
+        self.unit.save()
+        another_unit = Unit(title='another_test', addedBy=self.user)
+        another_unit.save()
+        lesson = Lesson(title='a test', text='a test', addedBy=self.user, treeID=1)
+        lesson.save()
+        for each in range(3):
+            u_lesson = UnitLesson.create_from_lesson(lesson, another_unit)
+            u_lesson.save()
+
+    def test_collapse_with_lessons_in_view(self):
+        url = '/ct/teach/courses/1/units/%s/lessons/?searchType=lesson&search=%s&submit=Search' % (self.unit.id, 't')
+        response = self.client.get(url)
+        self.assertContains(response, '<div class="collapse" id="1">')
+
+
