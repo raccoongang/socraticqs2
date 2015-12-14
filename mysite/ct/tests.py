@@ -8,8 +8,10 @@ Replace this with more appropriate tests for your application.
 from django.contrib.auth.models import User
 from django.test import TestCase
 from ct.models import *
+from fsm.fsm_base import FSMStack
 from fsm.models import *
 from ct import views, ct_util
+from ct.fsm_plugin import live, livestudent, add_lesson
 import time
 import urllib
 
@@ -288,3 +290,93 @@ class PageDataTests(TestCase):
         s = pageData.get_refresh_timer(request)
         self.assertNotEqual(s, '0:00')
         self.assertEqual(s[:3], '0:0')
+
+
+class LiveTeachingTest(TestCase):
+    """
+    Test out of index
+    Issue #74
+    """
+    def setUp(self):
+        self.teacher = User.objects.create_user(username='jacob', password='top_secret')
+        self.student = User.objects.create_user(username='student', password='top_secret')
+
+        self.course = Course(
+            title='Great Course', description='the bestest', addedBy=self.teacher
+        )
+        self.course.save()
+        student_role = Role(course=self.course, role=Role.ENROLLED, user=self.student)
+        student_role.save()
+        self.unit = Unit(title='My Courselet', addedBy=self.teacher)
+        self.unit.save()
+        self.course_unit = CourseUnit(course=self.course, unit=self.unit, addedBy=self.teacher, order=0)
+        self.course_unit.save()
+        self.lesson = Lesson(
+            title='Big Deal', text='very interesting info', addedBy=self.teacher
+        )
+        self.lesson.save_root()
+        self.unitLesson = UnitLesson.create_from_lesson(
+            self.lesson, self.unit, order='APPEND'
+        )
+        self.ulQ = create_question_unit(self.teacher)
+        self.ulQ2 = create_question_unit(
+            self.teacher, 'Pretest', 'Scary Question', 'Tell me something.'
+        )
+        concept = Concept(title='test concept title', addedBy=self.teacher)
+        concept.save()
+        lesson = Lesson(
+            title='lessot title',
+            text='lorem ipsum',
+            addedBy=self.teacher,
+            kind=Lesson.ORCT_QUESTION,
+        )
+        lesson.save_root()
+        lesson_wo_question = Lesson(
+            title='Test no question Lesson',
+            text='No question',
+            addedBy=self.teacher,
+        )
+        lesson_wo_question.save_root()
+        self.unit_lesson = UnitLesson(
+            unit=self.unit, lesson=lesson, addedBy=self.teacher, treeID=lesson.id
+        )
+        self.unit_lesson.save()
+        self.unit_lesson_wo_question = UnitLesson(
+            unit=self.unit, lesson=lesson_wo_question, addedBy=self.teacher, treeID=lesson_wo_question.id
+        )
+        self.unit_lesson_wo_question.save()
+        live.get_specs()[0].save_graph(self.teacher.username)
+        livestudent.get_specs()[0].save_graph(self.teacher.username)
+        add_lesson.get_specs()[0].save_graph(self.teacher.username)
+
+    def get_fsm_request(self, fsmName, stateData, startArgs=None, user=None, **kwargs):
+            """
+            Create request, fsmStack and start specified FSM.
+            """
+            startArgs = startArgs or {}
+            request = FakeRequest(user)
+            request.session = self.client.session
+            fsmStack = FSMStack(request)
+            result = fsmStack.push(request, fsmName, stateData, startArgs, **kwargs)
+            request.session.save()
+            return request, fsmStack, result
+
+    def test_out_of_index(self):
+        self.client.login(username='jacob', password='top_secret')
+        fsmData = dict(unit=self.unit, course=self.course)
+        request, fsmStack, result = self.get_fsm_request('liveteach', fsmData, user=self.teacher)
+        response = self.client.get(result)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Start asking a question', response.content)
+
+        url = '/ct/teach/courses/%d/units/%d/lessons/%d' % (self.course.id, self.unit.id, self.unit_lesson.id)
+        origin = 'http://testserver'
+        if not url.startswith(origin):
+            url = origin + url
+        response = self.client.post(url, dict(fsmtask='next'), HTTP_REFERER=url, HTTP_ORIGIN=origin)
+        self.assertEqual(response.status_code, 301)
+        url = response['Location']
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
