@@ -291,3 +291,16 @@ class PageDataTests(TestCase):
         s = pageData.get_refresh_timer(request)
         self.assertNotEqual(s, '0:00')
         self.assertEqual(s[:3], '0:0')
+
+
+class JsonResponseTestsCase(TestCase):
+
+    def setUp(self):
+        self.teacher = User.objects.create_user(username='jacob', password='top_secret')
+
+    def test_response(self):
+        self.client.login(username='jacob', password='top_secret')
+        url = '/ct/courses/report/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(json.loads(response.content), list)
