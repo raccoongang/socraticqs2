@@ -15,6 +15,7 @@ urlpatterns = patterns(
 
     (r'^ct/', include('ct.urls', namespace='ct')),
     (r'^fsm/', include('fsm.urls', namespace='fsm')),
+    (r'^ui/', include('ui.urls', namespace='ui')),
 
     # Login / logout.
     (r'^login/$', 'psa.views.custom_login'),
