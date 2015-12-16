@@ -143,6 +143,8 @@ INSTALLED_APPS = (
     # Socials
     'social.apps.django_app.default',
     'psa',
+    # UI
+    'ui',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
