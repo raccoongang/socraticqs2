@@ -1,12 +1,13 @@
 from rest_framework import viewsets
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
-from ct.models import Course
-from ui.serializers import UnitsSerializer
+from ct.models import Course, Unit
+from ui.serializers import UnitsSerializer, UnitContentSerializer
 
 
 class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
-    """
-    API for getting course units.
+    """API for getting course units
 
     Response format:
 
@@ -34,3 +35,24 @@ class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
             if course:
                 queryset = course.get_course_units(publishedOnly=False)
         return queryset
+
+
+class UnitContentVew(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """API for getting Unit content: Lessons, Concepts
+
+    Response format:
+    {
+      'id'
+      'lessons': [
+         {'id', 'lesson_title, 'order'}
+      ]
+      'concepts': [
+        {'id', 'title'}
+      ]
+    }
+    """
+    def retrieve(self, request, unit_id=None):
+        queryset = Unit.objects.all()
+        unit = get_object_or_404(queryset, pk=unit_id)
+        serializer = UnitContentSerializer(unit)
+        return Response(serializer.data)

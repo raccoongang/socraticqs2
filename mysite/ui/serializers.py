@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ct.models import CourseUnit
+from ct.models import CourseUnit, Unit, UnitLesson, Concept
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -27,3 +27,61 @@ class UnitsSerializer(serializers.HyperlinkedModelSerializer):
         Return CourseUnit -> unit.title
         """
         return obj.unit.title
+
+
+class LessonsSerializer(serializers.ModelSerializer):
+    """
+    Units aka UnitLessons serializer.
+    """
+    lesson_title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UnitLesson
+        fields = ('id', 'lesson_title', 'order')
+
+    def get_lesson_title(self, obj):
+        """
+        Returning Lesson id
+        """
+        return obj.lesson.title
+
+
+class ConceptsSerializer(serializers.ModelSerializer):
+    """
+    Units aka UnitLessons serializer.
+    """
+    ul_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Concept
+        fields = ('ul_id', 'title')
+
+    def get_ul_id(self, obj):
+        """
+        Returning UnitLesson id for this Concept.
+        """
+        return UnitLesson.objects.filter(lesson__concept=obj).first().id
+
+
+class UnitContentSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Serializer for Unit content: Lessons, Concepts.
+    """
+    lessons = serializers.SerializerMethodField()
+    concepts = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Unit
+        fields = ('id', 'lessons', 'concepts')
+
+    def get_lessons(self, obj):
+        """
+        Returning list of Lessons for this Unit.
+        """
+        return LessonsSerializer(many=True).to_representation(obj.get_exercises())
+
+    def get_concepts(self, obj):
+        """
+        Returning list of related Concepts for this Unit.
+        """
+        return ConceptsSerializer(many=True).to_representation(obj.get_related_concepts().keys())
