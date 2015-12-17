@@ -87,11 +87,6 @@ class UnitContentSerializer(serializers.HyperlinkedModelSerializer):
         return ConceptsSerializer(many=True).to_representation(obj.get_related_concepts().keys())
 
 
-class UnitLessonSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UnitLesson
-
-
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course

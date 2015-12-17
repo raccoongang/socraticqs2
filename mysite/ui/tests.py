@@ -144,7 +144,7 @@ class CourseAPIUnitsTests(TestCase):
         Check positive case for logged in user.
         """
         self.client.login(username='username', password='top_secret')
-        result = self.client.post(reverse('ui:course_list'))
+        result = self.client.get(reverse('ui:course_list'))
         self.assertEqual(result.status_code, 200)
 
     def test_check_result_content(self):
@@ -152,5 +152,5 @@ class CourseAPIUnitsTests(TestCase):
         Test result content returned by API.
         """
         self.client.login(username='username', password='top_secret')
-        result = self.client.post(reverse('ui:course_list'))
+        result = self.client.get(reverse('ui:course_list'))
         self.assertEqual(json.loads(result.content), [{'id': 1, 'title': 'title'}])
