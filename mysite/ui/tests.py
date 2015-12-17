@@ -129,3 +129,28 @@ class UnitContentTests(TestCase):
                 ]
             }
         )
+
+
+class CourseAPIUnitsTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.course = Course(title='title', description='description', addedBy=self.user)
+        self.course.save()
+
+    def test_positive_case(self):
+        """
+        Check positive case for logged in user.
+        """
+        self.client.login(username='username', password='top_secret')
+        result = self.client.post(reverse('ui:course_list'))
+        self.assertEqual(result.status_code, 200)
+
+    def test_check_result_content(self):
+        """
+        Test result content returned by API.
+        """
+        self.client.login(username='username', password='top_secret')
+        result = self.client.post(reverse('ui:course_list'))
+        self.assertEqual(json.loads(result.content), [{'id': 1, 'title': 'title'}])

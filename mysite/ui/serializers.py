@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ct.models import CourseUnit, Unit, UnitLesson, Concept
+from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -85,3 +85,14 @@ class UnitContentSerializer(serializers.HyperlinkedModelSerializer):
         Returning list of related Concepts for this Unit.
         """
         return ConceptsSerializer(many=True).to_representation(obj.get_related_concepts().keys())
+
+
+class UnitLessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UnitLesson
+
+
+class CourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ('id', 'title',)

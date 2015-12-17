@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit
-from ui.serializers import UnitsSerializer, UnitContentSerializer
+from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer
 
 
 class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -34,6 +34,29 @@ class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
             course = Course.objects.filter(id=course_id).first()
             if course:
                 queryset = course.get_course_units(publishedOnly=False)
+        return queryset
+
+
+class CourseView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+    API returning courses item(lesson, concept)
+
+    Response:
+    [
+    {
+    'ul_id',
+    'title',
+    }
+    ]
+
+    """
+    serializer_class = CourseSerializer
+    queryset = Course.objects.all()
+
+    def get_queryset(self):
+        queryset = super(CourseView, self).get_queryset()
+        if self.request.user:
+            queryset = Course.objects.filter(addedBy=self.request.user)
         return queryset
 
 
