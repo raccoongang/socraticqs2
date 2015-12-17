@@ -1,18 +1,20 @@
 from rest_framework import serializers
 
-from ct.models import Unit
+from ct.models import CourseUnit
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializer for list of Units.
+    """Serializer for list of Units
+
+    In current implementation this is a CourseUnit models
+    that hides Unit.
     """
     unit_id = serializers.SerializerMethodField()
     unit_title = serializers.SerializerMethodField()
 
     class Meta:
-        model = Unit
-        fields = ('unit_id', 'unit_title',)
+        model = CourseUnit
+        fields = ('unit_id', 'unit_title', 'order')
 
     def get_unit_id(self, obj):
         """

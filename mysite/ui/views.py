@@ -14,10 +14,12 @@ class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
       {
        'unit_id'
        'unit_title'
+       'order'
       },
       {
        'unit_id'
        'unit_title'
+       'order'
       },
     ]
     """

@@ -48,4 +48,13 @@ class CourseUnitsTests(TestCase):
         """
         self.client.login(username='username', password='top_secret')
         result = self.client.get(reverse('ui:units_list', kwargs={'course_id': self.course.id}))
-        self.assertEqual(json.loads(result.content), [{'unit_id': self.unit.id, 'unit_title': 'unit_title'}])
+        self.assertEqual(
+            json.loads(result.content),
+            [
+                {
+                    'unit_id': self.unit.id,
+                    'unit_title': 'unit_title',
+                    'order': self.unit.courseunit_set.first().order
+                }
+            ]
+        )
