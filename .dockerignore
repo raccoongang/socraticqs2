@@ -1,2 +1,4 @@
-*
-!requirements.txt
+*.pyc
+.idea
+_ve_socraticqs2
+.coverage
