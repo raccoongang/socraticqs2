@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course
+from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson, ConceptLink
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -91,3 +92,58 @@ class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ('id', 'title',)
+
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ('title', 'text', 'addedBy')
+
+
+class ConceptSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Concept
+
+
+class LessonContentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for lesson data
+    """
+    title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    added_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UnitLesson
+        fields = ('id', 'title', 'text', 'added_by', 'order')
+
+    def get_title(self, obj):
+        return Lesson.objects.filter(id=obj.lesson.id).first().title
+
+    def get_text(self, obj):
+        return Lesson.objects.filter(id=obj.lesson.id).first().text
+
+    def get_added_by(self, obj):
+        return obj.addedBy.username
+
+
+class ConceptContentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for concept data
+    """
+    title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    added_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ConceptLink
+        fields = ('id', 'title', 'text', 'added_by')
+
+    def get_title(self, obj):
+        return obj.concept.title
+
+    def get_text(self, obj):
+        return obj.lesson.text
+
+    def get_added_by(self, obj):
+        return obj.addedBy.username

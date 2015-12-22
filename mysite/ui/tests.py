@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase, Client
 from django.core.urlresolvers import reverse
 
-from ct.models import Course, Lesson, Concept, UnitLesson
+from ct.models import Course, Lesson, Concept, UnitLesson, Unit
 
 
 class CourseUnitsTests(TestCase):
@@ -154,3 +154,45 @@ class CourseAPIUnitsTests(TestCase):
         self.client.login(username='username', password='top_secret')
         result = self.client.get(reverse('ui:course_list'))
         self.assertEqual(json.loads(result.content), [{'id': 1, 'title': 'title'}])
+
+
+class LessonContentAPIUnitsTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.course = Course(title='title', description='description', addedBy=self.user)
+        self.course.save()
+        self.unit = Unit(title='TestUnit', addedBy=self.user)
+        self.unit.save()
+        self.lesson = Lesson(title='Test_title', text='Test', addedBy=self.user)
+        self.lesson.save_root()
+        self.ul = UnitLesson.create_from_lesson(lesson=self.lesson, unit=self.unit)
+        self.ul.save()
+
+    def test_get_list_lesson_case(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:lesson-list'))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(json.loads(result.content), list)
+
+
+class ConceptContentAPIUnitsTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.course = Course(title='title', description='description', addedBy=self.user)
+        self.course.save()
+        self.unit = Unit(title='TestUnit', addedBy=self.user)
+        self.unit.save()
+        self.lesson = Lesson(title='Test_title', text='Test', addedBy=self.user)
+        self.lesson.save_root()
+        self.ul = UnitLesson.create_from_lesson(lesson=self.lesson, unit=self.unit)
+        self.ul.save()
+
+    def test_get_list_concept_case(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:concept-list'))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(json.loads(result.content), list)
