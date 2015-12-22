@@ -3,6 +3,8 @@ from rest_framework import serializers
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson, ConceptLink
 
+from ct.templatetags.ct_extras import md2html
+
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
     """Serializer for list of Units
@@ -105,7 +107,7 @@ class ConceptSerializer(serializers.ModelSerializer):
         model = Concept
 
 
-class LessonContentSerializer(serializers.ModelSerializer):
+class LessonInfoSerializer(serializers.ModelSerializer):
     """
     Serializer for lesson data
     """
@@ -121,29 +123,36 @@ class LessonContentSerializer(serializers.ModelSerializer):
         return Lesson.objects.filter(id=obj.lesson.id).first().title
 
     def get_text(self, obj):
-        return Lesson.objects.filter(id=obj.lesson.id).first().text
+        return md2html(Lesson.objects.filter(id=obj.lesson.id).first().text)
 
     def get_added_by(self, obj):
         return obj.addedBy.username
 
 
-class ConceptContentSerializer(serializers.ModelSerializer):
+class ConceptInfoSerializer(serializers.ModelSerializer):
     """
     Serializer for concept data
     """
+    ul_id = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
     text = serializers.SerializerMethodField()
     added_by = serializers.SerializerMethodField()
 
     class Meta:
         model = ConceptLink
-        fields = ('id', 'title', 'text', 'added_by')
+        fields = ('ul_id', 'title', 'text', 'added_by')
+
+    def get_ul_id(self, obj):
+        """
+        Returning UnitLesson ID
+        """
+        return obj.lesson.unitlesson_set.filter(lesson=obj.lesson).first().id
 
     def get_title(self, obj):
         return obj.concept.title
 
     def get_text(self, obj):
-        return obj.lesson.text
+        return md2html(obj.lesson.text)
 
     def get_added_by(self, obj):
         return obj.addedBy.username
