@@ -1,8 +1,6 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson, ConceptLink
-
 from ct.templatetags.ct_extras import md2html
 
 
