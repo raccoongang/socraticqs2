@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
-from ct.models import Course, Unit, UnitLesson, ConceptLink, Lesson, Concept
+from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
     ConceptInfoSerializer
 
@@ -83,7 +83,7 @@ class UnitContentVew(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet
         return Response(serializer.data)
 
 
-class LessonContentView(viewsets.ModelViewSet):
+class LessonInfoView(viewsets.ModelViewSet):
     """
     API for getting lesson content
     Filter paramenter:
@@ -107,11 +107,11 @@ class LessonContentView(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = UnitLesson.objects.all()
         if 'unit_id' in self.request.GET:
-            queryset = UnitLesson.objects.filter(unit_id=self.request.GET['unit_id'])
+            queryset = queryset.filter(unit_id=self.request.GET['unit_id'])
         return queryset
 
 
-class ConceptContentView(viewsets.ModelViewSet):
+class ConceptInfoView(viewsets.ModelViewSet):
     """
     API for getting concept content
     Filter paramenter:
@@ -130,16 +130,13 @@ class ConceptContentView(viewsets.ModelViewSet):
     ]
     """
     serializer_class = ConceptInfoSerializer
-    queryset = Concept.objects.all()
+    queryset = UnitLesson.objects.filter(lesson__concept__isnull=False)
 
     def get_queryset(self):
-        queryset = ConceptLink.objects.all()
+        queryset = super(ConceptInfoView, self).get_queryset()
         if 'unit_id' in self.request.GET:
-            queryset = ConceptLink.objects.filter(unit_id__in=[x['id'] for x in UnitLesson.objects.filter(
-                unit_id=self.request.GET['unit_id']).values(('id',))])
-
+            queryset = queryset.filter(unit_id=self.request.GET['unit_id'])
         return queryset
 
     def get_object(self):
-        return ConceptLink.objects.filter(lesson=UnitLesson.objects.filter(
-            id=self.kwargs[self.lookup_field]).first()).first()
+        return UnitLesson.objects.filter(pk=self.kwargs[self.lookup_field]).first()

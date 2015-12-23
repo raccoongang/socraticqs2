@@ -193,6 +193,6 @@ class ConceptContentAPIUnitsTests(TestCase):
 
     def test_get_list_concept_case(self):
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:concept-list'))
+        result = self.client.get(reverse('ui:unitlesson-list'))
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), list)
