@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max
+from django_elasticsearch.models import EsIndexable
 
 
 ########################################################
@@ -158,7 +159,7 @@ ACCESS_CHOICES = (
 )
 
 
-class Lesson(models.Model):
+class Lesson(EsIndexable, models.Model):
     BASE_EXPLANATION = 'base' # focused on one concept, as intro for ORCT
     EXPLANATION = 'explanation' # conventional textbook or lecture explanation
 

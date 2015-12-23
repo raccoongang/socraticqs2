@@ -1,6 +1,9 @@
 db:
  image: postgres
 
+elastic:
+  image: elasticsearch
+
 web:
  build: .
  command: sh /code/docker-commands.sh
@@ -8,4 +11,5 @@ web:
    - "8000:8000"
  links:
    - db
+   - elastic
  env_file: web.env
