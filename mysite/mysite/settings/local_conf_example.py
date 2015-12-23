@@ -14,9 +14,6 @@ DATABASES = {
     }
 }
 
-# ElasticSearch
-ELASTICSEARCH_URL = ''
-
 SOCIAL_AUTH_TWITTER_KEY = ''
 SOCIAL_AUTH_TWITTER_SECRET = ''
 
