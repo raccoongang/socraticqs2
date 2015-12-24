@@ -15,15 +15,25 @@
 			}
 		}	
 	</style>
+
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,Safe">
+</script>
 </head>
 <body>
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
 		  		<a class="navbar-brand btn" data-toggle="offcanvas" data-target="#coursesTree" data-canvas="body">Concept tree</a>
-		  	</button>
 			</div>
-		</div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <form class="navbar-form navbar-left" >
+                    <div class="form-group">
+                      <input type="text" class="form-control" placeholder="Search" id="search_text">
+                    </div>
+                    <button type="submit" class="btn btn-default" id="search_button">Go</button>
+                </form>
+            </div>
+        </div>
     </nav>
     <div id="coursesTree" class="navmenu navmenu-default navmenu-fixed-left offcanvas" role="navigation" style="padding-top:5px; padding-right:5px;">
 	 <div class="row" >
@@ -106,8 +116,21 @@
               </div>
 
   </div>
-	    <div class="col-sm-9">
-	      <lead>Bla bla bla</lead>
+	    <div class="col-sm-8 col-xs-offset-1 content">
+            <h1 id="title">A Brief Definition of Conceptual Understanding</h1>
+            <p id="description">Let's define a concept as a concise statement of a principle that is always true, and that furnishes a reliable tool for solving a wide variety of problems.
+
+We can define conceptual understanding operationally, as the ability to use a concept correctly on a wide variety of problems. Concretely, given a concept statement, there are many different ways we could try to apply that statement even to a single problem -- some of which are right, and some which are invalid. To my mind, "conceptual understanding" means both knowing which ways are right vs. which ways are wrong, and also being able to explain why the right ways are right, and the wrong ways are wrong, from first principles.
+
+Without the latter component, students' knowledge is fragile: even slight errors (which are inevitable) will knock them off the track to a correct solution. By contrast, when they can reason from first principles, they will constantly catch their own errors and get back on track.</p>
+            <p><b>Author </b><span id="author">The Teacher</span></p>
+	    </div>
+        <div class="col-sm-8 col-xs-offset-1 search">
+            <button type="button" class="btn btn-default btn-lg pull-right" id="close_search">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            </button>
+            <h1 id="title">Search</h1>
+            <p id="description">Some result of search</p>
 	    </div>
 
     <script src="//code.jquery.com//jquery-2.1.1.min.js"></script>
@@ -116,6 +139,15 @@
     <script>
         function truncate(str, len){
           return (str.length > len) ? str.substr(0,len-3)+'&hellip;' : str;
+        }
+
+        function show_info(title, description, author){
+            $('.content').show();
+            $('.search').hide();
+            $('#title').empty().text(title);
+            $('#description').empty().append(description);
+            $('#author').empty().text(author);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,".content"]);
         }
 
         function get_content_for_unit(unit_id){
@@ -129,13 +161,13 @@
                tab_for_unit.append('<div id="lessons'+unit_id+'" class="collapse in"><div class="well"><ul></ul></div></div>');
                var lessons_tab = $('#lessons'+unit_id+' .well ul');
                for (lesson in lessons){
-                   lessons_tab.append('<li><a href="#'+lessons[lesson]['id']+'" lesson_order="'+lessons[lesson]['order']+'">"'+lessons[lesson]['lesson_title']+'</a></li>');
+                   lessons_tab.append('<li><a class="lesson" lesson_id="'+lessons[lesson]['id']+'" href="#" lesson_order="'+lessons[lesson]['order']+'">"'+lessons[lesson]['lesson_title']+'</a></li>');
                }
                tab_for_unit.append('<div class="btn-group btn-group-justified" role="group" aria-label="concepts"><div class="btn-group" role="group" style="width:80%;"><button type="button" class="btn btn-default" data-toggle="collapse" data-target="#concepts'+unit_id+'" aria-expanded="true" aria-controls="lesson1">Concepts</button></div><div class="btn-group" role="group" style="width:20%;"> <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus-sign"></span>&nbsp; </button> </div> </div>');
                tab_for_unit.append('<div id="concepts'+unit_id+'" class="collapse in"><div class="well"><ul></ul></div></div>');
                var conceptss_tab = $('#concepts'+unit_id+' .well ul');
                for (concept in concepts){
-                   conceptss_tab.append('<li><a href="#'+concepts[concept]['ul_id']+'">'+concepts[concept]['title']+'</a></li>');
+                   conceptss_tab.append('<li><a class="concept" concept_id="'+concepts[concept]['ul_id']+'" href="#">'+concepts[concept]['title']+'</a></li>');
                }
            });
         }
@@ -155,6 +187,7 @@
         }
 
         $(document).ready(function(){
+            $('.search').hide();
             var url = '/ui/api/courses/'
             $.get(url, {'format':'json'}).done(function(courses) {
                 this.courses_tabs = $('#courses_tabs');
@@ -174,6 +207,33 @@
                 }
          });
 
+        $(document).on('click', '.lesson', function () {
+            var unit_id = this.getAttribute('lesson_id');
+            var url = '/ui/api/lesson/'+unit_id;
+            $.get(url, {'format': 'json'}).done(function (lesson) {
+                show_info(lesson['title'], lesson['text'], lesson['added_by']);
+            });
+        });
+        
+        $(document).on('click', '.concept', function () {
+            var unit_id = this.getAttribute('concept_id');
+            var url = '/ui/api/concept/'+unit_id;
+            $.get(url, {'format': 'json'}).done(function (concept) {
+                show_info(concept['title'], concept['text'], concept['added_by']);
+            });
+        });
+
+        $(document).on('click', '#search_button', function () {
+             var text_to_search = $('#search_text');
+             $('.content').toggle();
+             $('.search').toggle();
+        });
+
+        $(document).on('click','#close_search', function(){
+            $('.content').toggle();
+            $('.search').toggle();
+            $('#search_text').val('');
+        });
     </script>
 </body>
 </html>
