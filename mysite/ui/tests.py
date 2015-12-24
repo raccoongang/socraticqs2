@@ -196,3 +196,29 @@ class ConceptContentAPIUnitsTests(TestCase):
         result = self.client.get(reverse('ui:unitlesson-list'))
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), list)
+
+
+class SearchUnitLessonTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.client.login(username='username', password='top_secret')
+        l1 = Lesson(title='A resolution', text='now I get it', addedBy=self.user)
+        l1.save_root()
+        l2 = Lesson(title='Test find', text='try to find me', addedBy=self.user)
+        l2.save_root()
+        l3 = Lesson(title='Not to find', text='you must never see me', addedBy=self.user)
+        l3.save_root()
+        self.unit = Unit(title='My Courselet', addedBy=self.user)
+        self.unit.save()
+        ul = UnitLesson.create_from_lesson(lesson=l1, unit=self.unit)
+        ul.save()
+        ul = UnitLesson.create_from_lesson(lesson=l2, unit=self.unit)
+        ul.save()
+        ul = UnitLesson.create_from_lesson(lesson=l3, unit=self.unit)
+        ul.save()
+
+    def test_rest_for_search(self):
+        response = self.client.get('/ui/api/search/?format=json&text=find me')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Test find')
+        self.assertNotContains(response, 'Not to find')

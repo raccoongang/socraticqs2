@@ -129,8 +129,13 @@ Without the latter component, students' knowledge is fragile: even slight errors
             <button type="button" class="btn btn-default btn-lg pull-right" id="close_search">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </button>
-            <h1 id="title">Search</h1>
-            <p id="description">Some result of search</p>
+            <table class="table" id="search_table">
+                <thead>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Author</th>
+                </thead>
+            </table>
 	    </div>
 
     <script src="//code.jquery.com//jquery-2.1.1.min.js"></script>
@@ -224,9 +229,17 @@ Without the latter component, students' knowledge is fragile: even slight errors
         });
 
         $(document).on('click', '#search_button', function () {
-             var text_to_search = $('#search_text');
-             $('.content').toggle();
-             $('.search').toggle();
+            var text_to_search = $('#search_text').val();
+            var url = '/ui/api/search/';
+            $.get(url, {'format': 'json', 'text':text_to_search}).done(function (find_result) {
+                $('.content').toggle();
+                $('.search').toggle();
+                var table = $('#search_table');
+                for (lesson in find_result) {
+                    var this_lesson = find_result[lesson];
+                    table.append('<tr><td><a href="#" ul_id='+this_lesson["id"]+'>'+this_lesson["title"]+'</a></td><td>'+this_lesson["kind"]+'</td><td>'+this_lesson["author"]+'</td></tr>');
+                }
+            });
         });
 
         $(document).on('click','#close_search', function(){
