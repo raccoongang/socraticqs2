@@ -170,3 +170,17 @@ class ConceptInfoSerializer(serializers.ModelSerializer):
 
     def get_added_by(self, obj):
         return obj.addedBy.username
+
+
+class CourseInfoSerialize(serializers.ModelSerializer):
+    """
+    Serializer for retrive course data
+    """
+    added_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Course
+        fields = ('title', 'description', 'added_by')
+
+    def get_added_by(self, obj):
+        return obj.addedBy.username

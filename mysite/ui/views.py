@@ -1,10 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerialize
 
 
 class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -166,3 +166,18 @@ class SearchView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
         else:
             queryset = []
         return queryset
+
+
+class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+    """
+    API for getting course data
+
+    Response:
+    {
+    "title",
+    "description",
+    "added_by"
+    }
+    """
+    serializer_class = CourseInfoSerialize
+    queryset = Course.objects.all()

@@ -222,3 +222,20 @@ class SearchUnitLessonTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Test find')
         self.assertNotContains(response, 'Not to find')
+
+class LessonContentAPIUnitsTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.course = Course(title='title', description='description', addedBy=self.user)
+        self.course.save()
+
+
+    def test_get_course_info(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:course-detail', kwargs={'pk':'1'}))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(json.loads(result.content), dict)
+        self.assertEqual(json.loads(result.content),
+                         {u'description': u'description', u'added_by': u'username', u'title': u'title'})
