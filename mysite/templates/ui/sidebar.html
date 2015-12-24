@@ -147,8 +147,6 @@ Without the latter component, students' knowledge is fragile: even slight errors
         }
 
         function show_info(title, description, author){
-            $('.content').show();
-            $('.search').hide();
             $('#title').empty().text(title);
             $('#description').empty().append(description);
             $('#author').empty().text(author);
@@ -209,6 +207,10 @@ Without the latter component, students' knowledge is fragile: even slight errors
                 var course_id = $(course.target).attr('course-id');
                 if (course_id) {
                     get_units_for_course(course_id);
+                    var url = '/ui/api/course/'+course_id;
+                    $.get(url, {'format': 'json'}).done(function (course) {
+                        show_info(course['title'], course['description'], course['added_by']);
+                    });
                 }
          });
 
@@ -216,6 +218,8 @@ Without the latter component, students' knowledge is fragile: even slight errors
             var unit_id = this.getAttribute('lesson_id');
             var url = '/ui/api/lesson/'+unit_id;
             $.get(url, {'format': 'json'}).done(function (lesson) {
+                $('.content').show();
+                $('.search').hide();
                 show_info(lesson['title'], lesson['text'], lesson['added_by']);
             });
         });
@@ -224,16 +228,19 @@ Without the latter component, students' knowledge is fragile: even slight errors
             var unit_id = this.getAttribute('concept_id');
             var url = '/ui/api/concept/'+unit_id;
             $.get(url, {'format': 'json'}).done(function (concept) {
+                $('.content').show();
+                $('.search').hide();
                 show_info(concept['title'], concept['text'], concept['added_by']);
             });
         });
+
 
         $(document).on('click', '#search_button', function () {
             var text_to_search = $('#search_text').val();
             var url = '/ui/api/search/';
             $.get(url, {'format': 'json', 'text':text_to_search}).done(function (find_result) {
-                $('.content').toggle();
-                $('.search').toggle();
+                $('.content').hide();
+                $('.search').show();
                 var table = $('#search_table');
                 for (lesson in find_result) {
                     var this_lesson = find_result[lesson];
@@ -243,8 +250,8 @@ Without the latter component, students' knowledge is fragile: even slight errors
         });
 
         $(document).on('click','#close_search', function(){
-            $('.content').toggle();
-            $('.search').toggle();
+            $('.content').show();
+            $('.search').hide();
             $('#search_text').val('');
         });
     </script>
