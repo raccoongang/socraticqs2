@@ -129,12 +129,15 @@ Without the latter component, students' knowledge is fragile: even slight errors
             <button type="button" class="btn btn-default btn-lg pull-right" id="close_search">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </button>
-            <table class="table" id="search_table">
+            <table class="table" >
                 <thead>
                     <th>Title</th>
                     <th>Type</th>
                     <th>Author</th>
                 </thead>
+                <tbody id="search_table">
+
+                </tbody>
             </table>
 	    </div>
 
@@ -241,6 +244,7 @@ Without the latter component, students' knowledge is fragile: even slight errors
             $.get(url, {'format': 'json', 'text':text_to_search}).done(function (find_result) {
                 $('.content').hide();
                 $('.search').show();
+                $('#search_table').empty();
                 var table = $('#search_table');
                 for (lesson in find_result) {
                     var this_lesson = find_result[lesson];
