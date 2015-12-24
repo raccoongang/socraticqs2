@@ -2,11 +2,12 @@ from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView
 from rest_framework.routers import SimpleRouter
 
-from ui.views import CourseUnitsVew, UnitContentVew, CourseView, LessonInfoView, ConceptInfoView
+from ui.views import CourseUnitsVew, UnitContentVew, CourseView, LessonInfoView, ConceptInfoView, SearchView
 
 router = SimpleRouter()
 router.register(r'api/lesson', LessonInfoView)
 router.register(r'api/concept', ConceptInfoView)
+router.register(r'api/search', SearchView, base_name='search')
 
 
 urlpatterns = patterns(

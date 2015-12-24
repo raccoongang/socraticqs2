@@ -106,6 +106,28 @@ class ConceptSerializer(serializers.ModelSerializer):
         model = Concept
 
 
+class SearchSerializer(serializers.ModelSerializer):
+    """
+    Serializer for search results
+    """
+    title = serializers.SerializerMethodField()
+    author = serializers.SerializerMethodField()
+    kind = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UnitLesson
+        fields = ('id', 'title', 'kind', 'author')
+
+    def get_title(self, obj):
+        return obj.lesson.title
+
+    def get_author(self, obj):
+        return obj.addedBy.username
+
+    def get_kind(self, obj):
+        return dict(Lesson.KIND_CHOICES)[obj.lesson.kind]
+
+
 class LessonInfoSerializer(serializers.ModelSerializer):
     """
     Serializer for lesson data

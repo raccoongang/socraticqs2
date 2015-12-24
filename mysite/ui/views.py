@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer
+    ConceptInfoSerializer, SearchSerializer
 
 
 class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -140,3 +140,29 @@ class ConceptInfoView(viewsets.ModelViewSet):
 
     def get_object(self):
         return UnitLesson.objects.filter(pk=self.kwargs[self.lookup_field]).first()
+
+
+class SearchView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
+    """API for serching through unit lessons
+
+    Response format:
+
+    [
+      {
+       'ul_id'
+       'title'
+       'type'
+       'ul_addedby'
+      }
+    ]
+    """
+    queryset = UnitLesson.objects.all()
+    serializer_class = SearchSerializer
+
+    def get_queryset(self):
+        queryset = super(SearchView, self).get_queryset()
+        if 'text' in self.request.GET:
+            queryset = UnitLesson.search_text(self.request.GET['text'])
+        else:
+            queryset = []
+        return queryset
