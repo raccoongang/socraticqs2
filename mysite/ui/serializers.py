@@ -172,7 +172,7 @@ class ConceptInfoSerializer(serializers.ModelSerializer):
         return obj.addedBy.username
 
 
-class CourseInfoSerialize(serializers.ModelSerializer):
+class CourseInfoSerializer(serializers.ModelSerializer):
     """
     Serializer for retrive course data
     """

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerialize
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer
 
 
 class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -179,5 +179,5 @@ class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     "added_by"
     }
     """
-    serializer_class = CourseInfoSerialize
+    serializer_class = CourseInfoSerializer
     queryset = Course.objects.all()
