@@ -117,6 +117,7 @@
 
   </div>
 	    <div class="col-sm-8 col-xs-offset-1 content">
+            <button class="btn btn-info pull-right" id="back_to_search"><span class="glyphicon glyphicon-arrow-left"></span> Back to search results</button>
             <h1 id="title">A Brief Definition of Conceptual Understanding</h1>
             <p id="description">Let's define a concept as a concise statement of a principle that is always true, and that furnishes a reliable tool for solving a wide variety of problems.
 
@@ -136,7 +137,6 @@ Without the latter component, students' knowledge is fragile: even slight errors
                     <th>Author</th>
                 </thead>
                 <tbody id="search_table">
-
                 </tbody>
             </table>
 	    </div>
@@ -194,6 +194,7 @@ Without the latter component, students' knowledge is fragile: even slight errors
 
         $(document).ready(function(){
             $('.search').hide();
+            $('#back_to_search').hide();
             var url = '/ui/api/courses/'
             $.get(url, {'format':'json'}).done(function(courses) {
                 this.courses_tabs = $('#courses_tabs');
@@ -217,15 +218,28 @@ Without the latter component, students' knowledge is fragile: even slight errors
                 }
          });
 
-        $(document).on('click', '.lesson', function () {
-            var unit_id = this.getAttribute('lesson_id');
+        function show_lesson(unit_id){
             var url = '/ui/api/lesson/'+unit_id;
             $.get(url, {'format': 'json'}).done(function (lesson) {
                 $('.content').show();
                 $('.search').hide();
                 show_info(lesson['title'], lesson['text'], lesson['added_by']);
             });
+        }
+
+        $(document).on('click', '.lesson', function () {
+            var unit_id = this.getAttribute('lesson_id');
+            show_lesson(unit_id);
+            $('#back_to_search').hide();
+            $('#search_text').val('');
         });
+
+        $(document).on('click', '.search-lesson', function () {
+            var unit_id = this.getAttribute('lesson_id');
+            show_lesson(unit_id);
+            $('#back_to_search').show();
+        });
+
         
         $(document).on('click', '.concept', function () {
             var unit_id = this.getAttribute('concept_id');
@@ -233,6 +247,8 @@ Without the latter component, students' knowledge is fragile: even slight errors
             $.get(url, {'format': 'json'}).done(function (concept) {
                 $('.content').show();
                 $('.search').hide();
+                $('#back_to_search').hide();
+                $('#search_text').val('');
                 show_info(concept['title'], concept['text'], concept['added_by']);
             });
         });
@@ -248,7 +264,7 @@ Without the latter component, students' knowledge is fragile: even slight errors
                 var table = $('#search_table');
                 for (lesson in find_result) {
                     var this_lesson = find_result[lesson];
-                    table.append('<tr><td><a href="#" ul_id='+this_lesson["id"]+'>'+this_lesson["title"]+'</a></td><td>'+this_lesson["kind"]+'</td><td>'+this_lesson["author"]+'</td></tr>');
+                    table.append('<tr><td><a class="search-lesson" href="#" lesson_id='+this_lesson["id"]+'>'+this_lesson["title"]+'</a></td><td>'+this_lesson["kind"]+'</td><td>'+this_lesson["author"]+'</td></tr>');
                 }
             });
         });
@@ -257,6 +273,12 @@ Without the latter component, students' knowledge is fragile: even slight errors
             $('.content').show();
             $('.search').hide();
             $('#search_text').val('');
+        });
+
+        $(document).on('click','#back_to_search', function(){
+            $('.content').hide();
+            $('.search').show();
+            $('#back_to_search').hide();
         });
     </script>
 </body>
