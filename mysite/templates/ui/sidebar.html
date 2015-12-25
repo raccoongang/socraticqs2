@@ -107,25 +107,27 @@
 				</div>
             </div>
                           </div>
-      </div>
+          </div>
             <div class="tab-pane" id="2">Course 2</div>
             <div class="tab-pane" id="3">Course 3</div>
             <div class="tab-pane" id="4">Course 4</div>
           </div>
         </div>
-              </div>
-
+    </div>
   </div>
 	    <div class="col-sm-8 col-xs-offset-1 content">
-            <button class="btn btn-info pull-right" id="back_to_search"><span class="glyphicon glyphicon-arrow-left"></span> Back to search results</button>
             <h1 id="title">A Brief Definition of Conceptual Understanding</h1>
             <p id="description">Let's define a concept as a concise statement of a principle that is always true, and that furnishes a reliable tool for solving a wide variety of problems.
-
-We can define conceptual understanding operationally, as the ability to use a concept correctly on a wide variety of problems. Concretely, given a concept statement, there are many different ways we could try to apply that statement even to a single problem -- some of which are right, and some which are invalid. To my mind, "conceptual understanding" means both knowing which ways are right vs. which ways are wrong, and also being able to explain why the right ways are right, and the wrong ways are wrong, from first principles.
-
-Without the latter component, students' knowledge is fragile: even slight errors (which are inevitable) will knock them off the track to a correct solution. By contrast, when they can reason from first principles, they will constantly catch their own errors and get back on track.</p>
+                We can define conceptual understanding operationally, as the ability to use a concept correctly on a wide variety of problems. Concretely, given a concept statement, there are many different ways we could try to apply that statement even to a single problem -- some of which are right, and some which are invalid. To my mind, "conceptual understanding" means both knowing which ways are right vs. which ways are wrong, and also being able to explain why the right ways are right, and the wrong ways are wrong, from first principles.
+                Without the latter component, students' knowledge is fragile: even slight errors (which are inevitable) will knock them off the track to a correct solution. By contrast, when they can reason from first principles, they will constantly catch their own errors and get back on track.</p>
             <p><b>Author </b><span id="author">The Teacher</span></p>
 	    </div>
+        <div class="col-sm-8 col-xs-offset-1 search_content">
+            <button class="btn btn-info pull-right" id="back_to_search"><span class="glyphicon glyphicon-arrow-left"></span> Back to search results</button>
+            <h1 id="title_search"></h1>
+            <p id="description_search"></p>
+            <p><b>Author </b><span id="author_search">The Teacher</span></p>
+        </div>
         <div class="col-sm-8 col-xs-offset-1 search">
             <button type="button" class="btn btn-default btn-lg pull-right" id="close_search">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
@@ -156,11 +158,18 @@ Without the latter component, students' knowledge is fragile: even slight errors
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,".content"]);
         }
 
+        function show_search_info(title, description, author){
+            $('#title_search').empty().text(title);
+            $('#description_search').empty().append(description);
+            $('#author_search').empty().text(author);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,".search_content"]);
+        }
+
         function get_content_for_unit(unit_id){
            var url = '/ui/api/units/'+unit_id+'/content/';
            $('#panel_for_tabs').append('<div id="unit'+unit_id+'" class="collapse in"><div class="well"></div></div>');
            var tab_for_unit = $('#unit'+unit_id+' .well');
-           $.get(url, {'format':'json'}).done(function(content) {
+           $.get(url).done(function(content) {
                var lessons = content['lessons'];
                var concepts = content['concepts'];
                tab_for_unit.append('<div class="btn-group btn-group-justified" role="group" aria-label="lessons"><div class="btn-group" role="group" style="width:80%;"><button type="button" class="btn btn-default" data-toggle="collapse" data-target="#lessons'+unit_id+'" aria-expanded="true" aria-controls="lesson1">Lessons</button></div><div class="btn-group" role="group" style="width:20%;"> <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus-sign"></span>&nbsp; </button> </div> </div>');
@@ -180,7 +189,7 @@ Without the latter component, students' knowledge is fragile: even slight errors
 
         function get_units_for_course(course_id){
             var url = '/ui/api/courses/'+course_id+'/units/';
-            $.get(url, {'format':'json'}).done(function(units) {
+            $.get(url).done(function(units) {
                 this.course_tab = $('#panel_for_tabs');
                 this.course_tab.empty();
                 for (unit_num in units) {
@@ -194,9 +203,9 @@ Without the latter component, students' knowledge is fragile: even slight errors
 
         $(document).ready(function(){
             $('.search').hide();
-            $('#back_to_search').hide();
-            var url = '/ui/api/courses/'
-            $.get(url, {'format':'json'}).done(function(courses) {
+            $('.search_content').hide();
+            var url = '/ui/api/courses/';
+            $.get(url).done(function(courses) {
                 this.courses_tabs = $('#courses_tabs');
                 for (course_num in courses) {
                     var course = courses[course_num];
@@ -204,7 +213,6 @@ Without the latter component, students' knowledge is fragile: even slight errors
                     this.courses_tabs.append(course_tab_html);
                 }
             });
-
         });
 
          $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (course) {
@@ -218,47 +226,52 @@ Without the latter component, students' knowledge is fragile: even slight errors
                 }
          });
 
-        function show_lesson(unit_id){
-            var url = '/ui/api/lesson/'+unit_id;
-            $.get(url, {'format': 'json'}).done(function (lesson) {
+        $(document).on('click', '.lesson', function () {
+            var unit_id = this.getAttribute('lesson_id');
+            var url = '/ui/api/lesson/'+unit_id+'/';
+            $.get(url).done(function (lesson) {
                 $('.content').show();
                 $('.search').hide();
                 show_info(lesson['title'], lesson['text'], lesson['added_by']);
             });
-        }
-
-        $(document).on('click', '.lesson', function () {
-            var unit_id = this.getAttribute('lesson_id');
-            show_lesson(unit_id);
-            $('#back_to_search').hide();
+            $('.search_content').hide();
+            $('.search').hide();
             $('#search_text').val('');
+            return false;
         });
 
         $(document).on('click', '.search-lesson', function () {
             var unit_id = this.getAttribute('lesson_id');
-            show_lesson(unit_id);
-            $('#back_to_search').show();
+            var url = '/ui/api/lesson/'+unit_id+'/';
+            $.get(url).done(function (lesson) {
+                $('.content').hide();
+                $('.search').hide();
+                $('.search_content').show();
+                show_search_info(lesson['title'], lesson['text'], lesson['added_by']);
+            });
+            return false;
         });
 
         
         $(document).on('click', '.concept', function () {
             var unit_id = this.getAttribute('concept_id');
-            var url = '/ui/api/concept/'+unit_id;
-            $.get(url, {'format': 'json'}).done(function (concept) {
+            var url = '/ui/api/concept/'+unit_id+'/';
+            $.get(url).done(function (concept) {
                 $('.content').show();
                 $('.search').hide();
-                $('#back_to_search').hide();
+                $('.search_content').hide();
                 $('#search_text').val('');
                 show_info(concept['title'], concept['text'], concept['added_by']);
             });
+            return false;
         });
-
 
         $(document).on('click', '#search_button', function () {
             var text_to_search = $('#search_text').val();
             var url = '/ui/api/search/';
-            $.get(url, {'format': 'json', 'text':text_to_search}).done(function (find_result) {
+            $.get(url, {'text':text_to_search}).done(function (find_result) {
                 $('.content').hide();
+                $(".search_content").hide();
                 $('.search').show();
                 $('#search_table').empty();
                 var table = $('#search_table');
@@ -267,18 +280,20 @@ Without the latter component, students' knowledge is fragile: even slight errors
                     table.append('<tr><td><a class="search-lesson" href="#" lesson_id='+this_lesson["id"]+'>'+this_lesson["title"]+'</a></td><td>'+this_lesson["kind"]+'</td><td>'+this_lesson["author"]+'</td></tr>');
                 }
             });
+            return false;
         });
 
         $(document).on('click','#close_search', function(){
             $('.content').show();
             $('.search').hide();
             $('#search_text').val('');
+            return false;
         });
 
         $(document).on('click','#back_to_search', function(){
-            $('.content').hide();
             $('.search').show();
-            $('#back_to_search').hide();
+            $('.search_content').hide();
+            return false;
         });
     </script>
 </body>
