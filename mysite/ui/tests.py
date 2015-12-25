@@ -80,9 +80,9 @@ class UnitContentTests(TestCase):
         self.lesson_concept.save_root()
         self.ul_lesson_for_concept = UnitLesson.create_from_lesson(lesson=self.lesson_concept, unit=self.unit)
 
-    def test_only_get_allowed(self):
+    def test_get_put_allowed(self):
         """
-        Test that only GET http method is allowed.
+        Test that only GET and PUT http method is allowed.
         """
         self.client.login(username='username', password='top_secret')
         result = self.client.post(reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}), {'key': 'value'})
@@ -101,6 +101,13 @@ class UnitContentTests(TestCase):
         """
         self.client.login(username='username', password='top_secret')
         result = self.client.get(reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}))
+        self.assertEqual(result.status_code, 200)
+        ul_lesson = self.lesson.unitlesson_set.first()
+        result = self.client.put(
+            reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}),
+            data='{"ul_id": %s}' % ul_lesson.id,
+            content_type='application/json'
+        )
         self.assertEqual(result.status_code, 200)
 
     def test_check_result_content(self):
@@ -129,6 +136,28 @@ class UnitContentTests(TestCase):
                 ]
             }
         )
+
+    def test_put_append_into_order(self):
+        """
+        Testing appending UnitLesosn into particular order.
+        """
+        self.client.login(username='username', password='top_secret')
+        self.unit2 = self.course.create_unit(title='unit_title_2', author=self.user)
+        self.lesson2 = self.unit.create_lesson(
+            title='test_lesson_title_2', author=self.user, text='test_text_2'
+        )
+        ul_lesson = self.lesson.unitlesson_set.first()
+        result = self.client.put(
+            reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}),
+            data='{"ul_id": %s}' % ul_lesson.id,
+            content_type='application/json'
+        )
+        self.assertEqual(result.status_code, 200)
+        res = {u'lessons': [{u'lesson_title': u'test_lesson_title', u'id': 1, u'order': 0},
+                            {u'id': 3, u'lesson_title': u'test_lesson_title_2', u'order': 1}],
+               u'concepts': [{u'title': u'test_concept_title', u'ul_id': 2}],
+               u'id': 1}
+        self.assertEqual(json.loads(result.content), res)
 
 
 class CourseAPIUnitsTests(TestCase):

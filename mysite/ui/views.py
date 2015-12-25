@@ -7,7 +7,7 @@ from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSeriali
     ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer
 
 
-class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
+class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
     """API for getting course units
 
     Response format:
@@ -29,7 +29,7 @@ class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = UnitsSerializer
 
     def get_queryset(self):
-        queryset = super(CourseUnitsVew, self).get_queryset()
+        queryset = super(CourseUnitsView, self).get_queryset()
         course_id = self.kwargs.get('course_id')
         if course_id:
             course = Course.objects.filter(id=course_id).first()
@@ -38,7 +38,7 @@ class CourseUnitsVew(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
         return queryset
 
 
-class CourseView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
+class CourseView(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     API returning courses item(lesson, concept)
 
@@ -61,7 +61,7 @@ class CourseView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
         return queryset
 
 
-class UnitContentVew(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class UnitContentView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     """API for getting Unit content: Lessons, Concepts
 
     Response format:
@@ -75,10 +75,23 @@ class UnitContentVew(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet
       ]
     }
     """
+    serializer_class = UnitContentSerializer
+    queryset = Unit.objects.all()
 
     def retrieve(self, request, unit_id=None):
         queryset = Unit.objects.all()
         unit = get_object_or_404(queryset, pk=unit_id)
+        serializer = UnitContentSerializer(unit)
+        return Response(serializer.data)
+
+    def append(self, request, unit_id=None):
+        ul_id = request.data.get('ul_id')
+        order = request.data.get('order')
+        ul = get_object_or_404(UnitLesson, pk=ul_id)
+        unit = get_object_or_404(Unit, pk=unit_id)
+        ul = unit.append(ul, request.user)
+        if order is not None:
+            unit.reorder_exercise(old=ul.order, new=order)
         serializer = UnitContentSerializer(unit)
         return Response(serializer.data)
 
@@ -142,7 +155,7 @@ class ConceptInfoView(viewsets.ModelViewSet):
         return UnitLesson.objects.filter(pk=self.kwargs[self.lookup_field]).first()
 
 
-class SearchView(viewsets.mixins.ListModelMixin, viewsets.GenericViewSet):
+class SearchView(mixins.ListModelMixin, viewsets.GenericViewSet):
     """API for serching through unit lessons
 
     Response format:
