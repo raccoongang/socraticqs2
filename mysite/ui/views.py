@@ -87,6 +87,13 @@ class UnitContentView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
     def append(self, request, unit_id=None):
         ul_id = request.data.get('ul_id')
         order = request.data.get('order')
+
+        if not isinstance(ul_id, int) and ul_id is not None:
+            ul_id = int(ul_id)
+
+        if not isinstance(order, int) and order is not None:
+            order = int(order)
+
         ul = get_object_or_404(UnitLesson, pk=ul_id)
         unit = get_object_or_404(Unit, pk=unit_id)
         ul = unit.append(ul, request.user)

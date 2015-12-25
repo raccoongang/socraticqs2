@@ -110,6 +110,21 @@ class UnitContentTests(TestCase):
         )
         self.assertEqual(result.status_code, 200)
 
+    def test_handling_order_as_string(self):
+        """
+        Test that if we will send order as a string nothing fails.
+        """
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}))
+        self.assertEqual(result.status_code, 200)
+        ul_lesson = self.lesson.unitlesson_set.first()
+        result = self.client.put(
+           reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}),
+           data='{"ul_id": "%s", "order": "0"}' % ul_lesson.id,
+           content_type='application/json'
+        )
+        self.assertEqual(result.status_code, 200)
+
     def test_check_result_content(self):
         """
         Test result content returned by API.
