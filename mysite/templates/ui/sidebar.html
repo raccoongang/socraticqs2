@@ -93,14 +93,12 @@
 				    	<span class="glyphicon glyphicon-plus-sign"></span>&nbsp;
 				    </button>
 				  </div>
-				</div>	
-
+				</div>
              </div>
             </div>
           </div>
           </div>
         </div>
-
     </div>
   </div>
         <div  class="col-xs-2" style="margin-left: -53px; padding-right: 20px;">
@@ -109,10 +107,8 @@
           </ul>
         </div>
 	    <div class="col-sm-8 content">
-            <h1 id="title">A Brief Definition of Conceptual Understanding</h1>
-            <p id="description">Let's define a concept as a concise statement of a principle that is always true, and that furnishes a reliable tool for solving a wide variety of problems.
-                We can define conceptual understanding operationally, as the ability to use a concept correctly on a wide variety of problems. Concretely, given a concept statement, there are many different ways we could try to apply that statement even to a single problem -- some of which are right, and some which are invalid. To my mind, "conceptual understanding" means both knowing which ways are right vs. which ways are wrong, and also being able to explain why the right ways are right, and the wrong ways are wrong, from first principles.
-                Without the latter component, students' knowledge is fragile: even slight errors (which are inevitable) will knock them off the track to a correct solution. By contrast, when they can reason from first principles, they will constantly catch their own errors and get back on track.</p>
+            <h1 id="title"></h1>
+            <p id="description"></p>
             <p><b>Author </b><span id="author">The Teacher</span></p>
 	    </div>
         <div class="col-sm-8 col-xs-offset-1 search_content" style="display: none;">
@@ -177,7 +173,6 @@
                    });
                    $(x).droppable({
                         drop: function (event, ui) {
-                            console.log('drop');
                             $('#blank_div').remove();
                             var a = $(this).find('a');
                             var ul_id = ui.draggable.attr('lesson_id');
@@ -258,14 +253,14 @@
               });
         });
         $(document).on('hidden.bs.offcanvas', '#coursesTree', function(e){
-            console.log(e);
             $('#arrow_on_button').rotate({
                   angle: 180,
                   animateTo:0,
                   duration:600
               });
         });
-        $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (course) {
+
+        $(document).on('click', 'a[data-toggle="tab"]', function (course) {
                 var course_id = $(course.target).attr('course-id');
                 if (course_id) {
                     get_units_for_course(course_id);
@@ -274,6 +269,7 @@
                         show_info(course['title'], course['description'], course['added_by']);
                     });
                 }
+            return false;
         });
 
         $(document).on('click', '.lesson', function () {
@@ -313,6 +309,10 @@
                 show_info(concept['title'], concept['text'], concept['added_by']);
             });
             return false;
+        });
+
+        $(document).on('click','#search_text',function(){
+           return false;
         });
 
         $(document).on('click', '#search_button', function () {
