@@ -101,23 +101,23 @@
         </div>
     </div>
   </div>
-        <div  class="col-xs-2" style="margin-left: -53px; padding-right: 20px;">
+        <div  class="col-xs-1" style="margin-left: -53px; padding-right: 20px;">
           <!-- Nav tabs -->
           <ul class="nav nav-tabs tabs-right sideways" id="courses_tabs">
           </ul>
         </div>
-	    <div class="col-sm-8 content">
+	    <div class="col-sm-7 col-xs-offset-1 content">
             <h1 id="title"></h1>
             <p id="description"></p>
-            <p><b>Author </b><span id="author">The Teacher</span></p>
+            <p><b>Author </b><span id="author"></span></p>
 	    </div>
-        <div class="col-sm-8 col-xs-offset-1 search_content" style="display: none;">
+        <div class="col-sm-7 col-xs-offset-1 search_content" style="display: none;">
             <button class="btn btn-info pull-right" id="back_to_search"><span class="glyphicon glyphicon-arrow-left"></span> Back to search results</button>
             <h1 id="title_search"></h1>
             <p id="description_search"></p>
             <p><b>Author </b><span id="author_search">The Teacher</span></p>
         </div>
-        <div class="col-sm-8 col-xs-offset-1 search" style="display: none;">
+        <div class="col-sm-7 col-xs-offset-1 search" style="display: none;">
             <button type="button" class="btn btn-default btn-lg pull-right" id="close_search">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </button>
@@ -243,6 +243,7 @@
                     var course_tab_html = '<li><a href="#course_'+course['id']+'" data-toggle="tab" course-id="'+course['id']+'">'+course['title']+'</a></li>'
                     this.courses_tabs.append(course_tab_html);
                 }
+                $('a[href="#course_'+courses[0]['id']+'"]').trigger('click');
             });
         });
         $(document).on('shown.bs.offcanvas', '#coursesTree', function(){
