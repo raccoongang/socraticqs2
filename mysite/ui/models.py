@@ -31,7 +31,7 @@ class Issue(models.Model):
     status = models.CharField(max_length=120, choices=ISSUE_STATUS)
     author = models.ForeignKey(User, related_name='author')
     assignee = models.ForeignKey(User, related_name='assignee')
-    tags = models.ManyToManyField(to=IssueTag)
+    tags = models.ManyToManyField(to=IssueTag, blank=True, null=True)
     created = models.DateTimeField(default=timezone.now)
     course = models.ForeignKey(Course, blank=True, null=True)
     unit = models.ForeignKey(Unit, blank=True, null=True)
