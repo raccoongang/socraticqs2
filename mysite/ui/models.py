@@ -30,7 +30,7 @@ class Issue(models.Model):
     description = models.TextField(blank=True)
     status = models.CharField(max_length=120, choices=ISSUE_STATUS)
     author = models.ForeignKey(User, related_name='author')
-    assignee = models.ForeignKey(User, related_name='assignee')
+    assignee = models.ForeignKey(User, related_name='assignee', blank=True, null=True)
     tags = models.ManyToManyField(to=IssueTag, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
