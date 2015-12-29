@@ -3,6 +3,7 @@ from django.utils.safestring import mark_safe
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson
 from ct.templatetags.ct_extras import md2html
+from ui.models import Issue
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -184,3 +185,11 @@ class CourseInfoSerializer(serializers.ModelSerializer):
 
     def get_added_by(self, obj):
         return obj.addedBy.username
+
+
+class IssueSerializer(serializers.ModelSerializer):
+    """
+    Serializer for Issue model.
+    """
+    class Meta:
+        model = Issue

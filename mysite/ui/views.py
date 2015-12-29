@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer
+from ui.models import Issue
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -201,3 +202,11 @@ class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     """
     serializer_class = CourseInfoSerializer
     queryset = Course.objects.all()
+
+
+class IssuesView(viewsets.ModelViewSet):
+    """
+    Dummy ViewSet for testing frontend.
+    """
+    queryset = Issue.objects.all()
+    serializer_class = IssueSerializer
