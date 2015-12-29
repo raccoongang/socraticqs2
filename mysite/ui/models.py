@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from ct.models import Course, Unit, Concept, UnitLesson
+from ct.models import Course, Unit, Concept, UnitLesson, CourseUnit
 
 ISSUE_STATUS = (('warning', 'warning'),
                 ('propose', 'propose'),
@@ -32,9 +32,10 @@ class Issue(models.Model):
     author = models.ForeignKey(User, related_name='author')
     assignee = models.ForeignKey(User, related_name='assignee')
     tags = models.ManyToManyField(to=IssueTag, blank=True, null=True)
-    created = models.DateTimeField(default=timezone.now)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     course = models.ForeignKey(Course, blank=True, null=True)
-    unit = models.ForeignKey(Unit, blank=True, null=True)
+    unit = models.ForeignKey(CourseUnit, blank=True, null=True)
     unit_lesson = models.ForeignKey(UnitLesson, blank=True, null=True)
 
     @property

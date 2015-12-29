@@ -191,5 +191,15 @@ class IssueSerializer(serializers.ModelSerializer):
     """
     Serializer for Issue model.
     """
+    related = serializers.SerializerMethodField()
+
     class Meta:
         model = Issue
+
+    def get_related(self, obj):
+        if type(obj.related) == Course:
+            return CourseSerializer(obj.related).data
+        elif type(obj.related) == CourseUnit:
+            return UnitsSerializer(obj.related).data
+        elif type(obj.related) == UnitLesson:
+            return LessonInfoSerializer(obj.related).data
