@@ -108,8 +108,135 @@
         </div>
 	    <div class="col-sm-7 col-xs-offset-1 content">
             <h1 id="title"></h1>
-            <p id="description"></p>
-            <p><b>Author </b><span id="author"></span></p>
+            <ul class="nav nav-tabs">
+              <li role="presentation" class="active"><a data-toggle="tab" href="#lesson_description">Description</a></li>
+              <li role="presentation"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="lesson_description" class="tab-pane fade in active">
+                  <br>
+                    <p id="description"></p>
+                    <p><b>Author </b><span id="author"></span></p>
+                </div>
+
+                <div id="lesson_issues" class="tab-pane fade">
+                    <br>
+                    <div class="row" id="lesson_issues_table">
+                    <div class="col-sm-5">
+                    <div class="input-group">
+                      <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Filters <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                          <li><a href="#">Action</a></li>
+                          <li><a href="#">Another action</a></li>
+                          <li><a href="#">Something else here</a></li>
+                          <li role="separator" class="divider"></li>
+                          <li><a href="#">Separated link</a></li>
+                        </ul>
+                      </div><!-- /btn-group -->
+                        <input type="text" class="form-control">
+                    </div><!-- /input-group -->
+                    </div>
+                    <div class="col-sm-5">
+                      <div class="input-group">
+                      <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Labels <span class="caret"></span></button>
+                        <ul class="dropdown-menu">
+                          <li><a href="#">Action</a></li>
+                          <li><a href="#">Another action</a></li>
+                          <li><a href="#">Something else here</a></li>
+                          <li role="separator" class="divider"></li>
+                          <li><a href="#">Separated link</a></li>
+                        </ul>
+                      </div><!-- /btn-group -->
+                        <input type="text" class="form-control">
+                    </div><!-- /input-group -->
+                    </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-info" id="add_new_issue">Add new issue</button>
+                        </div>
+
+
+                    <hr>
+                    <table class="table table-condensed">
+                        <thead>
+                        <th>
+                            <span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span>0</span>
+                        </th>
+                        <th>
+                            <span class="glyphicon glyphicon-ok"></span> Closed: <span>0</span>
+                        </th>
+                        <th>
+                    <div class="pull-right">
+                  <div class="btn-group">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Author <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </div>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Labels <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">asdfsdf</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </div>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Assignee <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">asdfsdf</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </div>
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Sort <span class="caret"></span>
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li><a href="#">asdfsdf</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                      </ul>
+                    </div>
+                </div>
+                        </th>
+                        </thead>
+                        <tbody id='table_of_issues'>
+                        </tbody>
+                        </table>
+                        </div>
+                    <div id="div_with_issue_form">
+                        <form class="form-horizontal" id="add_issue_form">
+                            {% csrf_token %}
+                            <label>Title</label>
+                            <input name="title" type="text" class="form-control">
+                            <label>Description</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                            <input type="hidden" name="author" value="{{ user.id }}">
+                            <hr>
+                            <button class="btn" id="add_issue_button">Ok</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 	    </div>
         <div class="col-sm-7 col-xs-offset-1 search_content" style="display: none;">
             <button class="btn btn-info pull-right" id="back_to_search"><span class="glyphicon glyphicon-arrow-left"></span> Back to search results</button>
@@ -137,6 +264,8 @@
   <script src="{% static 'ui/js/jasny-bootstrap.min.js' %}"></script>
   <script type="text/javascript" src="{% static 'ui/js/jQueryRotate.js' %}"></script>
   <script>
+      var active_lesson_id=0;
+      var user_id={{ user.id }};
         function truncate(str, len){
           return (str.length > len) ? str.substr(0,len-3)+'&hellip;' : str;
         }
@@ -235,6 +364,7 @@
             });
             $('.search').hide();
             $('.search_content').hide();
+            $('#add_issue_form').hide();
             var url = '/ui/api/courses/';
             $.get(url).done(function(courses) {
                 this.courses_tabs = $('#courses_tabs');
@@ -274,8 +404,9 @@
         });
 
         $(document).on('click', '.lesson', function () {
-            var unit_id = this.getAttribute('lesson_id');
-            var url = '/ui/api/lesson/'+unit_id+'/';
+            var lesson_id = this.getAttribute('lesson_id');
+            active_lesson_id = lesson_id;
+            var url = '/ui/api/lesson/'+lesson_id+'/';
             $.get(url).done(function (lesson) {
                 $('.content').show();
                 $('.search').hide();
@@ -300,8 +431,9 @@
         });
         
         $(document).on('click', '.concept', function () {
-            var unit_id = this.getAttribute('concept_id');
-            var url = '/ui/api/concept/'+unit_id+'/';
+            var concept_id = this.getAttribute('concept_id');
+            var url = '/ui/api/concept/'+concept_id+'/';
+            active_lesson_id = 0;
             $.get(url).done(function (concept) {
                 $('.content').show();
                 $('.search').hide();
@@ -363,6 +495,42 @@
            return cookieValue;
         }
 
+      $(document).on('click','#add_issue_button',function(){
+        var url = '/ui/api/issues/';
+        var data = $('#add_issue_form').serialize();
+        $.post(url, data).done(function () {
+            $('a[href="#lesson_issues"]').trigger('click');
+            $('#add_issue_form').hide();
+            $('#lesson_issues_table').show();
+        }).fail(function(result) {
+            console.log(result['responseJSON']);
+            for (each in result['responseJSON']){
+                $('input[name="'+each+'"]').attr('border','1px solid red');
+                console.log(each);
+            }
+          })
+          return false;
+      });
+
+      $(document).on('click','a[href="#lesson_issues"]',function(){
+           $('#add_issue_form').hide();
+          $('#lesson_issues_table').show();
+          var url = '/ui/api/issues/';
+          $('#table_of_issues').empty();
+        $.get(url).done(function (issues) {
+            $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Description</td><td>Author</td></tr>');
+            for (each in issues){
+              var issue = issues[each];
+                $('#table_of_issues').append('<tr><td>'+issue['title']+'</td><td>'+issue['description']+'</td><td>'+issue['author']+'</td></tr>'
+                )
+            }
+        })
+      });
+
+      $(document).on('click','#add_new_issue',function(){
+          $('#add_issue_form').show();
+          $('#lesson_issues_table').hide();
+      });
   </script>
 </body>
 </html>
