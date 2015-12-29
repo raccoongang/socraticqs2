@@ -1,3 +1,6 @@
 from django.contrib import admin
+from ui.models import Issue, IssueTag
 
-# Register your models here.
+
+admin.site.register(Issue)
+admin.site.register(IssueTag)
