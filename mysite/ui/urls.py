@@ -1,5 +1,6 @@
 from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView
+from django.contrib.auth.decorators import login_required
 from rest_framework.routers import SimpleRouter
 
 from ui.views import (
@@ -10,6 +11,7 @@ from ui.views import (
     ConceptInfoView,
     SearchView,
     CourseInfoView,
+    IssuesView,
 )
 
 router = SimpleRouter()
@@ -17,11 +19,16 @@ router.register(r'api/lesson', LessonInfoView)
 router.register(r'api/concept', ConceptInfoView)
 router.register(r'api/search', SearchView, base_name='search')
 router.register(r'api/course', CourseInfoView)
+router.register(r'api/issues', IssuesView)
 
 
 urlpatterns = patterns(
     '',
-    url(r'^hack/$', TemplateView.as_view(template_name='ui/sidebar.html'), name='entry_point'),
+    url(
+        r'^hack/$',
+        login_required(TemplateView.as_view(template_name='ui/sidebar.html')),
+        name='entry_point'
+    ),
     url(r'^api/courses/(?P<course_id>\d+)/units/$', CourseUnitsView.as_view({'get': 'list'}), name='units_list'),
     url(
         r'^api/units/(?P<unit_id>\d+)/content/$',

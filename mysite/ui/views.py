@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer
+from ui.models import Issue
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -87,6 +88,13 @@ class UnitContentView(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewse
     def append(self, request, unit_id=None):
         ul_id = request.data.get('ul_id')
         order = request.data.get('order')
+
+        if not isinstance(ul_id, int) and ul_id is not None:
+            ul_id = int(ul_id)
+
+        if not isinstance(order, int) and order is not None:
+            order = int(order)
+
         ul = get_object_or_404(UnitLesson, pk=ul_id)
         unit = get_object_or_404(Unit, pk=unit_id)
         ul = unit.append(ul, request.user)
@@ -194,3 +202,11 @@ class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     """
     serializer_class = CourseInfoSerializer
     queryset = Course.objects.all()
+
+
+class IssuesView(viewsets.ModelViewSet):
+    """
+    Dummy ViewSet for testing frontend.
+    """
+    queryset = Issue.objects.all()
+    serializer_class = IssueSerializer
