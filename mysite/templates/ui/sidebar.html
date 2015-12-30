@@ -223,7 +223,7 @@
                             <input name="title" type="text" class="form-control inp">
                             <label>Description</label>
                             <textarea class="form-control inp" name="description" rows="3"></textarea>
-                            <label>Status</label>
+                            <label>Labels</label>
                             <select name="labels" class="form-control">
 
                             </select>
@@ -233,6 +233,7 @@
                             </select>
                             <input type="hidden" name="author" value="{{ user.id }}">
                             <input type="hidden" name="unit_lesson">
+                            <input type="hidden" name="is_open" value="true">
                             <hr>
                             <button class="btn btn-success" id="add_issue_button">Ok</button>
                             <button class="btn btn-warning" id="add_issue_cancel_button">Cancel</button>
@@ -626,6 +627,8 @@
               }
           }
           add_filters(authors, assignee);
+          get_assignee();
+
           $('#closed_span').text(close_issues);
           $('#open_span').text(open_issues);
       };
