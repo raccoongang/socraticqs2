@@ -1,10 +1,12 @@
 from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 
-from ct.models import Course, Unit, UnitLesson, Lesson
+from ct.models import Course, Unit, UnitLesson, Lesson, Role
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer, IssueLabelSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer, IssueLabelSerializer, \
+    InstructorsSerializer
 from ui.models import Issue, IssueLabel
 
 
@@ -224,3 +226,16 @@ class IssueLabelsView(viewsets.ModelViewSet):
     """
     queryset = IssueLabel.objects.all()
     serializer_class = IssueLabelSerializer
+
+
+class InstructorView(viewsets.ModelViewSet):
+    """
+    Returns Instructors list.
+    """
+    queryset = User.objects.all()
+    serializer_class = InstructorsSerializer
+
+    def get_queryset(self):
+        queryset = super(InstructorView, self).get_queryset()
+        queryset = queryset.filter(id__in=set([role.user.id for role in Role.objects.filter(role=Role.INSTRUCTOR)]))
+        return queryset

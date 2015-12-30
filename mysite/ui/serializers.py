@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils.safestring import mark_safe
+from django.contrib.auth.models import User
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson
 from ct.templatetags.ct_extras import md2html
@@ -219,3 +220,12 @@ class IssueLabelSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = IssueLabel
+
+
+class InstructorsSerializer(serializers.ModelSerializer):
+    """
+    Instructor serizlizer.
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'username')
