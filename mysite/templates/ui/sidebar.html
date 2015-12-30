@@ -13,7 +13,10 @@
 			-moz-box-sizing: border-box;
 			box-sizing: border-box;
 			}
-		}	
+		}
+        .error_input {
+            border-color: red;
+        }
 	</style>
 
     <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,Safe">
@@ -79,7 +82,7 @@
 				    	<span class="glyphicon glyphicon-plus-sign"></span>&nbsp;
 				    </button>
 				  </div>
-				</div>	
+				</div>
 
 
 				<div class="btn-group btn-group-justified" role="group" aria-label="concepts">
@@ -110,7 +113,7 @@
             <h1 id="title"></h1>
             <ul class="nav nav-tabs">
               <li role="presentation" class="active"><a data-toggle="tab" href="#lesson_description">Description</a></li>
-              <li role="presentation"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>
+              <li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>
             </ul>
             <div class="tab-content">
                 <div id="lesson_description" class="tab-pane fade in active">
@@ -158,7 +161,7 @@
 
 
                     <hr>
-                    <table class="table table-condensed">
+                    <table class="table">
                         <thead>
                         <th>
                             <span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span>0</span>
@@ -219,6 +222,8 @@
                 </div>
                         </th>
                         </thead>
+                        </table>
+                        <table class="table table-condensed">
                         <tbody id='table_of_issues'>
                         </tbody>
                         </table>
@@ -227,12 +232,61 @@
                         <form class="form-horizontal" id="add_issue_form">
                             {% csrf_token %}
                             <label>Title</label>
-                            <input name="title" type="text" class="form-control">
+                            <input name="title" type="text" class="form-control inp">
                             <label>Description</label>
-                            <textarea class="form-control" name="description" rows="3"></textarea>
+                            <textarea class="form-control inp" name="description" rows="3"></textarea>
+                            <label>Status</label>
+                            <select name="status" class="form-control">
+                                <option value="warning">Warning</option>
+                                <option value="propose">Propose</option>
+                                <option value="enhance">Enhance</option>
+                                <option value="off-target">Off-target</option>
+                                <option value="bug">Bug</option>
+                                <option value="diagnose">Diagnose</option>
+                                <option value="resolve">Resolve</option>
+                            </select>
                             <input type="hidden" name="author" value="{{ user.id }}">
+                            <input type="hidden" name="unit_lesson">
                             <hr>
-                            <button class="btn" id="add_issue_button">Ok</button>
+                            <button class="btn btn-success" id="add_issue_button">Ok</button>
+                            <button class="btn btn-warning" id="add_issue_cancel_button">Cancel</button>
+                        </form>
+                    </div>
+                    <div id="show_issue_div">
+                        <div id="show_issue_inside_div">
+                        <button class="btn btn-info pull-right" id="edit_issue_button">Edit</button>
+                        <label>Title</label>
+                        <p id="show_issue_title"></p>
+                        <label>Description</label>
+                        <p id="show_issue_description"></p>
+                        <label>Status</label>
+                        <p id="show_issue_status"></p>
+                        <label>Author</label>
+                        <p id="show_issue_author"></p>
+                        <button class="btn btn-warning" id="show_issue_cancel_button">Go back</button>
+                        </div>
+                        <form id="update_issue_form">
+                           {% csrf_token %}
+                            <label>Title</label>
+                            <input name="title" type="text" class="form-control inp">
+                            <label>Description</label>
+                            <textarea class="form-control inp" name="description" rows="3"></textarea>
+                            <label>Status</label>
+                            <select name="status" class="form-control">
+                                <option value="warning">Warning</option>
+                                <option value="propose">Propose</option>
+                                <option value="enhance">Enhance</option>
+                                <option value="off-target">Off-target</option>
+                                <option value="bug">Bug</option>
+                                <option value="diagnose">Diagnose</option>
+                                <option value="resolve">Resolve</option>
+                            </select>
+                            <input type="hidden" name="author" value="{{ user.id }}">
+                            <input type="hidden" name="unit_lesson">
+                            <input type="hidden" name="id">
+                            <hr>
+                            <button class="btn btn-success" id="update_issue_button">Update</button>
+                            <button class="btn btn-warning" id="update_issue_cancel_button">Cancel</button>
                         </form>
                     </div>
                 </div>
@@ -271,6 +325,7 @@
         }
 
         function show_info(title, description, author){
+            $('.nav-tabs a[href="#lesson_description"]').tab('show');
             $('#title').empty().text(title);
             $('#description').empty().append(description);
             $('#author').empty().text(author);
@@ -335,6 +390,8 @@
         }
 
         function get_units_for_course(course_id){
+            $('#issues_tab').addClass("disabled");
+            $('#issues_tab a').attr('href','#');
             var url = '/ui/api/courses/'+course_id+'/units/';
             $.get(url).done(function(units) {
                 this.course_tab = $('#panel_for_tabs');
@@ -346,7 +403,6 @@
                     get_content_for_unit(unit['unit_id'], course_id);
                 }
             });
-
         }
 
         $(document).ready(function(){
@@ -392,20 +448,23 @@
         });
 
         $(document).on('click', 'a[data-toggle="tab"]', function (course) {
-                var course_id = $(course.target).attr('course-id');
-                if (course_id) {
-                    get_units_for_course(course_id);
-                    var url = '/ui/api/course/'+course_id;
-                    $.get(url, {'format': 'json'}).done(function (course) {
-                        show_info(course['title'], course['description'], course['added_by']);
-                    });
-                }
+            var course_id = $(course.target).attr('course-id');
+            if (course_id) {
+                get_units_for_course(course_id);
+                var url = '/ui/api/course/'+course_id;
+                $.get(url, {'format': 'json'}).done(function (course) {
+                    show_info(course['title'], course['description'], course['added_by']);
+                });
+            }
             return false;
         });
 
         $(document).on('click', '.lesson', function () {
+            $('#issues_tab').removeClass("disabled");
+            $('#issues_tab a').attr('href','#lesson_issues');
             var lesson_id = this.getAttribute('lesson_id');
             active_lesson_id = lesson_id;
+            console.log(active_lesson_id);
             var url = '/ui/api/lesson/'+lesson_id+'/';
             $.get(url).done(function (lesson) {
                 $('.content').show();
@@ -429,11 +488,13 @@
             });
             return false;
         });
-        
+
         $(document).on('click', '.concept', function () {
+            $('#issues_tab').removeClass("disabled");
+            $('#issues_tab a').attr('href','#lesson_issues');
             var concept_id = this.getAttribute('concept_id');
+            active_lesson_id = concept_id;
             var url = '/ui/api/concept/'+concept_id+'/';
-            active_lesson_id = 0;
             $.get(url).done(function (concept) {
                 $('.content').show();
                 $('.search').hide();
@@ -496,6 +557,7 @@
         }
 
       $(document).on('click','#add_issue_button',function(){
+        $('.inp').removeClass('error_input');
         var url = '/ui/api/issues/';
         var data = $('#add_issue_form').serialize();
         $.post(url, data).done(function () {
@@ -503,34 +565,115 @@
             $('#add_issue_form').hide();
             $('#lesson_issues_table').show();
         }).fail(function(result) {
-            console.log(result['responseJSON']);
             for (each in result['responseJSON']){
-                $('input[name="'+each+'"]').attr('border','1px solid red');
-                console.log(each);
+                $('[name="'+each+'"]').addClass('error_input');
+                $('[name="'+each+'"]').attr('placeholder', result['responseJSON'][each]);
             }
           })
           return false;
       });
 
+      $(document).on('click','#add_issue_cancel_button',function(){
+        $('#add_issue_form').hide();
+        $('#lesson_issues_table').show();
+          return false;
+      });
+
+      $(document).on('click','#show_issue_cancel_button',function(){
+        $('#show_issue_div').hide();
+        $('#lesson_issues_table').show();
+          return false;
+      });
+
       $(document).on('click','a[href="#lesson_issues"]',function(){
-           $('#add_issue_form').hide();
+          console.log('before');
+          if ($(this).closest('li').hasClass('disabled') == false){
+              console.log('after');
+          $('#add_issue_form').hide();
           $('#lesson_issues_table').show();
+          $('#show_issue_div').hide();
           var url = '/ui/api/issues/';
           $('#table_of_issues').empty();
-        $.get(url).done(function (issues) {
-            $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Description</td><td>Author</td></tr>');
+          $.get(url, {'unit_lesson':active_lesson_id}).done(function (issues) {
+            $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Author</td></tr>');
             for (each in issues){
               var issue = issues[each];
-                $('#table_of_issues').append('<tr><td>'+issue['title']+'</td><td>'+issue['description']+'</td><td>'+issue['author']+'</td></tr>'
+                $('#table_of_issues').append('<tr><td><a href="#" issue_id="'+issue['id']+'" class="issue">'+issue['title']+'</a></td><td>'+issue['author']+'</td></tr>'
                 )
             }
-        })
+        });
+          return false;
+          }
+
+      });
+
+
+      $(document).on('click',".issue",function(){
+         $('#lesson_issues_table').hide();
+          $('#show_issue_div').show();
+          $('#show_issue_inside_div').show();
+          $('#update_issue_form').hide();
+          var url = '/ui/api/issues/'+this.getAttribute('issue_id');
+          $.get(url).done(function(issue) {
+              $("#show_issue_title").text(issue['title']);
+              $("#show_issue_description").text(issue['description']);
+              $("#show_issue_author").text(issue['author']);
+              $("#show_issue_status").text(issue['status']);
+              $('[name="title"]').val(issue['title']);
+              $('[name="description"]').val(issue['description']);
+              $('[name="id"]').val(issue['id']);
+              $('[name="status"]').val(issue['status']);
+              $('[name="unit_lesson"]').val(active_lesson_id);
+          });
+          return false;
       });
 
       $(document).on('click','#add_new_issue',function(){
+                    console.log(active_lesson_id);
+
+          $('.inp').val('');
+          $('.inp').removeClass('error_input');
+          $('.inp').attr('placeholder','');
           $('#add_issue_form').show();
           $('#lesson_issues_table').hide();
+          $('#show_issue_div').hide();
+          $('[name="unit_lesson"]').val(active_lesson_id);
+          return false;
       });
+
+      $(document).on('click', '#edit_issue_button', function(){
+          $('#show_issue_inside_div').hide();
+          $('#update_issue_form').show();
+          return false;
+      })
+
+      $(document).on('click', '#update_issue_cancel_button', function(){
+          $('#show_issue_inside_div').show();
+          $('#update_issue_form').hide();
+          return false;
+      })
+
+      $(document).on('click', '#update_issue_button', function(){
+        var issue_id = $('[name="id"]').val();
+        var url = '/ui/api/issues/'+issue_id
+          $('.inp').removeClass('error_input');
+          $('.inp').attr('placeholder','');
+          $('[name="unit_lesson"]').val(active_lesson_id);
+        $.ajax({
+            url: url,
+            type: 'PUT',
+            data:$('#update_issue_form').serialize() ,
+            success:function(result){
+                $('[issue_id="'+issue_id+'"]').trigger('click');
+            },
+            error:function(result) {
+            for (each in result['responseJSON']){
+                $('[name="'+each+'"]').addClass('error_input');
+                $('[name="'+each+'"]').attr('placeholder', result['responseJSON'][each]);
+            }}
+        });
+        return false;
+      })
   </script>
 </body>
 </html>
