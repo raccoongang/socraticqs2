@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404
 
 from ct.models import Course, Unit, UnitLesson, Lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer
-from ui.models import Issue
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer, IssueLabelSerializer
+from ui.models import Issue, IssueLabel
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -216,3 +216,11 @@ class IssuesView(viewsets.ModelViewSet):
         if 'unit_lesson' in self.request.GET:
             queryset = queryset.filter(unit_lesson_id=self.request.GET['unit_lesson'])
         return queryset
+
+
+class IssueLabelsView(viewsets.ModelViewSet):
+    """
+    Simple ViewsSet for retrive issueLabels
+    """
+    queryset = IssueLabel.objects.all()
+    serializer_class = IssueLabelSerializer

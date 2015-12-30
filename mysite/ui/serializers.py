@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson
 from ct.templatetags.ct_extras import md2html
-from ui.models import Issue
+from ui.models import Issue, IssueLabel
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -211,3 +211,11 @@ class IssueSerializer(serializers.ModelSerializer):
 
     def get_assignee_name(self, obj):
         return obj.author.username
+
+
+class IssueLabelSerializer(serializers.ModelSerializer):
+    """
+    Serializer for IssueLabels restAPI
+    """
+    class Meta:
+        model = IssueLabel

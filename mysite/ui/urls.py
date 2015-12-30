@@ -12,7 +12,7 @@ from ui.views import (
     SearchView,
     CourseInfoView,
     IssuesView,
-)
+    IssueLabelsView)
 
 router = SimpleRouter()
 router.register(r'api/lesson', LessonInfoView)
@@ -20,6 +20,8 @@ router.register(r'api/concept', ConceptInfoView)
 router.register(r'api/search', SearchView, base_name='search')
 router.register(r'api/course', CourseInfoView)
 router.register(r'api/issues', IssuesView)
+router.register(r'api/labels', IssueLabelsView)
+
 
 
 urlpatterns = patterns(
