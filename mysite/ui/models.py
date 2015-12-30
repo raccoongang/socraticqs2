@@ -12,11 +12,13 @@ ISSUE_STATUS = (('warning', 'warning'),
                 ('resolve', 'resolve'))
 
 
-class IssueTag(models.Model):
+class IssueLabel(models.Model):
     """
     Simple realization tagging
     """
     title = models.CharField(max_length=120)
+    description = models.CharField(max_length=200)
+    color = models.CharField(max_length=6, default='ffffff')
 
     def __unicode__(self):
         return self.title
@@ -28,10 +30,10 @@ class Issue(models.Model):
     """
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    status = models.CharField(max_length=120, choices=ISSUE_STATUS)
+    is_open = models.BooleanField(default=True)
     author = models.ForeignKey(User, related_name='author')
     assignee = models.ForeignKey(User, related_name='assignee', blank=True, null=True)
-    tags = models.ManyToManyField(to=IssueTag, blank=True, null=True)
+    labels = models.ManyToManyField(to=IssueLabel, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     course = models.ForeignKey(Course, blank=True, null=True)

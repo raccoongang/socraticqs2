@@ -192,6 +192,8 @@ class IssueSerializer(serializers.ModelSerializer):
     Serializer for Issue model.
     """
     related = serializers.SerializerMethodField()
+    author_name = serializers.SerializerMethodField()
+    assignee_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Issue
@@ -203,3 +205,9 @@ class IssueSerializer(serializers.ModelSerializer):
             return UnitsSerializer(obj.related).data
         elif type(obj.related) == UnitLesson:
             return LessonInfoSerializer(obj.related).data
+
+    def get_author_name(self, obj):
+        return obj.author.username
+
+    def get_assignee_name(self, obj):
+        return obj.author.username

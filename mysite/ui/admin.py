@@ -1,6 +1,6 @@
 from django.contrib import admin
-from ui.models import Issue, IssueTag
+from ui.models import Issue, IssueLabel
 
 
 admin.site.register(Issue)
-admin.site.register(IssueTag)
+admin.site.register(IssueLabel)
