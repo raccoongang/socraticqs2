@@ -163,10 +163,10 @@
                     <hr>
                     <table class="table">
                         <thead>
-                        <th>
+                        <th id="open_link_th" class="success">
                             <a href="#" id="opened_issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span id="open_span">0</span></a>
                         </th>
-                        <th>
+                        <th id="close_link_th">
                            <a href="#" id="closed_issues"><span class="glyphicon glyphicon-ok"></span> Closed: <span id="closed_span">0</span></a>
                         </th>
                         <th>
@@ -308,6 +308,8 @@
       var active_lesson_id=0;
       var user_id={{ user.id }};
       var list_of_issues = [];
+      var list_of_labels = [];
+      var is_open_shown = true;
         function truncate(str, len){
           return (str.length > len) ? str.substr(0,len-3)+'&hellip;' : str;
         }
@@ -572,9 +574,10 @@
           return false;
       });
 
-      function add_filters(authors, assignee){
+      function add_filters(authors, assignee, labels){
           $('#dropdown_author').empty();
           $('#dropdown_assignee').empty();
+          $('#dropdown_labels').empty();
         for (x in authors){
             $('#dropdown_author').append('<li><a href="#" filter="'+authors[x]+'" field="author_name">'+authors[x]+'</a></li>');
         }
@@ -583,30 +586,39 @@
             $('#dropdown_assignee').append('<li><a href="#" filter="'+assignee[x]+'" field="assignee_name">'+assignee[x]+'</a></li>');
         }
           $('#dropdown_assignee').append('<li role="separator" class="divider"></li><li><a href="#" filter="all" field="author_name">Show all</a></li>');
+          for (x in labels){
+            $('#dropdown_labels').append('<li><a href="#" filter="'+labels[x]+'" field="labels">'+list_of_labels[labels[x]]+'</a></li>');
+        }
+          $('#dropdown_labels').append('<li role="separator" class="divider"></li><li><a href="#" filter="all" field="author_name">Show all</a></li>');
+
       }
 
       function get_labels(){
           var labels_url='/ui/api/labels/';
           $('[name="labels"]').empty();
-          var labels_list=[];
           $.get(labels_url).done(function(labels){
               for (each in labels){
                   var label = labels[each];
-                  labels_list[label['id']]=label['title'];
+                  list_of_labels[label['id']]=label['title'];
                   $('[name="labels"]').append('<option value="'+label['id']+'">'+label['title']+'</option>')
               }
           });
-          return labels_list;
       }
 
-      function show_one_type_of_issues(is_open) {
-          $('#table_of_issues').empty();
+      function show_one_type_of_issues() {
+          get_labels();
+          var url = '/ui/api/issues/';
           var open_issues = 0;
           var close_issues = 0;
           var authors = [];
           var assignee = [];
-          var labels_list = get_labels();
-          $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Author</td></tr>');
+          var labels = [];
+          $.get(url, {'unit_lesson':active_lesson_id}).done(function (issues) {
+            list_of_issues = issues;
+
+          $('#table_of_issues').empty();
+
+          $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Label</td><td>Author</td></tr>');
           for (each in list_of_issues) {
               var issue = list_of_issues[each];
               if (issue['is_open']) {
@@ -615,8 +627,8 @@
               else {
                   close_issues += 1;
               }
-              if (issue['is_open'] == is_open) {
-                  $('#table_of_issues').append('<tr><td><a href="#" issue_id="' + issue['id'] + '" class="issue">' + issue['title'] + '</a></td><td>' + issue['author_name'] + '</td></tr>'
+              if (issue['is_open'] == is_open_shown) {
+                  $('#table_of_issues').append('<tr><td><a href="#" issue_id="' + issue['id'] + '" class="issue">' + issue['title'] + '</a></td><td>'+list_of_labels[issue['labels'][0]]+'</td><td>' + issue['author_name'] + '</td></tr>'
                   )
                   if (authors.indexOf(issue['author_name']) == -1 && issue['author_name'] != null) {
                       authors.push(issue['author_name']);
@@ -624,13 +636,18 @@
                   if (assignee.indexOf(issue['assignee_name']) == -1 && issue['assignee_name'] != null) {
                       assignee.push(issue['assignee_name']);
                   }
+                  if (labels.indexOf(issue['labels'][0]) == -1 && issue['labels'][0] != null) {
+                      labels.push(issue['labels'][0]);
+                  }
               }
           }
-          add_filters(authors, assignee);
+          add_filters(authors, assignee, labels);
           get_assignee();
+
 
           $('#closed_span').text(close_issues);
           $('#open_span').text(open_issues);
+       });
       };
 
       $(document).on('click','a[href="#lesson_issues"]',function(){
@@ -640,11 +657,7 @@
 
           if ($(this).closest('li').hasClass('disabled') == false){
 
-          var url = '/ui/api/issues/';
-          $.get(url, {'unit_lesson':active_lesson_id}).done(function (issues) {
-            list_of_issues = issues;
-            show_one_type_of_issues(true);
-            });
+            show_one_type_of_issues();
            };
           return false;
 
@@ -661,26 +674,22 @@
           })
       }
 
-
-
       $(document).on('click',".issue",function(){
           var url = '/ui/api/issues/'+this.getAttribute('issue_id');
           get_assignee();
-          var labels_list = get_labels();
+          get_labels();
           $.get(url).done(function(issue) {
               var is_open = issue['is_open'];
               $("#show_issue_title").text(issue['title']);
               $("#show_issue_description").text(issue['description']);
               $("#show_issue_author").text(issue['author']);
-              $("#show_issue_status").text(issue['status']);
-              $("#show_issue_label").text(labels_list[issue['labels'][0]]);
-              if (is_open == true ){
+              $("#show_issue_label").text(list_of_labels[issue['labels'][0]]);
+              $('[name="is_open"]').val(is_open);
+              if (is_open){
                   $("#is_open_button").text('Close issue').removeClass('btn-danger').addClass('btn-success');
-                  $('[name="is_open"]').val(false);
               }
               else{
                   $("#is_open_button").text('Reopen issue').removeClass('btn-success').addClass('btn-danger');
-                  $('[name="is_open"]').val(true);
               }
               $('[name="title"]').val(issue['title']);
               $('[name="description"]').val(issue['description']);
@@ -729,6 +738,7 @@
             type: 'PUT',
             data:$('#update_issue_form').serialize() ,
             success:function(result){
+                show_one_type_of_issues();
                 $('[issue_id="'+issue_id+'"]').trigger('click');
             },
             error:function(result) {
@@ -738,32 +748,44 @@
             }}
         });
         return false;
-      })
+      });
 
       $(document).on('click', '.dropdown-menu li a', function () {
           var filter = $(this).attr('filter');
           var field = $(this).attr('field');
           $('#table_of_issues').empty();
-          $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Status</td><td>Author</td></tr>');
+          $('#table_of_issues').append('<tr class="active"><td>Title</td><td>Label</td><td>Author</td></tr>');
         for (each in list_of_issues){
           var issue = list_of_issues[each];
+            if (issue['is_open'] == is_open_shown){
             if (issue[field] == filter || filter=='all'){
-            $('#table_of_issues').append('<tr><td><a href="#" issue_id="'+issue['id']+'" class="issue">'+issue['title']+'</a></td><td>'+issue['status']+'</td><td>'+issue['author_name']+'</td></tr>'
-            )}
+            $('#table_of_issues').append('<tr><td><a href="#" issue_id="'+issue['id']+'" class="issue">'+issue['title']+'</a></td><td>'+list_of_labels[issue['labels'][0]]+'</td><td>'+issue['author_name']+'</td></tr>'
+            )}}
         }
       });
 
       $(document).on('click','#is_open_button',function(){
+          if ($(this).hasClass('btn-success')){
+              $('[name="is_open"]').val(false);
+          }
+          else {
+              $('[name="is_open"]').val(true);
+          }
           $('#update_issue_button').trigger('click');
-
          return false;
       });
 
       $(document).on('click','#opened_issues',function(){
-         show_one_type_of_issues(true);
+          $('#open_link_th').addClass('success');
+          $('#close_link_th').removeClass('success');
+          is_open_shown = true;
+         show_one_type_of_issues();
       });
       $(document).on('click','#closed_issues',function(){
-         show_one_type_of_issues(false);
+           $('#close_link_th').addClass('success');
+          $('#open_link_th').removeClass('success');
+          is_open_shown =  false;
+         show_one_type_of_issues();
       });
   </script>
 </body>
