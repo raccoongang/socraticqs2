@@ -682,7 +682,7 @@
               var is_open = issue['is_open'];
               $("#show_issue_title").text(issue['title']);
               $("#show_issue_description").text(issue['description']);
-              $("#show_issue_author").text(issue['author']);
+              $("#show_issue_author").text(issue['author_name']);
               $("#show_issue_label").text(list_of_labels[issue['labels'][0]]);
               $('[name="is_open"]').val(is_open);
               if (is_open){
