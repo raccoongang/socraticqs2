@@ -211,7 +211,7 @@ class IssueSerializer(serializers.ModelSerializer):
         return obj.author.username
 
     def get_assignee_name(self, obj):
-        return obj.author.username
+        return obj.assignee.username if obj.assignee is not None else None
 
 
 class IssueLabelSerializer(serializers.ModelSerializer):
