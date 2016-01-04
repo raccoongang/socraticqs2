@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
-from ct.models import Course, Unit, Concept, UnitLesson, CourseUnit
+from ct.models import Course, Unit, UnitLesson, CourseUnit
 
 ISSUE_STATUS = (('warning', 'warning'),
                 ('propose', 'propose'),
