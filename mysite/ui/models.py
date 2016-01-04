@@ -56,4 +56,4 @@ class Issue(models.Model):
             self.unit_lesson = obj
 
     def __unicode__(self):
-        return "%s(%s) - %s" % (self.title, self.status, self.assignee)
+        return "%s(%s) - %s" % (self.title, self.is_open, self.assignee)

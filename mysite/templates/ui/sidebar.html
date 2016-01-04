@@ -250,6 +250,8 @@
                         <p id="show_issue_label"></p>
                         <label>Author</label>
                         <p id="show_issue_author"></p>
+                        <label>Assignee</label>
+                        <p id="show_issue_assignee"></p>
                         <button class="btn btn-warning" id="show_issue_cancel_button">Go back</button>
                         <button class="btn pull-right" id="is_open_button">Close issue</button>
                         </div>
@@ -683,6 +685,7 @@
               $("#show_issue_title").text(issue['title']);
               $("#show_issue_description").text(issue['description']);
               $("#show_issue_author").text(issue['author_name']);
+              $("#show_issue_assignee").text(issue['assignee_name']);
               $("#show_issue_label").text(list_of_labels[issue['labels'][0]]);
               $('[name="is_open"]').val(is_open);
               if (is_open){
