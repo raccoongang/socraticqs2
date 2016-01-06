@@ -629,8 +629,12 @@
               else {
                   close_issues += 1;
               }
+              var span_affected = '';
+              if (issue['affected_count'] > 1) {
+                span_affected = '<span class="label label-pill label-danger">' + issue['affected_count'] + '</span>';
+              }
               if (issue['is_open'] == is_open_shown) {
-                  $('#table_of_issues').append('<tr><td><a href="#" issue_id="' + issue['id'] + '" class="issue">' + issue['title'] + '</a></td><td>'+list_of_labels[issue['labels'][0]]+'</td><td>' + issue['author_name'] + '</td></tr>'
+                  $('#table_of_issues').append('<tr><td><a href="#" issue_id="' + issue['id'] + '" class="issue">' + issue['title'] + '</a> ' + span_affected + '</td><td>'+list_of_labels[issue['labels'][0]]+'</td><td>' + issue['author_name'] + '</td></tr>'
                   )
                   if (authors.indexOf(issue['author_name']) == -1 && issue['author_name'] != null) {
                       authors.push(issue['author_name']);

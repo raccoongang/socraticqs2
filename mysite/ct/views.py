@@ -26,6 +26,7 @@ from ct.templatetags.ct_extras import (md2html,
                                        get_path_type)
 from fsm.fsm_base import FSMStack
 from fsm.models import FSM, FSMState, KLASS_NAME_DICT
+from ui.models import Issue, IssueLabel
 
 
 ###########################################################
@@ -1540,6 +1541,26 @@ def assess_errors(request, course_id, unit_id, ul_id, resp_id):
             status = r.status
         else:
             status = NEED_REVIEW_STATUS
+        # TODO Consider moving next logic to model classmethod
+        # Creating Issue if student need help and have an undiagnosed Error
+        if status == NEED_HELP_STATUS and not request.POST.get('emlist'):
+            label, label_created = IssueLabel.objects.get_or_create(
+                title='diagnose',
+                description='diagnose',
+                color='red'
+            )
+            title = 'Diagnose student errors for {0}'.format(ul.lesson.title)
+            issue, created = Issue.objects.get_or_create(
+                title=title,
+                author=ul.addedBy,
+                unit_lesson=ul,
+                auto_issue=True
+            )
+            issue.labels.add(label)
+            issue.save()
+            if not created:
+                issue.incr_affected()
+
         for emID in request.POST.getlist('emlist', []):
             em = get_object_or_404(UnitLesson, pk=int(emID))
             activity = pageData.fsmStack.state and \

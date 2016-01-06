@@ -1,5 +1,8 @@
+from django.db.models import F
+
 from django.contrib.auth.models import User
 from django.db import models
+
 from ct.models import Course, Unit, UnitLesson, CourseUnit
 
 ISSUE_STATUS = (('warning', 'warning'),
@@ -38,6 +41,8 @@ class Issue(models.Model):
     course = models.ForeignKey(Course, blank=True, null=True)
     unit = models.ForeignKey(CourseUnit, blank=True, null=True)
     unit_lesson = models.ForeignKey(UnitLesson, blank=True, null=True)
+    affected_count = models.PositiveIntegerField(default=1, blank=True)
+    auto_issue = models.BooleanField(default=False, blank=True)
 
     @property
     def related(self):
@@ -54,6 +59,13 @@ class Issue(models.Model):
             self.unit_lesson = obj
         elif type(obj) == UnitLesson:
             self.unit_lesson = obj
+
+    def incr_affected(self):
+        """
+        Increment affected student counter.
+        """
+        self.affected_count = F('affected_count') + 1
+        self.save()
 
     def __unicode__(self):
         return "%s(%s) - %s" % (self.title, self.is_open, self.assignee)
