@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 from ct.models import Course, Unit, UnitLesson, Lesson, Role
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
     ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer, IssueLabelSerializer, \
-    InstructorsSerializer
-from ui.models import Issue, IssueLabel
+    InstructorsSerializer, IssueCommentSerializer
+from ui.models import Issue, IssueLabel, IssueComment
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -239,3 +239,18 @@ class InstructorView(viewsets.ModelViewSet):
         queryset = super(InstructorView, self).get_queryset()
         queryset = queryset.filter(id__in=set([role.user.id for role in Role.objects.filter(role=Role.INSTRUCTOR)]))
         return queryset
+
+
+class IssueCommentsView(viewsets.ModelViewSet):
+    """
+    Simple ViewsSet for retrive issueComment
+    """
+    queryset = IssueComment.objects.all()
+    serializer_class = IssueCommentSerializer
+
+    def get_queryset(self):
+        queryset = super(IssueCommentsView, self).get_queryset()
+        if 'issue_id' in self.request.GET:
+            queryset = queryset.filter(issue_id=self.request.GET['issue_id'])
+        return queryset
+

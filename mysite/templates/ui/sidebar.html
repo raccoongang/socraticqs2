@@ -17,6 +17,14 @@
         .error_input {
             border-color: red;
         }
+    #comments_div div{
+      border: solid 1px black;
+      margin: 5px;
+      padding: 3px;
+    }
+    #comments_div div p:first-child {
+      background-color: #eee;
+    }
 	</style>
 
     <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,Safe">
@@ -255,6 +263,16 @@
                         <button class="btn btn-warning" id="show_issue_cancel_button">Go back</button>
                         <button class="btn pull-right" id="is_open_button">Close issue</button>
                         </div>
+                      <div id="comments_div">
+
+                      </div>
+                      <div id="comments_form">
+                         <form id="add_comment">
+                           {% csrf_token %}
+                           <textarea id='comments_text'class="form-control inp" name="text" rows="4"></textarea>
+                            <button class="btn btn-success" id="add_comment_button">Add</button>
+                         </form>
+                      </div>
                         <form id="update_issue_form">
                            {% csrf_token %}
                             <label>Title</label>
@@ -651,6 +669,7 @@
           get_assignee();
 
 
+
           $('#closed_span').text(close_issues);
           $('#open_span').text(open_issues);
        });
@@ -681,7 +700,8 @@
       }
 
       $(document).on('click',".issue",function(){
-          var url = '/ui/api/issues/'+this.getAttribute('issue_id');
+          window.current_issue_id = +this.getAttribute('issue_id');
+          var url = '/ui/api/issues/'+window.current_issue_id;
           get_assignee();
           get_labels();
           $.get(url).done(function(issue) {
@@ -708,6 +728,21 @@
           $('#show_issue_div').show();
           $('#show_issue_inside_div').show();
           $('#update_issue_form').hide();
+
+          //Load comments
+        var commnets_url = '/ui/api/comments/?issue_id=' + window.current_issue_id;
+        $.get(commnets_url).done(function(comments){
+          var comments_block = $('#comments_div');
+          window.com  = comments;
+          $.each(comments, function(index, value){
+            var comment = '<div>' +
+                '<p>' +value['author_name'] + '</p>' +
+                '<p>' +value['text'] + '</p>' +
+                '</div>';
+            comments_block.append(comment);
+          })
+        });
+
           return false;
       });
 
@@ -794,6 +829,34 @@
           is_open_shown =  false;
          show_one_type_of_issues();
       });
+    $(document).on('click', '#add_comment_button', function(){
+        var url = '/ui/api/comments/'
+        var text = $('#comments_text');
+        //$("#add_comment_button").disable();
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data:{text: text.val(),
+              issue: window.current_issue_id,
+              author: window.user_id
+            },
+            success:function(result){
+               var comment = '<div>' +
+                '<p>' + window.user_id + '</p>' +
+                '<p>' + text.val()+ '</p>' +
+                '</div>';
+            $('#comments_div').append(comment);
+              text.val("");
+
+            },
+            error:function(result) {
+            for (each in result['responseJSON']){
+                $('[name="'+each+'"]').addClass('error_input');
+                $('[name="'+each+'"]').attr('placeholder', result['responseJSON'][each]);
+            }}
+        });
+        return false;
+    })
   </script>
 </body>
 </html>
