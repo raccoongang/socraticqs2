@@ -69,3 +69,10 @@ class Issue(models.Model):
 
     def __unicode__(self):
         return "%s(%s) - %s" % (self.title, self.is_open, self.assignee)
+
+
+class IssueComment(models.Model):
+    issue = models.ForeignKey(Issue)
+    parent = models.ForeignKey('IssueComment', blank=True, null=True)
+    author = models.ForeignKey(User)
+    text = models.TextField(blank=True)

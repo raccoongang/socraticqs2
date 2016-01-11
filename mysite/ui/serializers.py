@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson
 from ct.templatetags.ct_extras import md2html
-from ui.models import Issue, IssueLabel
+from ui.models import Issue, IssueLabel, IssueComment
 
 
 class UnitsSerializer(serializers.HyperlinkedModelSerializer):
@@ -229,3 +229,16 @@ class InstructorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username')
+
+
+class IssueCommentSerializer(serializers.ModelSerializer):
+    """
+    Serializer for IssueLabels restAPI
+    """
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = IssueComment
+
+    def get_author_name(self, obj):
+        return obj.author.username

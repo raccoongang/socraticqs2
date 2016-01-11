@@ -14,7 +14,7 @@ from ui.views import (
     IssuesView,
     IssueLabelsView,
     InstructorView,
-)
+    IssueCommentsView)
 
 router = SimpleRouter()
 router.register(r'api/lesson', LessonInfoView)
@@ -23,6 +23,8 @@ router.register(r'api/search', SearchView, base_name='search')
 router.register(r'api/course', CourseInfoView)
 router.register(r'api/issues', IssuesView)
 router.register(r'api/labels', IssueLabelsView)
+router.register(r'api/comments', IssueCommentsView)
+
 
 
 urlpatterns = patterns(
