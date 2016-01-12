@@ -22,7 +22,7 @@
         <textarea class="form-control inp" name="description" rows="3"></textarea>
         <label>Labels</label>
         <select name="labels" class="form-control">
-
+            
         </select>
         <label>Assignee</label>
         <select name="assignee" class="form-control">
@@ -46,7 +46,8 @@
         <label>Description</label>
         <p><%= description %></p>
         <label>Labels</label>
-        <p><%= labels %></p>
+        <p><% _.each(labels, function( label ) {%>
+            <%= label %><% } ); %></p>
         <label>Author</label>
         <p><%= author %></p>
         <label>Assignee</label>
