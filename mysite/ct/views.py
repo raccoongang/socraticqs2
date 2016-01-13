@@ -26,7 +26,7 @@ from ct.templatetags.ct_extras import (md2html,
                                        get_path_type)
 from fsm.fsm_base import FSMStack
 from fsm.models import FSM, FSMState, KLASS_NAME_DICT
-from ui.models import Issue, IssueLabel
+from issues.models import Issue, IssueLabel
 
 
 ###########################################################

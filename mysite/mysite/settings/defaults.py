@@ -138,6 +138,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'ct',
     'fsm',
+    'issues',
     # LTI
     'lti',
     # Socials

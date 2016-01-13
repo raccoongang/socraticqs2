@@ -567,7 +567,7 @@
 
       $(document).on('click','#add_issue_button',function(){
         $('.inp').removeClass('error_input');
-        var url = '/ui/api/issues/';
+        var url = '/api/issues/';
         var data = $('#add_issue_form').serialize();
         $.post(url, data).done(function () {
             $('a[href="#lesson_issues"]').trigger('click');
@@ -614,7 +614,7 @@
       }
 
       function get_labels(){
-          var labels_url='/ui/api/labels/';
+          var labels_url='/api/labels/';
           $('[name="labels"]').empty();
           $.get(labels_url).done(function(labels){
               for (each in labels){
@@ -627,7 +627,7 @@
 
       function show_one_type_of_issues() {
           get_labels();
-          var url = '/ui/api/issues/';
+          var url = '/api/issues/';
           var open_issues = 0;
           var close_issues = 0;
           var authors = [];
@@ -701,7 +701,7 @@
 
       $(document).on('click',".issue",function(){
           window.current_issue_id = +this.getAttribute('issue_id');
-          var url = '/ui/api/issues/'+window.current_issue_id;
+          var url = '/api/issues/'+window.current_issue_id;
           get_assignee();
           get_labels();
           $.get(url).done(function(issue) {
@@ -730,7 +730,7 @@
           $('#update_issue_form').hide();
 
           //Load comments
-        var commnets_url = '/ui/api/comments/?issue_id=' + window.current_issue_id;
+        var commnets_url = '/api/comments/?issue_id=' + window.current_issue_id;
         $.get(commnets_url).done(function(comments){
           var comments_block = $('#comments_div');
           window.com  = comments;
@@ -771,7 +771,7 @@
 
       $(document).on('click', '#update_issue_button', function(){
         var issue_id = $('[name="id"]').val();
-        var url = '/ui/api/issues/'+issue_id
+        var url = '/api/issues/'+issue_id
           $('.inp').removeClass('error_input');
           $('.inp').attr('placeholder','');
           $('[name="unit_lesson"]').val(active_lesson_id);
@@ -830,7 +830,7 @@
          show_one_type_of_issues();
       });
     $(document).on('click', '#add_comment_button', function(){
-        var url = '/ui/api/comments/'
+        var url = '/api/comments/'
         var text = $('#comments_text');
         //$("#add_comment_button").disable();
         $.ajax({

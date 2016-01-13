@@ -5,9 +5,7 @@ from django.contrib.auth.models import User
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, IssueSerializer, IssueLabelSerializer, \
-    InstructorsSerializer, IssueCommentSerializer
-from ui.models import Issue, IssueLabel, IssueComment
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, InstructorsSerializer
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -206,28 +204,6 @@ class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Course.objects.all()
 
 
-class IssuesView(viewsets.ModelViewSet):
-    """
-    Dummy ViewSet for testing frontend.
-    """
-    queryset = Issue.objects.all()
-    serializer_class = IssueSerializer
-
-    def get_queryset(self):
-        queryset = super(IssuesView, self).get_queryset()
-        if 'unit_lesson' in self.request.GET:
-            queryset = queryset.filter(unit_lesson_id=self.request.GET['unit_lesson'])
-        return queryset
-
-
-class IssueLabelsView(viewsets.ModelViewSet):
-    """
-    Simple ViewsSet for retrive issueLabels
-    """
-    queryset = IssueLabel.objects.all()
-    serializer_class = IssueLabelSerializer
-
-
 class InstructorView(viewsets.ModelViewSet):
     """
     Returns Instructors list.
@@ -239,18 +215,3 @@ class InstructorView(viewsets.ModelViewSet):
         queryset = super(InstructorView, self).get_queryset()
         queryset = queryset.filter(id__in=set([role.user.id for role in Role.objects.filter(role=Role.INSTRUCTOR)]))
         return queryset
-
-
-class IssueCommentsView(viewsets.ModelViewSet):
-    """
-    Simple ViewsSet for retrive issueComment
-    """
-    queryset = IssueComment.objects.all()
-    serializer_class = IssueCommentSerializer
-
-    def get_queryset(self):
-        queryset = super(IssueCommentsView, self).get_queryset()
-        if 'issue_id' in self.request.GET:
-            queryset = queryset.filter(issue_id=self.request.GET['issue_id'])
-        return queryset
-

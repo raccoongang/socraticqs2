@@ -1,10 +1,22 @@
 from django.conf.urls import patterns, include, url
 from django.apps import apps
+from rest_framework.routers import SimpleRouter
+
 from mysite.views import *
+from issues.views import (
+    IssuesView,
+    IssueLabelsView,
+    IssueCommentsView
+)
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
+
+router = SimpleRouter()
+router.register(r'api/issues', IssuesView)
+router.register(r'api/labels', IssueLabelsView)
+router.register(r'api/comments', IssueCommentsView)
 
 urlpatterns = patterns(
     '',
@@ -36,6 +48,9 @@ urlpatterns = patterns(
     url(r'^set-pass/$', 'psa.views.set_pass'),
 
     url(r'^done/$', 'psa.views.done'),
+
+    # REST API
+    url(r'^', include(router.urls)),
 )
 
 if apps.is_installed('lti'):
