@@ -618,6 +618,8 @@ To install packages run command::
 
     npm install --global gulp
     npm install gulp gulp-stylus gulp-csso gulp-uglify gulp-concat  gulp-minify-css gulp-autoprefixer gulp-requirejs through2 connect --save-dev
+    or only
+    npm install
 
 
 Running gulp

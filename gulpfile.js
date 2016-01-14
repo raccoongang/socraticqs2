@@ -16,6 +16,7 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     minifyCSS = require('gulp-minify-css'),
     autoprefixer = require('gulp-autoprefixer'),
+    order = require("gulp-order"),
     rjs = require('gulp-requirejs');
 var through = require('through2');
 
@@ -32,22 +33,40 @@ gulp.task('js-move', function() {
 });
 
 gulp.task('js', function() {
-   return gulp.src(['./mysite/assets/js/lib/*.js', './mysite/assets/js/src/*.js', '!./mysite/assets/js/lib/require.js'])
+   return gulp.src([
+       '!./mysite/assets/js/src/config.js',
+       '!./mysite/assets/js/lib/require.js',
+       '!./mysite/assets/js/lib/backbone.js',
+       './mysite/assets/js/lib/*.js',
+       './mysite/assets/js/src/*.js'])
+       .pipe(order([
+            "jquery-2.1.1.min.js",
+            "*.js",
+
+          ]))
        .pipe(concat('main.min.js'))
-       .pipe(uglify())
+      // .pipe(uglify())
        .on('error', console.log)
        .pipe(gulp.dest('./mysite/mysite/static/js/'));
 
 });
 
 gulp.task('js-require', function() {
-   return gulp.src(['./mysite/assets/js/lib/require.js'])
-       //.pipe(concat('main.min.js'))
+   return gulp.src(['./mysite/assets/js/lib/require.js', './mysite/assets/js/src/require.js'])
        .pipe(uglify())
        .on('error', console.log)
-       .pipe(gulp.dest('./mysite/mysite/static/js/'));
+       .pipe(gulp.dest('./mysite/mysite/static/js/lib'));
 
 });
+
+gulp.task('require-config', function() {
+   return gulp.src(['./mysite/assets/js/src/config.js'])
+       .pipe(uglify())
+       .on('error', console.log)
+       .pipe(gulp.dest('./mysite/mysite/static/js'));
+
+});
+
 // CSS
 gulp.task('css', function() {
     return gulp.src(['./mysite/assets/css/src/*.css', './mysite/assets/css/lib/*.css'])
@@ -84,4 +103,4 @@ gulp.task('rbuild', function() {
         .pipe(gulp.dest('./delpoy/'));
 });
 
-gulp.task('default', ['js', 'js-require', 'css', ]);
+gulp.task('default', ['js', 'js-require', 'require-config', 'css', ]);
