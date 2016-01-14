@@ -617,7 +617,7 @@ Also we need to install next packages:
 To install packages run command::
 
     npm install --global gulp
-    npm install gulp gulp-stylus gulp-csso gulp-uglify gulp-concat  gulp-minify-css gulp-autoprefixer connect --save-dev
+    npm install gulp gulp-stylus gulp-csso gulp-uglify gulp-concat  gulp-minify-css gulp-autoprefixer gulp-requirejs through2 connect --save-dev
 
 
 Running gulp
