@@ -607,18 +607,21 @@ We need to have installed nodeJS latest version and npm (version >= 3.3.XX) from
 Also we need to install next packages:
 
 * gulp
-* gulp-stylus
-* gulp-csso
-* gulp-uglify
-* gulp-concat
-* gulp-minify-css
 * gulp-autoprefixer
+* gulp-clean
+* gulp-concat
+* gulp-csso
+* gulp-less
+* gulp-minify-css
+* gulp-order
+* gulp-rename
+* gulp-requirejs
+* gulp-stylus
+* gulp-uglify
 
 To install packages run command::
 
     npm install --global gulp
-    npm install gulp gulp-stylus gulp-csso gulp-uglify gulp-concat  gulp-minify-css gulp-autoprefixer gulp-requirejs through2 connect --save-dev
-    or only
     npm install
 
 
