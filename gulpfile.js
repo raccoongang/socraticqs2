@@ -15,14 +15,24 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'), 
     concat = require('gulp-concat'),
     minifyCSS = require('gulp-minify-css'),
-    autoprefixer = require('gulp-autoprefixer');
+    autoprefixer = require('gulp-autoprefixer'),
+    rjs = require('gulp-requirejs');
 var through = require('through2');
 
 
 
 //  JS
+gulp.task('js-move', function() {
+   return gulp.src(['./mysite/assets/js/lib/*.js', './mysite/assets/js/src/*.js', '!./mysite/assets/js/lib/require.js'])
+       //.pipe(concat('main.min.js'))
+       .pipe(uglify())
+       .on('error', console.log)
+       .pipe(gulp.dest('./mysite/mysite/static/js/'));
+
+});
+
 gulp.task('js', function() {
-   return gulp.src(['./mysite/assets/js/src/*.js', ])
+   return gulp.src(['./mysite/assets/js/lib/*.js', './mysite/assets/js/src/*.js', '!./mysite/assets/js/lib/require.js'])
        .pipe(concat('main.min.js'))
        .pipe(uglify())
        .on('error', console.log)
@@ -30,13 +40,48 @@ gulp.task('js', function() {
 
 });
 
+gulp.task('js-require', function() {
+   return gulp.src(['./mysite/assets/js/lib/require.js'])
+       //.pipe(concat('main.min.js'))
+       .pipe(uglify())
+       .on('error', console.log)
+       .pipe(gulp.dest('./mysite/mysite/static/js/'));
+
+});
 // CSS
 gulp.task('css', function() {
-    return gulp.src(['./mysite/assets/css/src/*.css', ])
-        .pipe(minifyCSS())
+    return gulp.src(['./mysite/assets/css/src/*.css', './mysite/assets/css/lib/*.css'])
+        //.pipe(minifyCSS())
         .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9'))
         .pipe(concat('main.css'))
         .pipe(gulp.dest('./mysite/mysite/static/css/'));
 });
 
-gulp.task('default', ['js', 'css']);
+
+gulp.task('rbuild', function() {
+    rjs({
+        baseUrl: './mysite/assets/js/src/file.js',
+        out: './mysite/mysite/static/js/',
+        shim: {
+            underscore: {
+                exports: '_'
+            },
+            backbone: {
+                deps: [
+                    'underscore',
+                    'jquery'
+                ],
+                exports: 'Backbone'
+            },
+            'backbone-relational': {
+                deps: [
+                    'backbone'
+                ],
+                exports: 'RelationalModel'
+            }
+        },
+    })
+        .pipe(gulp.dest('./delpoy/'));
+});
+
+gulp.task('default', ['js', 'js-require', 'css', ]);
