@@ -2,9 +2,13 @@
 <html>
 <head>
     <meta charset="utf-8">
+     <script type="text/javascript" src="{% static 'js/main.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'ui/css/bootstrap.min.css' %}">
 	<link rel="stylesheet" href="{% static 'ui/css/bootstrap.vertical-tabs.css' %}">
 	<link rel="stylesheet" href="{% static 'ui/css/jasny-bootstrap.min.css' %}">
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="{% static 'ui/js/bootstrap.min.js' %}"></script>
+
 	<style type="text/css">
 		@media (max-width: 767px){
 			.col-sm-3, .col-sm-9, .row .col-sm-9, .row .col-sm-3 {
@@ -26,7 +30,7 @@
       background-color: #eee;
     }
 	</style>
-{#<script data-main="static/js/config" src="{% static 'js/lib/require.js' %}"></script>#}
+<script data-main="{% static 'js/config' %}" src="{% static 'js/lib/require.js' %}"></script>
 
     <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML,Safe">
 </script>
@@ -132,172 +136,7 @@
                 </div>
 
                 <div id="lesson_issues" class="tab-pane fade">
-                    <br>
-                    <div class="row" id="lesson_issues_table">
-                    <div class="col-sm-5">
-                    <div class="input-group">
-                      <div class="input-group-btn">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Filters <span class="caret"></span></button>
-                        <ul class="dropdown-menu">
-                          <li><a href="#">Action</a></li>
-                          <li><a href="#">Another action</a></li>
-                          <li><a href="#">Something else here</a></li>
-                          <li role="separator" class="divider"></li>
-                          <li><a href="#">Separated link</a></li>
-                        </ul>
-                      </div><!-- /btn-group -->
-                        <input type="text" class="form-control">
-                    </div><!-- /input-group -->
-                    </div>
-                    <div class="col-sm-5">
-                      <div class="input-group">
-                      <div class="input-group-btn">
-                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Labels <span class="caret"></span></button>
-                        <ul class="dropdown-menu">
-                          <li><a href="#">Action</a></li>
-                          <li><a href="#">Another action</a></li>
-                          <li><a href="#">Something else here</a></li>
-                          <li role="separator" class="divider"></li>
-                          <li><a href="#">Separated link</a></li>
-                        </ul>
-                      </div><!-- /btn-group -->
-                        <input type="text" class="form-control">
-                    </div><!-- /input-group -->
-                    </div>
-                        <div class="col-sm-2">
-                            <button class="btn btn-info" id="add_new_issue">Add new issue</button>
-                        </div>
 
-
-                    <hr>
-                    <table class="table">
-                        <thead>
-                        <th id="open_link_th" class="success">
-                            <a href="#" id="opened_issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span id="open_span">0</span></a>
-                        </th>
-                        <th id="close_link_th">
-                           <a href="#" id="closed_issues"><span class="glyphicon glyphicon-ok"></span> Closed: <span id="closed_span">0</span></a>
-                        </th>
-                        <th>
-                    <div class="pull-right">
-                  <div class="btn-group">
-                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Author <span class="caret"></span>
-                      </button>
-                      <ul class="dropdown-menu" id="dropdown_author">
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#" filter="all" field="author">Show all</a></li>
-                      </ul>
-                    </div>
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Labels <span class="caret"></span>
-                      </button>
-                      <ul class="dropdown-menu" id="dropdown_labels">
-
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#">Show all</a></li>
-                      </ul>
-                    </div>
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Assignee <span class="caret"></span>
-                      </button>
-                      <ul class="dropdown-menu" id="dropdown_assignee">
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#" filter="all" field="assignee">Show all</a></li>
-                      </ul>
-                    </div>
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Sort <span class="caret"></span>
-                      </button>
-                      <ul class="dropdown-menu">
-
-                      </ul>
-                    </div>
-                </div>
-                        </th>
-                        </thead>
-                        </table>
-                        <table class="table table-condensed">
-                        <tbody id='table_of_issues'>
-                        </tbody>
-                        </table>
-                        </div>
-                    <div id="div_with_issue_form">
-                        <form class="form-horizontal" id="add_issue_form">
-                            {% csrf_token %}
-                            <label>Title</label>
-                            <input name="title" type="text" class="form-control inp">
-                            <label>Description</label>
-                            <textarea class="form-control inp" name="description" rows="3"></textarea>
-                            <label>Labels</label>
-                            <select name="labels" class="form-control">
-
-                            </select>
-                            <label>Assignee</label>
-                            <select name="assignee" class="form-control">
-
-                            </select>
-                            <input type="hidden" name="author" value="{{ user.id }}">
-                            <input type="hidden" name="unit_lesson">
-                            <input type="hidden" name="is_open" value="true">
-                            <hr>
-                            <button class="btn btn-success" id="add_issue_button">Ok</button>
-                            <button class="btn btn-warning" id="add_issue_cancel_button">Cancel</button>
-                        </form>
-                    </div>
-                    <div id="show_issue_div">
-                        <div id="show_issue_inside_div">
-                        <button class="btn btn-info pull-right" id="edit_issue_button">Edit</button>
-                        <label>Title</label>
-                        <p id="show_issue_title"></p>
-                        <label>Description</label>
-                        <p id="show_issue_description"></p>
-                        <label>Labels</label>
-                        <p id="show_issue_label"></p>
-                        <label>Author</label>
-                        <p id="show_issue_author"></p>
-                        <label>Assignee</label>
-                        <p id="show_issue_assignee"></p>
-                        <button class="btn btn-warning" id="show_issue_cancel_button">Go back</button>
-                        <button class="btn pull-right" id="is_open_button">Close issue</button>
-                        </div>
-                      <div id="comments_div">
-
-                      </div>
-                      <div id="comments_form">
-                         <form id="add_comment">
-                           {% csrf_token %}
-                           <textarea id='comments_text'class="form-control inp" name="text" rows="4"></textarea>
-                            <button class="btn btn-success" id="add_comment_button">Add</button>
-                         </form>
-                      </div>
-                        <form id="update_issue_form">
-                           {% csrf_token %}
-                            <label>Title</label>
-                            <input name="title" type="text" class="form-control inp">
-                            <label>Description</label>
-                            <textarea class="form-control inp" name="description" rows="3"></textarea>
-                            <label>Status</label>
-                            <select name="labels" class="form-control">
-
-                            </select>
-                            <label>Assignee</label>
-                            <select name="assignee" class="form-control">
-
-                            </select>
-                            <input type="hidden" name="author" value="{{ user.id }}">
-                            <input type="hidden" name="unit_lesson">
-                            <input type="hidden" name="is_open">
-                            <input type="hidden" name="id">
-                            <hr>
-                            <button class="btn btn-success" id="update_issue_button">Update</button>
-                            <button class="btn btn-warning" id="update_issue_cancel_button">Cancel</button>
-                        </form>
-                    </div>
-                </div>
             </div>
 	    </div>
         <div class="col-sm-7 col-xs-offset-1 search_content" style="display: none;">
@@ -332,6 +171,6 @@
       var list_of_labels = [];
       var is_open_shown = true;
   </script>
-  <script type="text/javascript" src="{% static 'js/main.min.js' %}"></script>
+{# >#}
 </body>
 </html>
