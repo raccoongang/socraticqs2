@@ -4,21 +4,27 @@ define([
     'underscore',
     'backbone',
     'collections/issues',
+    'collections/labels',
     'views/issue_row_view',
+    'views/add_issue',
     'text!templates/issue_tab.html'
     ],
 
-    function($, _, Backbone, Issues, issue_row_view,  tab_template){
+    function($, _, Backbone, Issues, Labels, issue_row_view, add_issue_view, tab_template){
         var main_tab_view = Backbone.View.extend({
+
             template: _.template(tab_template),
+
+            events:{
+                'click #add_new_issue': 'addIssue',
+            },
 
             initialize: function(){
 
                 this.$tab = $('#lesson_issues');
-
                 this.listenTo(Issues, 'reset', this.render);
-
                 Issues.fetch({reset:true});
+
 
             },
 
@@ -36,7 +42,14 @@ define([
                 $('#table_of_issues').empty();
                 Issues.each(this.addOne, this);
 
+            },
+
+            addIssue: function(){
+                console.log('adsfasf');
+                $('#table_of_issues').empty();
+                $('#table_of_issues').append(add_issue_view.render().el);
             }
+
         });
         return main_tab_view;
     }

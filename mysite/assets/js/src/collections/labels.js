@@ -3,6 +3,8 @@ define(['underscore', 'backbone', 'models/label'], function(_, Backbone, label) 
     var LabelsCollection = Backbone.Collection.extend({
       model: label,
 
+      url: '/api/labels/',
+
       initialize: function(){
           this.on('add', this.onAdd, this)
       },
