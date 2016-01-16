@@ -16,20 +16,17 @@ define([
             template: _.template(tab_template),
 
             events:{
-                'click #add_new_issue': 'addIssue',
+                'click .col-sm-2': 'addIssue'
             },
 
             initialize: function(){
-
-                this.$tab = $('#lesson_issues');
                 this.listenTo(Issues, 'reset', this.render);
                 Issues.fetch({reset:true});
-
-
+                Labels.fetch({reset:true});
             },
 
             render: function(){
-                this.$tab.html(this.template());
+                this.$el.html(this.template());
                 this.addAll();
             },
 
@@ -45,9 +42,9 @@ define([
             },
 
             addIssue: function(){
-                console.log('adsfasf');
-                $('#table_of_issues').empty();
-                $('#table_of_issues').append(add_issue_view.render().el);
+                var view = new add_issue_view();
+                this.$el.empty();
+                this.$el.append(view.render().el);
             }
 
         });

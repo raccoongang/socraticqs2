@@ -43,5 +43,21 @@ require([
 	'views/main_tab_view',
 ], function (Backbone, AppView) {
 
-	new AppView();
+	function getCookie(name) {
+	    var matches = document.cookie.match(new RegExp(
+	      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+	    ))
+	    return matches ? decodeURIComponent(matches[1]) : undefined
+	}
+
+	var csrftoken = getCookie('csrftoken');
+	var oldSync = Backbone.sync;
+    Backbone.sync = function(method, model, options){
+        options.beforeSend = function(xhr){
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+        };
+        return oldSync(method, model, options);
+    };
+
+	new AppView({el:$('#lesson_issues')});
 });

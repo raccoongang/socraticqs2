@@ -29,9 +29,9 @@ define([
 		    },
 
             showDetails: function(){
-                $('#table_of_issues').empty();
+                $('#lesson_issues').empty();
                 var view = new detail_view({model:this.model});
-                $('#table_of_issues').append(view.render().el);
+                $('#lesson_issues').append(view.render().el);
             }
         });
 	return MainTabView;

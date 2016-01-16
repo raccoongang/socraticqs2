@@ -13,7 +13,8 @@ define([
             template: _.template(add_issue),
 
             events:{
-                "click #add_issue_button": 'CreateNewIssue'
+                "click #add_issue_button": 'CreateNewIssue',
+                "click #add_issue_cancel_button": "goBackToMainView",
             },
 
             initialize: function () {
@@ -21,12 +22,22 @@ define([
             },
 
             render: function () {
-                this.$el.html(this.template());
+                this.$el.html(this.template({'user':256}));
                 return this;
 		    },
 
             CreateNewIssue: function(){
-                Issues.create( $('#add_issue_form').serialize() );
+                var unindexed_array = $('#add_issue_form').serializeArray();
+                var model = []
+                $.map(unindexed_array, function(n, i){
+                    model[n.name] = n.value;
+                    });
+                Issues.create(model, {success: this.goBackToMainView});
+            },
+
+             goBackToMainView: function(){
+                Issues.trigger('reset');
+                this.remove();
             }
         });
 	return AddIssueView;
