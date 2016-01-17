@@ -5,7 +5,7 @@ define([
     'backbone',
     'models/issue',
     'collections/issues',
-    'text!templates/add_issue.html'
+    'text!templates/edit_issue.html'
     ],
 
     function($, _, Backbone, issue, Issues, add_issue){
@@ -14,7 +14,7 @@ define([
             template: _.template(add_issue),
 
             events:{
-                "click #ok_button": 'CreateNewIssue',
+                "click #ok_button": 'updateIssue',
                 "click #cancel_button": "goBackToMainView",
             },
 
@@ -24,11 +24,11 @@ define([
 
             render: function () {
                 this.$el.empty();
-                this.$el.html(this.template({'author':256}));
+                this.$el.html(this.template(this.model.toJSON()));
 
 		    },
 
-            CreateNewIssue: function(){
+            updateIssue: function(){
                 $('.has-error').removeClass('has-error');
                 $('.help-block').addClass('hidden');
                 var unindexed_array = $('#issue_form').serializeArray();
@@ -38,16 +38,12 @@ define([
                     });
                 var temp_model = new issue(model_array);
 
-                if (temp_model.isValid()){
-                    Issues.create(temp_model, {success: this.goBackToMainView});
-                }
-                else{
-                    this.showErrors(temp_model.errors)
-                }
+                if (temp_model.isValid()){this.model.save(temp_model);}
+                else{this.showErrors(temp_model.errors)}
             },
 
              goBackToMainView: function(){
-                Issues.trigger('reset');
+                this.model.trigger('change');
             },
 
             showErrors: function(errors){

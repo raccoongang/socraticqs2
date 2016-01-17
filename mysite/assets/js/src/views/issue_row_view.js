@@ -17,6 +17,8 @@ define([
                 'click a': 'showDetails',
             },
 
+            detailView:'',
+
             initialize: function () {
                 this.listenTo(this.model, 'change', this.render);
                 this.listenTo(this.model, 'destroy', this.remove);
@@ -24,15 +26,14 @@ define([
 
             render: function () {
                 this.$el.html(this.template(this.model.toJSON()));
-
                 return this;
 		    },
 
             showDetails: function(){
-                $('#lesson_issues').empty();
-                var view = new detail_view({model:this.model});
-                $('#lesson_issues').append(view.render().el);
-            }
+                this.detailView = new detail_view({model:this.model, el: this.parent.el});
+                this.detailView.render();
+            },
+
         });
 	return MainTabView;
 });

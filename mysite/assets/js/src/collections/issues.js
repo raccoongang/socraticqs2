@@ -9,6 +9,16 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
           this.on('add', this.onAdd, this)
       },
 
+      is_open: function() {
+         return this.filter(function( issue ) {
+             return issue.get('is_open');
+         });
+      },
+
+      is_close:function() {
+         return this.without.apply( this, this.is_open());
+      },
+
       onAdd: function(){
           console.log('Issue added')
       }

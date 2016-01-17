@@ -26,12 +26,13 @@ define([
             },
 
             render: function(){
-                this.$el.html(this.template());
+                this.$el.html(this.template({closed_count:Issues.is_close().length, open_count:Issues.is_open().length}));
                 this.addAll();
             },
 
             addOne: function(issue){
-                var view = new issue_row_view({ model: issue });
+                var view = new issue_row_view({model: issue});
+                view.parent = this;
 			    $('#table_of_issues').append(view.render().el);
             },
 
@@ -42,9 +43,8 @@ define([
             },
 
             addIssue: function(){
-                var view = new add_issue_view();
-                this.$el.empty();
-                this.$el.append(view.render().el);
+                var view = new add_issue_view({el: this.el});
+                view.render();
             }
 
         });

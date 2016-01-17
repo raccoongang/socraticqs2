@@ -1,6 +1,6 @@
 <br>
 <div id="issue_detail">
-    <button class="btn btn-info pull-right" id="edit_issue_button">Edit</button>
+    <button class="btn btn-info pull-right" id="edit_issue">Edit</button>
     <label>Title</label>
     <p><%= title %></p>
     <label>Description</label>
@@ -13,5 +13,9 @@
     <label>Assignee</label>
     <p><%= assignee %></p>
     <button class="btn btn-warning" id="issue_detail_cancel_button">Go back</button>
-    <button class="btn pull-right" id="close_issue_button">Close issue</button>
+    <% if (is_open) { %>
+        <button class="btn pull-right btn-success" id="is_open_button">Close issue</button>
+    <% }  else { %>
+        <button class="btn pull-right btn-warning" id="is_open_button">Reopen issue</button>
+    <% } %>
 </div>
