@@ -4,11 +4,12 @@ define([
     'underscore',
     'backbone',
     'views/issue_detail',
+    'views/label_view',
     'text!templates/issue_row.html'
     ],
 
-    function($, _, Backbone, detail_view, row_template){
-        var MainTabView = Backbone.View.extend({
+    function($, _, Backbone, detail_view, label_view, row_template){
+        var IssueRowView = Backbone.View.extend({
             tagName: 'tr',
 
             template: _.template(row_template),
@@ -26,6 +27,12 @@ define([
 
             render: function () {
                 this.$el.html(this.template(this.model.toJSON()));
+                var labels = this.model.toJSON().labels;
+                    for (var each in labels) {
+                        var view = new label_view();
+                        view.template = _.template('<%= title %>');
+                        this.$el.find('#label_row').append(view.render(labels[each]).el);
+                }
                 return this;
 		    },
 
@@ -35,7 +42,7 @@ define([
             },
 
         });
-	return MainTabView;
+	return IssueRowView;
 });
 
 

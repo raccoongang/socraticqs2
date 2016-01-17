@@ -9,6 +9,10 @@ define(['underscore', 'backbone', 'models/label'], function(_, Backbone, label) 
           this.on('add', this.onAdd, this)
       },
 
+      getLabelById: function(label_id){
+            return this.find(function(x){return x.get('id') == label_id});
+      },
+
       onAdd: function(){
           console.log('Label added')
       }
