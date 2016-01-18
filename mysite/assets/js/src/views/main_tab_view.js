@@ -47,6 +47,7 @@ define([
 
             addIssue: function(){
                 var view = new add_issue_view({el: this.el});
+                this.listenToOnce(view, 'cancel', this.render);
                 view.render();
             }
 

@@ -44,6 +44,7 @@ define([
 
             editIssue: function(){
                 var view = new edit_issue({model: this.model, el: this.el});
+                this.listenToOnce(view, 'cancel', this.render);
                 view.render();
             },
 

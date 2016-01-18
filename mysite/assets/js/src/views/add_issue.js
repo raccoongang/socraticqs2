@@ -29,35 +29,30 @@ define([
                                             this.undelegateEvents();});
                 this.model = new issue({'author':window.settings.user,'labels':[]});
                 this.for_template = this.model.toJSON();
+                this.for_template['all_labels'] = Labels.toJSON();
+                this.for_template['all_users'] = Users.toJSON();
             },
 
             render: function () {
                 this.$el.empty();
-
-                this.for_template['all_labels'] = Labels.toJSON();
-                this.for_template['all_users'] = Users.toJSON();
-
                 this.$el.html(this.template(this.for_template));
-
                 var view = new label_view({model: this.model});
                 this.$el.find('#labels').append(view.render().el);
 		    },
 
             getFormInfo: function(){
-                var model_array = [];
+                var for_template = this.for_template;
                 var unindexed_array = $('#issue_form').serializeArray();
                 $.map(unindexed_array, function(n, i){
-                    model_array[n.name] = n.value;
+                    for_template[n.name] = n.value;
                 });
-                model_array['labels'] = this.for_template.labels;
-                return model_array;
             },
 
             CreateNewIssue: function(){
                 $('.has-error').removeClass('has-error');
                 $('.help-block').addClass('hidden');
-                console.log(this.getFormInfo());
-                var temp_model = new issue(this.getFormInfo());
+                this.getFormInfo()
+                var temp_model = new issue(this.for_template);
                 if (temp_model.isValid()){
                     Issues.create(temp_model);
                 }
@@ -69,7 +64,7 @@ define([
              goBackToMainView: function(){
                 this.stopListening();
                 this.undelegateEvents();
-                Issues.trigger('reset');
+                this.trigger('cancel');
             },
 
             showErrors: function(errors){
@@ -82,14 +77,15 @@ define([
             },
 
             addLabel: function(event){
-                this.for_template = this.getFormInfo();
+                this.getFormInfo();
                 this.for_template.labels.push(parseInt(event.currentTarget.getAttribute('data')));
                 this.render();
             },
 
             removeLabel: function(event){
-                this.for_template = this.getFormInfo();
-                this.for_template.labels.pop(parseInt(event.currentTarget.getAttribute('data')));
+                this.getFormInfo();
+                var index = this.for_template.labels.indexOf(parseInt(event.currentTarget.getAttribute('data')));
+                this.for_template.labels.splice(index, 1);
                 this.render();
             }
         });

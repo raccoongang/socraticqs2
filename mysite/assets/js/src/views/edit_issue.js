@@ -25,36 +25,41 @@ define([
 
             initialize: function () {
                 this.for_template = this.model.toJSON();
-                this.listenTo(this.model, 'change', function(){this.stopListening();
-                this.undelegateEvents();});
+                this.for_template['all_labels'] = Labels.toJSON();
+                this.for_template['all_users'] = Users.toJSON();
+                this.listenTo(this.model, 'change', function(){
+                                                this.stopListening();
+                                                this.undelegateEvents();});
             },
 
             render: function () {
                 this.$el.empty();
-                this.for_template['all_labels'] = Labels.toJSON();
-                this.for_template['all_users'] = Users.toJSON();
                 this.$el.html(this.template(this.for_template));
                 var view = new label_view({model: this.model});
                 this.$el.find('#labels').append(view.render().el);
 		    },
 
+            getFormInfo: function(){
+                var for_template = this.for_template;
+                var unindexed_array = $('#issue_form').serializeArray();
+                $.map(unindexed_array, function(n, i){
+                    for_template[n.name] = n.value;
+                });
+            },
+
             updateIssue: function(){
                 $('.has-error').removeClass('has-error');
                 $('.help-block').addClass('hidden');
-                var unindexed_array = $('#issue_form').serializeArray();
-                var model_array = []
-                $.map(unindexed_array, function(n, i){
-                    model_array[n.name] = n.value;
-                    });
-                model_array['labels']=this.for_template.labels;
-                var temp_model = new issue(model_array);
-
-                if (temp_model.isValid()){this.model.save(model_array);}
+                this.getFormInfo();
+                var temp_model = new issue(this.for_template);
+                if (temp_model.isValid()){this.model.save(temp_model);}
                 else{this.showErrors(temp_model.errors)}
             },
 
              goBackToMainView: function(){
-                this.model.trigger('change');
+                this.stopListening();
+                this.undelegateEvents();
+                this.trigger('cancel');
             },
 
             showErrors: function(errors){
@@ -67,12 +72,14 @@ define([
             },
 
             addLabel: function(event){
+                this.getFormInfo();
                 this.for_template.labels.push(parseInt(event.currentTarget.getAttribute('data')));
                 this.render();
 
             },
 
             removeLabel: function(event){
+                this.getFormInfo();
                 var index = this.for_template.labels.indexOf(parseInt(event.currentTarget.getAttribute('data')));
                 this.for_template.labels.splice(index, 1);
                 this.render();
