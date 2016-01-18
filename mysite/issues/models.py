@@ -5,20 +5,15 @@ from django.db import models
 
 from ct.models import Course, Unit, UnitLesson, CourseUnit
 
-ISSUE_STATUS = (('warning', 'warning'),
-                ('propose', 'propose'),
-                ('enhance', 'enhance'),
-                ('off-target', 'off-target'),
-                ('bug', 'bug'),
-                ('diagnose', 'diagnose'),
-                ('resolve', 'resolve'))
 
-LABEL_COLORS= (('label-default', 'Grey'),
-               ('label-primary', 'Blue'),
-               ('label-success', 'Green'),
-               ('label-info', 'LightBlue'),
-               ('label-warning', 'Yellow'),
-               ('label-danger', 'Red'))
+LABEL_COLORS = (
+    ('label-default', 'Grey'),
+    ('label-primary', 'Blue'),
+    ('label-success', 'Green'),
+    ('label-info', 'LightBlue'),
+    ('label-warning', 'Yellow'),
+    ('label-danger', 'Red')
+)
 
 
 class IssueLabel(models.Model):
