@@ -1,3 +1,5 @@
+var watch = require('gulp-watch');
+
 function Logging(){
   var stream = through.obj(function (file, enc, callback) {
     console.log("stream:");
@@ -37,7 +39,8 @@ gulp.task('copy_structure', function () {
     './mysite/assets/js/src/**/*',
     '!./mysite/assets/js/src/config.js',
     '!./mysite/assets/js/src/ct.js',
-    '!./mysite/assets/js/src/issue.js'])
+    '!./mysite/assets/js/src/issue.js'
+    ])
     .pipe(gulp.dest('./mysite/assets/static/js/'));
 });
 
@@ -113,4 +116,28 @@ gulp.task('rbuild', function() {
         .pipe(gulp.dest('./delpoy/'));
 });
 
+gulp.task('watch-config', function () {
+    return gulp.src('./mysite/assets/js/src/config.js')
+        .pipe(watch('./mysite/assets/js/src/config.js'))
+        .pipe(gulp.dest('./mysite/assets/static/js'));
+});
+
+gulp.task('watch-structure', function () {
+    return gulp.src([
+    './mysite/assets/js/src/**/*',
+    '!./mysite/assets/js/src/config.js',
+    '!./mysite/assets/js/src/ct.js',
+    '!./mysite/assets/js/src/issue.js'
+    ])
+    .pipe(watch([
+    './mysite/assets/js/src/**/*',
+    '!./mysite/assets/js/src/config.js',
+    '!./mysite/assets/js/src/ct.js',
+    '!./mysite/assets/js/src/issue.js'
+    ]))
+    .pipe(gulp.dest('./mysite/assets/static/js'));
+});
+
 gulp.task('default', ['copy_structure', 'js', 'js-require', 'require-config', 'css']);
+
+gulp.task('watch', ['watch-config', 'watch-structure']);

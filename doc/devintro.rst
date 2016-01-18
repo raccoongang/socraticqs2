@@ -618,6 +618,7 @@ Also we need to install next packages:
 * gulp-requirejs
 * gulp-stylus
 * gulp-uglify
+* gulp-watch
 
 To install packages run command::
 
@@ -636,5 +637,8 @@ Also we might run one task::
 
     $ gulp [task_name]
 
+To install dependecies we are using django-bower.
 
+For this app we need to install bower::
 
+    $ nmp install -g bower
