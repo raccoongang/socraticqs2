@@ -22,7 +22,13 @@
         <br>
         <label>Assignee</label>
         <select name="assignee" class="form-control">
-
+            <% _.each(all_users, function(x) {%>
+                <option value="<%= x.id %>"
+                    <% if (x.id == assignee) { %>
+                        selected = "selected"
+                    <% } %>
+                > <%= x.username %></option>
+            <% } ); %>
         </select>
         <input type="hidden" name="author" value="<%= author %>">
         <input type="hidden" name="unit_lesson">

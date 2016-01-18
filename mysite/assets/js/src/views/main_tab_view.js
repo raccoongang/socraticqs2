@@ -5,12 +5,13 @@ define([
     'backbone',
     'collections/issues',
     'collections/labels',
+    'collections/users',
     'views/issue_row_view',
     'views/add_issue',
     'text!templates/issue_tab.html'
     ],
 
-    function($, _, Backbone, Issues, Labels, issue_row_view, add_issue_view, tab_template){
+    function($, _, Backbone, Issues, Labels, Users, issue_row_view, add_issue_view, tab_template){
         var main_tab_view = Backbone.View.extend({
 
             template: _.template(tab_template),
@@ -24,10 +25,10 @@ define([
                 this.listenTo(Issues, 'add', this.render);
                 Issues.fetch({reset:true});
                 Labels.fetch({reset:true});
+                Users.fetch({reset:true});
             },
 
             render: function(){
-                console.log(Issues);
                 this.$el.html(this.template({closed_count:Issues.is_close().length, open_count:Issues.is_open().length}));
                 this.addAll();
             },

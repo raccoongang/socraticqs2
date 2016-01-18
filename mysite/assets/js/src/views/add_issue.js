@@ -6,11 +6,12 @@ define([
     'models/issue',
     'collections/issues',
     'collections/labels',
+    'collections/users',
     'views/label_view',
     'text!templates/edit_issue.html'
     ],
 
-    function($, _, Backbone, issue, Issues, Labels, label_view, add_issue){
+    function($, _, Backbone, issue, Issues, Labels, Users, label_view, add_issue){
         var AddIssueView = Backbone.View.extend({
 
             template: _.template(add_issue),
@@ -26,7 +27,7 @@ define([
                 this.listenTo(Issues, 'add', function(){
                                             this.stopListening();
                                             this.undelegateEvents();});
-                this.model = new issue({'author':256,'labels':[]});
+                this.model = new issue({'author':window.settings.user,'labels':[]});
                 this.for_template = this.model.toJSON();
             },
 
@@ -34,6 +35,8 @@ define([
                 this.$el.empty();
 
                 this.for_template['all_labels'] = Labels.toJSON();
+                this.for_template['all_users'] = Users.toJSON();
+
                 this.$el.html(this.template(this.for_template));
 
                 var view = new label_view({model: this.model});

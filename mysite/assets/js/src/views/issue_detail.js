@@ -4,12 +4,13 @@ define([
     'underscore',
     'backbone',
     'collections/issues',
+    'collections/users',
     'views/edit_issue',
     'views/label_view',
     'text!templates/issue_detail.html'
     ],
 
-    function($, _, Backbone, Issues, edit_issue, label_view, issue_detail_template){
+    function($, _, Backbone, Issues, Users, edit_issue, label_view, issue_detail_template){
         var IssueDetailView = Backbone.View.extend({
             template: _.template(issue_detail_template),
 
@@ -24,11 +25,15 @@ define([
             },
 
             render: function () {
-                this.$el.html(this.template(this.model.toJSON()));
+                var for_template = this.model.toJSON();
+                if (for_template.assignee) {
+                for_template.assignee_name = Users.getUserById(for_template.assignee).toJSON();}
+                else {
+                    for_template.assignee_name = '';
+                }
+                this.$el.html(this.template(for_template));
                 var view = new label_view({model: this.model});
                 this.$el.find('#labels').append(view.render().el);
-                console.log(this.model.toJSON());
-
 		    },
 
             goBackToMainView: function(){
