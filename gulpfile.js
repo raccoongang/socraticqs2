@@ -28,13 +28,23 @@ gulp.task('js-move', function() {
        //.pipe(concat('main.min.js'))
        .pipe(uglify())
        .on('error', console.log)
-       .pipe(gulp.dest('./mysite/mysite/static/js/'));
+       .pipe(gulp.dest('./mysite/assets/static/js/'));
 
+});
+
+gulp.task('copy_structure', function () {
+  gulp.src([
+    './mysite/assets/js/src/**/*',
+    '!./mysite/assets/js/src/config.js',
+    '!./mysite/assets/js/src/ct.js',
+    '!./mysite/assets/js/src/issue.js'])
+    .pipe(gulp.dest('./mysite/assets/static/js/'));
 });
 
 gulp.task('js', function() {
    return gulp.src([
        '!./mysite/assets/js/src/config.js',
+       '!./mysite/assets/js/src/issue.js',
        '!./mysite/assets/js/lib/require.js',
        '!./mysite/assets/js/lib/backbone.js',
        './mysite/assets/js/lib/*.js',
@@ -47,7 +57,7 @@ gulp.task('js', function() {
        .pipe(concat('main.min.js'))
       // .pipe(uglify())
        .on('error', console.log)
-       .pipe(gulp.dest('./mysite/mysite/static/js/'));
+       .pipe(gulp.dest('./mysite/assets/static/js/'));
 
 });
 
@@ -55,7 +65,7 @@ gulp.task('js-require', function() {
    return gulp.src(['./mysite/assets/js/lib/require.js', './mysite/assets/js/src/require.js'])
        .pipe(uglify())
        .on('error', console.log)
-       .pipe(gulp.dest('./mysite/mysite/static/js/lib'));
+       .pipe(gulp.dest('./mysite/assets/static/js/lib'));
 
 });
 
@@ -63,7 +73,7 @@ gulp.task('require-config', function() {
    return gulp.src(['./mysite/assets/js/src/config.js'])
        .pipe(uglify())
        .on('error', console.log)
-       .pipe(gulp.dest('./mysite/mysite/static/js'));
+       .pipe(gulp.dest('./mysite/assets/static/js'));
 
 });
 
@@ -73,14 +83,14 @@ gulp.task('css', function() {
         //.pipe(minifyCSS())
         .pipe(autoprefixer('last 2 version', 'safari 5', 'ie 8', 'ie 9'))
         .pipe(concat('main.css'))
-        .pipe(gulp.dest('./mysite/mysite/static/css/'));
+        .pipe(gulp.dest('./mysite/assets/static/css/'));
 });
 
 
 gulp.task('rbuild', function() {
     rjs({
         baseUrl: './mysite/assets/js/src/file.js',
-        out: './mysite/mysite/static/js/',
+        out: './mysite/assets/static/js/',
         shim: {
             underscore: {
                 exports: '_'
@@ -103,4 +113,4 @@ gulp.task('rbuild', function() {
         .pipe(gulp.dest('./delpoy/'));
 });
 
-gulp.task('default', ['js', 'js-require', 'require-config', 'css', ]);
+gulp.task('default', ['copy_structure', 'js', 'js-require', 'require-config', 'css']);

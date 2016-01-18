@@ -20,10 +20,10 @@ require.config({
 		}
 	},
 	paths: {
-		jquery: 'node_modules/jquery/dist/jquery',
-		underscore:'node_modules/underscore/underscore',
-		backbone: 'node_modules/backbone/backbone',
-		text: 'node_modules/requirejs-text/text'
+		jquery: '../jquery/jquery',
+		underscore:'../underscore/underscore',
+		backbone: '../backbone/backbone',
+		text: '../text/text'
 	}
 });
 

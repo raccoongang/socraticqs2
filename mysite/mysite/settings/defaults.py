@@ -74,7 +74,7 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = ''
+STATIC_ROOT = os.path.join(BASE_DIR, 'mysite/static')
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
@@ -82,7 +82,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
-  os.path.join(BASE_DIR, 'mysite/static'),
+    os.path.join(BASE_DIR, 'assets/static'),
 )
 
 # List of finder classes that know how to find static files in
@@ -91,6 +91,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    'djangobower.finders.BowerFinder',
 )
 
 # URL of the login page.
@@ -145,6 +146,7 @@ INSTALLED_APPS = (
     # UI
     'ui',
     'rest_framework',
+    'djangobower',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -261,6 +263,19 @@ CACHES = {
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
 }
+
+
+# BOWER
+BOWER_COMPONENTS_ROOT = BASE_DIR + '/components/'
+BOWER_PATH = '/usr/local/bin/bower'
+BOWER_INSTALLED_APPS = (
+   'backbone',
+   'requirejs',
+   'jquery#1.9',
+   'bootstrap',
+   'underscore',
+   'requirejs-text',
+)
 
 
 # A sample logging configuration. The only tangible logging
