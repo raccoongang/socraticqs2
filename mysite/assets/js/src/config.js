@@ -1,5 +1,3 @@
-console.log('config required');
-
 require.config({
 	// The shim config allows us to configure dependencies for
 	// scripts that do not call define() to register a module
@@ -27,31 +25,14 @@ require.config({
 	}
 });
 
-//requirejs.config({
-//	paths: {
-//		"app" : "app",
-//
-//	}
-//});
-//
-//require(['app'],function(app){
-//	//app.run(); maybe
-//});
-
 require([
 	'backbone',
 	'views/main_tab_view',
-], function (Backbone, AppView) {
-
-	function getCookie(name) {
-	    var matches = document.cookie.match(new RegExp(
-	      "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
-	    ))
-	    return matches ? decodeURIComponent(matches[1]) : undefined
-	}
-
-	var csrftoken = getCookie('csrftoken');
-	var oldSync = Backbone.sync;
+	'utils/utils',
+], function (Backbone, AppView, utils) {
+    // Main access point for our app
+    var csrftoken = utils.getCookie('csrftoken');
+    var oldSync = Backbone.sync;
     Backbone.sync = function(method, model, options){
         options.beforeSend = function(xhr){
             xhr.setRequestHeader('X-CSRFToken', csrftoken);
@@ -59,5 +40,5 @@ require([
         return oldSync(method, model, options);
     };
 
-	new AppView({el:$('#lesson_issues')});
+    new AppView({el:$('#lesson_issues')});
 });
