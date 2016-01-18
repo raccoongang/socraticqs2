@@ -2,6 +2,13 @@
 define(['underscore', 'backbone'], function(_, Backbone) {
     var issue = Backbone.Model.extend({
 
+       defaults:{
+          'labels':[],
+          'title':'',
+          'description':'',
+          'author_name':''
+        },
+
         initialize: function() {
             console.log('new issue created');
         },

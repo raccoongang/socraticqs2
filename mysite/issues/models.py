@@ -13,6 +13,13 @@ ISSUE_STATUS = (('warning', 'warning'),
                 ('diagnose', 'diagnose'),
                 ('resolve', 'resolve'))
 
+LABEL_COLORS= (('label-default', 'Grey'),
+               ('label-primary', 'Blue'),
+               ('label-success', 'Green'),
+               ('label-info', 'LightBlue'),
+               ('label-warning', 'Yellow'),
+               ('label-danger', 'Red'))
+
 
 class IssueLabel(models.Model):
     """
@@ -20,7 +27,7 @@ class IssueLabel(models.Model):
     """
     title = models.CharField(max_length=120)
     description = models.CharField(max_length=200)
-    color = models.CharField(max_length=6, default='ffffff')
+    color = models.CharField(max_length=20, default='Grey', choices=LABEL_COLORS)
     default = models.BooleanField(default=False)
 
     def __unicode__(self):

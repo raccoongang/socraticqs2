@@ -9,9 +9,16 @@
         <label>Description</label>
         <textarea class="form-control inp" name="description" rows="3"></textarea>
         <label>Labels</label>
-        <select name="labels" class="form-control">
-
-        </select>
+        <section id="labels"></section><br>
+        <hr>
+        <div id="all_labels">
+            <% _.each(all_labels, function(x) {%>
+                <% if ($.inArray(x.id, labels) < 0) { %>
+                <label data="<%= x.id %>" class="choices label <%= x.color %>"> <%= x.title %></label>
+                <% } %>
+            <% } ); %>
+        </div>
+        <br>
         <label>Assignee</label>
         <select name="assignee" class="form-control">
 

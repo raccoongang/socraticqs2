@@ -8,15 +8,18 @@ define([
 
     function($, _, Backbone, Labels){
         var LabelView = Backbone.View.extend({
-            tagName: 'p',
 
-            initialize: function () {
+            template: _.template('<label data="<%= id %>" class="label <%= color %>"><%= title %></label>'),
 
-            },
+            initialize: function () {},
 
-            render: function (label_id) {
-                var label = Labels.getLabelById(label_id);
-                this.$el.html(this.template(label.toJSON()));
+            render: function () {
+                var labels = this.model.toJSON().labels;
+                for (var each in labels) {
+                    var label = Labels.getLabelById(labels[each]).toJSON();
+                    var new_label = this.template(label);
+                    this.$el.append(new_label);
+                }
                 return this;
 		    },
 

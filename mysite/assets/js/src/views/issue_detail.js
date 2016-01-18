@@ -5,10 +5,11 @@ define([
     'backbone',
     'collections/issues',
     'views/edit_issue',
+    'views/label_view',
     'text!templates/issue_detail.html'
     ],
 
-    function($, _, Backbone, Issues, edit_issue, issue_detail_template){
+    function($, _, Backbone, Issues, edit_issue, label_view, issue_detail_template){
         var IssueDetailView = Backbone.View.extend({
             template: _.template(issue_detail_template),
 
@@ -19,11 +20,15 @@ define([
             },
 
             initialize: function(){
-                this.listenTo(this.model, 'change', this.render)
+                this.listenTo(this.model, 'change', this.render);
             },
 
             render: function () {
                 this.$el.html(this.template(this.model.toJSON()));
+                var view = new label_view({model: this.model});
+                this.$el.find('#labels').append(view.render().el);
+                console.log(this.model.toJSON());
+
 		    },
 
             goBackToMainView: function(){

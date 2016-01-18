@@ -21,11 +21,13 @@ define([
 
             initialize: function(){
                 this.listenTo(Issues, 'reset', this.render);
+                this.listenTo(Issues, 'add', this.render);
                 Issues.fetch({reset:true});
                 Labels.fetch({reset:true});
             },
 
             render: function(){
+                console.log(Issues);
                 this.$el.html(this.template({closed_count:Issues.is_close().length, open_count:Issues.is_open().length}));
                 this.addAll();
             },
