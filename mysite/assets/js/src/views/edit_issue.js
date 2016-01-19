@@ -8,7 +8,7 @@ define([
     'collections/labels',
     'collections/users',
     'views/label_view',
-    'text!templates/edit_issue.html'
+    'text!templates/edit_add_issue.html'
     ],
 
     function($, _, Backbone, issue, Issues, Labels, Users, label_view, edit_issue){
@@ -25,19 +25,22 @@ define([
 
             initialize: function () {
                 this.for_template = this.model.toJSON();
-                this.for_template['all_labels'] = Labels.toJSON();
                 this.for_template['all_users'] = Users.toJSON();
-                this.listenTo(this.model, 'change', function(){
-                                                this.stopListening();
-                                                this.undelegateEvents();});
+                this.listenTo(this.model, 'change', this.goBackToMainView);
             },
 
             render: function () {
                 this.$el.empty();
                 this.$el.html(this.template(this.for_template));
-                var view = new label_view({model: this.model});
-                this.$el.find('#labels').append(view.render().el);
+                this.renderLabels();
 		    },
+
+            renderLabels: function(){
+
+                var view = new label_view({model: this.model});
+                $('#labels').html(view.render().el);
+                view.renderNotModelLabels($('#all_labels'));
+            },
 
             getFormInfo: function(){
                 var for_template = this.for_template;
@@ -52,7 +55,8 @@ define([
                 $('.help-block').addClass('hidden');
                 this.getFormInfo();
                 var temp_model = new issue(this.for_template);
-                if (temp_model.isValid()){this.model.save(temp_model);}
+                console.log(this.for_template);
+                if (temp_model.isValid()){this.model.save(this.for_template);}
                 else{this.showErrors(temp_model.errors)}
             },
 
@@ -72,17 +76,15 @@ define([
             },
 
             addLabel: function(event){
-                this.getFormInfo();
                 this.for_template.labels.push(parseInt(event.currentTarget.getAttribute('data')));
-                this.render();
+                this.renderLabels();
 
             },
 
             removeLabel: function(event){
-                this.getFormInfo();
                 var index = this.for_template.labels.indexOf(parseInt(event.currentTarget.getAttribute('data')));
                 this.for_template.labels.splice(index, 1);
-                this.render();
+                this.renderLabels();
             }
         });
 	return EditIssueView;

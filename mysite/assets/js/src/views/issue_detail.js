@@ -16,7 +16,8 @@ define([
 
             events:{
                 'click #issue_detail_cancel_button': 'goBackToMainView',
-                'click #is_open_button': 'toggleIssue',
+                'click #open_button': 'openIssue',
+                'click #close_button': 'closeIssue',
                 'click #edit_issue': 'editIssue'
             },
 
@@ -27,7 +28,7 @@ define([
             render: function () {
                 var for_template = this.model.toJSON();
                 if (for_template.assignee) {
-                for_template.assignee_name = Users.getUserById(for_template.assignee).toJSON();}
+                    for_template.assignee_name = Users.getUserById(for_template.assignee).toJSON();}
                 else {
                     for_template.assignee_name = '';
                 }
@@ -48,8 +49,12 @@ define([
                 view.render();
             },
 
-            toggleIssue: function(){
-                this.model.toggle();
+            openIssue: function(){
+                this.model.save({is_open: true});
+            },
+
+            closeIssue: function(){
+                this.model.save({is_open: false});
             }
         });
 	return IssueDetailView;

@@ -27,6 +27,8 @@ define([
             initialize: function(){
                 this.listenTo(Issues, 'reset', this.render);
                 this.listenTo(Issues, 'add', this.render);
+                this.listenTo(Issues, 'open', this.addOpen);
+                this.listenTo(Issues, 'closed', this.addClosed);
                 Issues.fetch({reset:true});
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
@@ -52,6 +54,18 @@ define([
 
             },
 
+            addOpen: function() {
+                Issues.sort();
+                $('#table_of_issues').empty();
+                var thisView = this;
+                _.each(Issues.where({is_open: true}), this.addOne.apply(thisView));
+            },
+
+            addClosed: function() {
+                    Issues.sort();
+                $('#table_of_issues').empty();
+                _.each(Issues.is_close, this.addOne);
+            },
             addIssue: function(){
                 var view = new add_issue_view({el: this.el});
                 this.listenToOnce(view, 'cancel', this.render);

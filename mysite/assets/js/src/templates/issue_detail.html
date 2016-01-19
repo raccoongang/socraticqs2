@@ -13,8 +13,8 @@
     <p><%= assignee_name.username %></p>
     <button class="btn btn-warning" id="issue_detail_cancel_button">Go back</button>
     <% if (is_open) { %>
-        <button class="btn pull-right btn-success" id="is_open_button">Close issue</button>
+        <button class="btn pull-right btn-success" id="close_button">Close issue</button>
     <% }  else { %>
-        <button class="btn pull-right btn-warning" id="is_open_button">Reopen issue</button>
+        <button class="btn pull-right btn-warning" id="open_button">Reopen issue</button>
     <% } %>
 </div>
