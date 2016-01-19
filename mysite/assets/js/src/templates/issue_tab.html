@@ -51,7 +51,13 @@
             Labels <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" id="dropdown_labels">
-
+            <% _.each(all_labels, function(x) { %>
+                <li style="margin-left: 20px; margin-bottom: 15px;">
+                    <h4>
+                        <a data="<%= x.id %>" class="choices label <%= x.color %>"> <%= x.title %></a>
+                    </h4>
+                </li>
+            <% }); %>
             <li role="separator" class="divider"></li>
             <li><a href="#">Show all</a></li>
           </ul>
@@ -70,7 +76,8 @@
             Sort <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-
+              <li><a id="byTitle" href="#">By title</a></li>
+              <li><a id="byAuthor" href="#">By author</a></li>
           </ul>
       </div>
     </div>

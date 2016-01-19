@@ -15,8 +15,10 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
          });
       },
 
+      compareBy:'title',
+
       comparator: function(issue) {
-            return issue.get("title");
+            return issue.get(this.compareBy);
       },
 
       is_close:function() {

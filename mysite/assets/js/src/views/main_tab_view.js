@@ -17,7 +17,9 @@ define([
             template: _.template(tab_template),
 
             events:{
-                'click .col-sm-2': 'addIssue'
+                'click .col-sm-2': 'addIssue',
+                'click #byTitle': 'byTitle',
+                'click #byAuthor': 'byAuthor'
             },
 
             initialize: function(){
@@ -29,7 +31,9 @@ define([
             },
 
             render: function(){
-                this.$el.html(this.template({closed_count:Issues.is_close().length, open_count:Issues.is_open().length}));
+                this.$el.html(this.template({closed_count: Issues.is_close().length,
+                                             open_count: Issues.is_open().length,
+                                             all_labels: Labels.toJSON()}));
                 this.addAll();
             },
 
@@ -40,6 +44,7 @@ define([
             },
 
             addAll: function(){
+                Issues.sort();
                 $('#table_of_issues').empty();
                 Issues.each(this.addOne, this);
 
@@ -49,6 +54,16 @@ define([
                 var view = new add_issue_view({el: this.el});
                 this.listenToOnce(view, 'cancel', this.render);
                 view.render();
+            },
+
+            byAuthor: function(){
+                Issues.compareBy = 'author_name';
+                this.addAll();
+            },
+
+             byTitle: function(){
+                Issues.compareBy = 'title';
+                this.addAll();
             }
 
         });
