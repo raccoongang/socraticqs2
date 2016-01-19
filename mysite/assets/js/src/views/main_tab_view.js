@@ -19,7 +19,9 @@ define([
             events:{
                 'click .col-sm-2': 'addIssue',
                 'click #byTitle': 'byTitle',
-                'click #byAuthor': 'byAuthor'
+                'click #byAuthor': 'byAuthor',
+                'click .choices': 'filterByLabels',
+                'click #show_all_labels': 'addAll'
             },
 
             initialize: function(){
@@ -61,9 +63,16 @@ define([
                 this.addAll();
             },
 
-             byTitle: function(){
+            byTitle: function(){
                 Issues.compareBy = 'title';
                 this.addAll();
+            },
+
+            filterByLabels: function(event){
+                var label = parseInt(event.currentTarget.getAttribute('data'));
+                $('#table_of_issues').empty();
+                var filterResult = Issues.filter(function(issue){ return $.inArray(label,issue.get('labels')) >= 0; });
+                _.each(filterResult, this.addOne);
             }
 
         });
