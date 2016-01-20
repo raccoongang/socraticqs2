@@ -637,8 +637,10 @@ Also we might run one task::
 
     $ gulp [task_name]
 
-To install dependecies we are using django-bower.
+To build static files use fabric::
 
-For this app we need to install bower::
+    $ fab static.build
 
-    $ nmp install -g bower
+Also install js dependency::
+
+    $ fab static.install

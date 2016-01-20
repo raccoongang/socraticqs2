@@ -51,7 +51,7 @@ gulp.task('js', function() {
        '!./mysite/assets/js/lib/require.js',
        '!./mysite/assets/js/lib/backbone.js',
        './mysite/assets/js/lib/*.js',
-       './mysite/assets/js/src/*.js'])
+       '!./mysite/assets/js/src/*.js'])
        .pipe(order([
             "jquery-2.1.1.min.js",
             "*.js",
@@ -90,30 +90,39 @@ gulp.task('css', function() {
 });
 
 
-gulp.task('rbuild', function() {
-    rjs({
-        baseUrl: './mysite/assets/js/src/file.js',
-        out: './mysite/assets/static/js/',
-        shim: {
-            underscore: {
-                exports: '_'
-            },
-            backbone: {
-                deps: [
-                    'underscore',
-                    'jquery'
-                ],
-                exports: 'Backbone'
-            },
-            'backbone-relational': {
-                deps: [
-                    'backbone'
-                ],
-                exports: 'RelationalModel'
-            }
-        },
-    })
-        .pipe(gulp.dest('./delpoy/'));
+gulp.task('rbuild', function () {
+  rjs({
+    name: "config",
+    baseUrl: './mysite/assets/js/src/',
+    out: 'app.js',
+    delimiter: '\t',
+    shim: {
+      underscore: {
+        exports: '_'
+      },
+      backbone: {
+        deps: [
+          'underscore',
+          'jquery'
+        ],
+        exports: 'Backbone'
+      },
+      backboneLocalstorage: {
+        deps: ['backbone',],
+        exports: 'Store'
+      },
+      bootstrap: {deps:['jquery'] }
+    },
+    paths: {
+      jquery: '../../../../node_modules/jquery/dist/jquery',
+      underscore: '../../../../node_modules/underscore/underscore',
+      backbone: '../../../../node_modules/backbone/backbone',
+      text: '../../../../node_modules/requirejs-text/text',
+      bootstrap: '../../../../node_modules/bootstrap/dist/js/bootstrap'
+    }
+  })
+    .pipe(uglify())
+    .pipe(gulp.dest('./mysite/assets/static/js/'));
 });
 
 gulp.task('watch-config', function () {
@@ -138,6 +147,6 @@ gulp.task('watch-structure', function () {
     .pipe(gulp.dest('./mysite/assets/static/js'));
 });
 
-gulp.task('default', ['copy_structure', 'js', 'js-require', 'require-config', 'css']);
+gulp.task('default', ['js-require', 'rbuild', 'js', 'css']);
 
 gulp.task('watch', ['watch-config', 'watch-structure']);
