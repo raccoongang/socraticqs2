@@ -17,7 +17,7 @@ define([
 
             render: function () {
                 this.$el.empty();
-                var labels = this.model.toJSON().labels;
+                var labels = this.model.labels;
                 for (var each in labels) {
                     var label = Labels.getLabelById(labels[each]).toJSON();
                     var new_label = this.template(label);
@@ -28,7 +28,7 @@ define([
 
             renderNotModelLabels: function(el){
                 el.empty();
-                var modelLabels = this.model.toJSON().labels;
+                var modelLabels = this.model.labels;
                 var labels = Labels.filter(function(x) {
                                     return $.inArray(x.id, modelLabels) < 0;
                                 });

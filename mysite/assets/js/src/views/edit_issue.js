@@ -36,8 +36,7 @@ define([
 		    },
 
             renderLabels: function(){
-
-                var view = new label_view({model: this.model});
+                var view = new label_view({model: this.for_template});
                 $('#labels').html(view.render().el);
                 view.renderNotModelLabels($('#all_labels'));
             },
@@ -55,7 +54,6 @@ define([
                 $('.help-block').addClass('hidden');
                 this.getFormInfo();
                 var temp_model = new issue(this.for_template);
-                console.log(this.for_template);
                 if (temp_model.isValid()){this.model.save(this.for_template);}
                 else{this.showErrors(temp_model.errors)}
             },
@@ -76,14 +74,20 @@ define([
             },
 
             addLabel: function(event){
-                this.for_template.labels.push(parseInt(event.currentTarget.getAttribute('data')));
+                var label = parseInt(event.currentTarget.getAttribute('data'));
+                var labels = Array.from(this.for_template.labels);
+                labels.push(label);
+                this.for_template.labels = labels;
                 this.renderLabels();
 
             },
 
             removeLabel: function(event){
+                var label = parseInt(event.currentTarget.getAttribute('data'));
+                var labels = Array.from(this.for_template.labels);
                 var index = this.for_template.labels.indexOf(parseInt(event.currentTarget.getAttribute('data')));
-                this.for_template.labels.splice(index, 1);
+                labels.splice(index, 1);
+                this.for_template.labels = labels;
                 this.renderLabels();
             }
         });

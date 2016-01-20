@@ -27,7 +27,7 @@ define([
 
             render: function () {
                 this.$el.html(this.template(this.model.toJSON()));
-                var view = new label_view({model: this.model});
+                var view = new label_view({model: this.model.toJSON()});
                 this.$el.find('#labels_row').append(view.render().el);
                 return this;
 		    },

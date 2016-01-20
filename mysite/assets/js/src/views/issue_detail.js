@@ -39,19 +39,15 @@ define([
                     for_template.assignee_name = '';
                 }
                 this.$el.html(this.template(for_template));
-                var view = new label_view({model: this.model});
+                var view = new label_view({model: this.model.toJSON()});
                 this.$el.find('#labels').append(view.render().el);
 		    },
 
             renderComments: function(){
                 var commentView = new comments_view({model: this.model});
                 $('#comments').html(commentView.render().el);
-                console.log('1');
                 var commentFormView = new add_comment_view({el:$('#for_comment_form')});
-                console.log('2');
                 commentFormView.issue = this.model.get('id');
-                console.log('3');
-
                 commentFormView.render();
             },
 

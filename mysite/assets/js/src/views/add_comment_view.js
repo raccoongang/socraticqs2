@@ -18,11 +18,10 @@ define([
             },
 
             initialize: function (a) {
-                                console.log('initialize');
-
                 this.model = new comment({'author':window.settings.user,
                                             'author_name':''});
-                this.listenTo(Comments, 'change', function(){this.stopListening(); this.undelegateEvents();});
+                this.listenTo(Comments, 'change', function(){this.stopListening();
+                                                             this.undelegateEvents();});
             },
 
             render: function () {
