@@ -5,12 +5,15 @@ define([
     'backbone',
     'collections/issues',
     'collections/users',
+    'collections/comments',
     'views/edit_issue',
     'views/label_view',
+    'views/comments_view',
+    'views/add_comment_view',
     'text!templates/issue_detail.html'
     ],
 
-    function($, _, Backbone, Issues, Users, edit_issue, label_view, issue_detail_template){
+    function($, _, Backbone, Issues, Users, Comments, edit_issue, label_view, comments_view, add_comment_view, issue_detail_template){
         var IssueDetailView = Backbone.View.extend({
             template: _.template(issue_detail_template),
 
@@ -23,6 +26,9 @@ define([
 
             initialize: function(){
                 this.listenTo(this.model, 'change', this.render);
+                this.listenTo(Comments, 'change', this.renderComments);
+                this.listenTo(Comments, 'reset', this.renderComments);
+                Comments.fetch({data: {issue_id:this.model.get('id')}, reset:true});
             },
 
             render: function () {
@@ -36,6 +42,18 @@ define([
                 var view = new label_view({model: this.model});
                 this.$el.find('#labels').append(view.render().el);
 		    },
+
+            renderComments: function(){
+                var commentView = new comments_view({model: this.model});
+                $('#comments').html(commentView.render().el);
+                console.log('1');
+                var commentFormView = new add_comment_view({el:$('#for_comment_form')});
+                console.log('2');
+                commentFormView.issue = this.model.get('id');
+                console.log('3');
+
+                commentFormView.render();
+            },
 
             goBackToMainView: function(){
                 this.stopListening();

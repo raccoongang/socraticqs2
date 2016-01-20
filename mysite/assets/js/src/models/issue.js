@@ -11,7 +11,6 @@ define(['underscore', 'backbone'], function(_, Backbone) {
         },
 
         initialize: function() {
-            console.log('new issue created');
         },
 
         clear: function() {

@@ -3,7 +3,12 @@ define(['underscore', 'backbone', 'models/comment'], function(_, Backbone, comme
     var CommentsCollection = Backbone.Collection.extend({
       model: comment,
 
-      initialize: function(){
+      url:'/api/comments/',
+
+      initialize: function(options){
+          options || (options = {});
+          this.issue_id = options.issue_id;
+          console.log(this.issue_id);
           this.on('add', this.onAdd, this)
       },
 

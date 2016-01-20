@@ -6,12 +6,13 @@ define([
     'collections/issues',
     'collections/labels',
     'collections/users',
+    'collections/comments',
     'views/issue_row_view',
     'views/add_issue',
     'text!templates/issue_tab.html'
     ],
 
-    function($, _, Backbone, Issues, Labels, Users, issue_row_view, add_issue_view, tab_template){
+    function($, _, Backbone, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
         var main_tab_view = Backbone.View.extend({
 
             template: _.template(tab_template),
