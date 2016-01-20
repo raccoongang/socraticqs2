@@ -45,20 +45,15 @@ gulp.task('copy_structure', function () {
 });
 
 gulp.task('js', function() {
-   return gulp.src([
-       '!./mysite/assets/js/src/config.js',
-       '!./mysite/assets/js/src/issue.js',
-       '!./mysite/assets/js/lib/require.js',
-       '!./mysite/assets/js/lib/backbone.js',
-       './mysite/assets/js/lib/*.js',
-       '!./mysite/assets/js/src/*.js'])
+   return gulp.src(['.mysite/../node_modules/jquery/dist/jquery.min.js',
+                    '.mysite/../node_modules/bootstrap/dist/js/bootstrap.min.js',])
        .pipe(order([
-            "jquery-2.1.1.min.js",
+            "jquery*.min.js",
             "*.js",
 
           ]))
        .pipe(concat('main.min.js'))
-      // .pipe(uglify())
+       .pipe(uglify())
        .on('error', console.log)
        .pipe(gulp.dest('./mysite/assets/static/js/'));
 
