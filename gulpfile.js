@@ -60,20 +60,13 @@ gulp.task('js', function() {
 });
 
 gulp.task('js-require', function() {
-   return gulp.src(['./mysite/assets/js/lib/require.js', './mysite/assets/js/src/require.js'])
+   return gulp.src(['.mysite/../node_modules/requirejs/require.js'])
        .pipe(uglify())
        .on('error', console.log)
        .pipe(gulp.dest('./mysite/assets/static/js/lib'));
 
 });
 
-gulp.task('require-config', function() {
-   return gulp.src(['./mysite/assets/js/src/config.js'])
-       .pipe(uglify())
-       .on('error', console.log)
-       .pipe(gulp.dest('./mysite/assets/static/js'));
-
-});
 
 // CSS
 gulp.task('css', function() {
