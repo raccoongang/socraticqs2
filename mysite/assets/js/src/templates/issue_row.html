@@ -1,7 +1,12 @@
-{# One row with issue template#}
-
-<td>
-    <a href="#"> <%= title%> </a>
+<td style="vertical-align: middle;">
+    <a href="#"> <%= title%> </a>&nbsp;
+    <% if (affected_count>1) { %>
+        <span class="label label-danger" style="padding-right: .6em;
+                                                padding-left: .6em;
+                                                border-radius: 10rem;">
+            <%= affected_count %>
+        </span>
+    <% } %>
 </td>
 <td id="labels_row" style="vertical-align: middle;">
 </td>
