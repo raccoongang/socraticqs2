@@ -91,7 +91,6 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
-    'djangobower.finders.BowerFinder',
 )
 
 # URL of the login page.
@@ -146,7 +145,6 @@ INSTALLED_APPS = (
     # UI
     'ui',
     'rest_framework',
-    'djangobower',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
@@ -264,18 +262,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
 }
 
-
-# BOWER
-BOWER_COMPONENTS_ROOT = BASE_DIR + '/components/'
-BOWER_PATH = '/usr/local/bin/bower'
-BOWER_INSTALLED_APPS = (
-   'backbone',
-   'requirejs',
-   'jquery#1.9',
-   'bootstrap',
-   'underscore',
-   'requirejs-text',
-)
 
 
 # A sample logging configuration. The only tangible logging
