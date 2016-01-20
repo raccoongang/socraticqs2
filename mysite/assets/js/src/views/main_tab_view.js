@@ -25,10 +25,12 @@ define([
             },
 
             initialize: function(){
+                Backbone.history.getFragment();
                 this.listenTo(Issues, 'reset', this.render);
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
+                this.filter = {is_open: true};
                 Issues.fetch({reset:true});
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
@@ -37,7 +39,8 @@ define([
             render: function(){
                 this.$el.html(this.template({closed_count: Issues.is_close().length,
                                              open_count: Issues.is_open().length,
-                                             all_labels: Labels.toJSON()}));
+                                             all_labels: Labels.toJSON(),
+                                             filter: this.filter}));
                 this.addAll();
             },
 
@@ -48,23 +51,30 @@ define([
             },
 
             addAll: function(){
-                Issues.sort();
                 $('#table_of_issues').empty();
-                Issues.each(this.addOne, this);
+                var collection = Issues.where({is_open: this.filter.is_open});
+                if (this.filter.label){
+                    var label = this.filter.label;
+                    collection = _.filter(collection, function(issue){ return $.inArray(label,issue.get('labels')) >= 0; });
+                }
+                for (var each in collection){
+                    this.addOne(collection[each]);
+                }
 
             },
 
             addOpen: function() {
-                Issues.sort();
-                $('#table_of_issues').empty();
-                var thisView = this;
-                _.each(Issues.where({is_open: true}), this.addOne.apply(thisView));
+                this.filter.is_open = true;
+                $('#open_link_th').addClass('success');
+                $('#close_link_th').removeClass('success');
+                this.addAll();
             },
 
             addClosed: function() {
-                    Issues.sort();
-                $('#table_of_issues').empty();
-                _.each(Issues.is_close, this.addOne);
+                this.filter.is_open = false;
+                $('#open_link_th').removeClass('success');
+                $('#close_link_th').addClass('success');
+                this.addAll();
             },
             addIssue: function(){
                 var view = new add_issue_view({el: this.el});
@@ -74,19 +84,19 @@ define([
 
             byAuthor: function(){
                 Issues.compareBy = 'author_name';
+                Issues.sort();
                 this.addAll();
             },
 
             byTitle: function(){
                 Issues.compareBy = 'title';
+                Issues.sort();
                 this.addAll();
             },
 
             filterByLabels: function(event){
-                var label = parseInt(event.currentTarget.getAttribute('data'));
-                $('#table_of_issues').empty();
-                var filterResult = Issues.filter(function(issue){ return $.inArray(label,issue.get('labels')) >= 0; });
-                _.each(filterResult, this.addOne);
+                this.filter.label = parseInt(event.currentTarget.getAttribute('data'));
+                this.addAll();
             }
 
         });

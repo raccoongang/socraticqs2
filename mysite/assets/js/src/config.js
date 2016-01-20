@@ -11,10 +11,6 @@ require.config({
 				'jquery'
 			],
 			exports: 'Backbone'
-		},
-		backboneLocalstorage: {
-			deps: ['backbone'],
-			exports: 'Store'
 		}
 	},
 	paths: {
@@ -29,14 +25,21 @@ require([
 	'backbone',
 	'views/main_tab_view',
 	'utils/utils',
-], function (Backbone, AppView, utils) {
+    'routers/router'
+], function (Backbone, AppView, utils, Workspace) {
     // Main access point for our app
+    var router = new Workspace();
+	Backbone.history.start();
+
     var csrftoken = utils.getCookie('csrftoken');
     var oldSync = Backbone.sync;
     Backbone.sync = function(method, model, options){
         options.beforeSend = function(xhr){
             xhr.setRequestHeader('X-CSRFToken', csrftoken);
         };
+		var _url = _.isFunction(model.url) ?  model.url() : model.url;
+    	_url += _url.charAt(_url.length - 1) == '/' ? '' : '/';
+    	options.url = _url;
         return oldSync(method, model, options);
     };
 

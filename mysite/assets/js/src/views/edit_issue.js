@@ -19,7 +19,7 @@ define([
             events:{
                 "click #ok_button": 'updateIssue',
                 "click #cancel_button": "goBackToMainView",
-                "click .choices": "addLabel",
+                "click .label_to_add": "addLabel",
                 "click #labels>div>label": "removeLabel"
             },
 

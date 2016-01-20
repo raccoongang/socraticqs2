@@ -27,13 +27,14 @@
 </div>
 
 <hr>
+    <%= filter.is_open %>
 <table class="table">
     <thead>
-    <th id="open_link_th" class="success">
+    <th id="open_link_th" <% if (filter.is_open) { %> class="success" <% } %> style="text-align: center;">
         <a href="#open" id="opened_issues"><span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span id="open_span"><%= open_count %></span></a>
     </th>
-    <th id="close_link_th">
-       <a href="#close" id="closed_issues"><span class="glyphicon glyphicon-ok"></span> Closed: <span id="closed_span"><%= closed_count %></span></a>
+    <th id="close_link_th" <% if (!filter.is_open) { %> class="success" <% } %> style=" text-align: center;">
+       <a href="#closed" id="closed_issues"><span class="glyphicon glyphicon-ok"></span> Closed: <span id="closed_span"><%= closed_count %></span></a>
     </th>
     <th>
     <div class="pull-right">
@@ -54,7 +55,7 @@
             <% _.each(all_labels, function(x) { %>
                 <li style="margin-left: 20px; margin-bottom: 15px;">
                     <h4>
-                        <a data="<%= x.id %>" class="choices label <%= x.color %>"> <%= x.title %></a>
+                        <a href="#label" data="<%= x.id %>" class="choices label <%= x.color %>"> <%= x.title %></a>
                     </h4>
                 </li>
             <% }); %>
@@ -91,9 +92,4 @@
     </table>
 
     </div>
-<div id="div_with_issue_form">
 
-</div>
-<div id="show_issue_div">
-
-</div>
