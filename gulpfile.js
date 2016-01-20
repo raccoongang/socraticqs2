@@ -1,4 +1,5 @@
 var watch = require('gulp-watch');
+var batch = require('gulp-batch');
 
 function Logging(){
   var stream = through.obj(function (file, enc, callback) {
@@ -113,28 +114,13 @@ gulp.task('rbuild', function () {
     .pipe(gulp.dest('./mysite/assets/static/js/'));
 });
 
-gulp.task('watch-config', function () {
-    return gulp.src('./mysite/assets/js/src/config.js')
-        .pipe(watch('./mysite/assets/js/src/config.js'))
-        .pipe(gulp.dest('./mysite/assets/static/js'));
-});
-
-gulp.task('watch-structure', function () {
-    return gulp.src([
+gulp.task('watch', function () {
+    watch([
     './mysite/assets/js/src/**/*',
-    '!./mysite/assets/js/src/config.js',
-    '!./mysite/assets/js/src/ct.js',
     '!./mysite/assets/js/src/issue.js'
-    ])
-    .pipe(watch([
-    './mysite/assets/js/src/**/*',
-    '!./mysite/assets/js/src/config.js',
-    '!./mysite/assets/js/src/ct.js',
-    '!./mysite/assets/js/src/issue.js'
-    ]))
-    .pipe(gulp.dest('./mysite/assets/static/js'));
+    ], batch(function (events, done) {
+        gulp.start('rbuild', done);
+    }));
 });
 
 gulp.task('default', ['js-require', 'rbuild', 'js', 'css']);
-
-gulp.task('watch', ['watch-config', 'watch-structure']);
