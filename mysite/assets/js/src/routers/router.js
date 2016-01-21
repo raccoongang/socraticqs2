@@ -1,8 +1,8 @@
 define(['jquery',
 	    'backbone',
-	    'collections/issues',],
-
-function ($, Backbone, Issues) {
+        'bootstrap',
+	    'collections/issues'],
+function ($, Backbone, Bootstrap, Issues) {
 	'use strict';
 
 	var IssueRouter = Backbone.Router.extend({
@@ -10,7 +10,7 @@ function ($, Backbone, Issues) {
 			'ui/hack/lesson/:number(/)': 'getIssues',
 			'ui/hack/lesson/:number/:is_open(/)': 'is_open',
             'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id(/)': 'Issues',
-            'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id/issues': 'openIssues'
+            'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id/issues(/)': 'openIssues'
 
 		},
 
@@ -29,6 +29,7 @@ function ($, Backbone, Issues) {
         },
 
         openIssues: function(course_id, unit_id, concept_id){
+            $('a[href="#lesson_issues"]').tab('show');
             Backbone.trigger('unit_lesson',{unit_lesson: concept_id});
         },
 

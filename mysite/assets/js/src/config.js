@@ -11,13 +11,17 @@ require.config({
 				'jquery'
 			],
 			exports: 'Backbone'
-		}
-	},
-	paths: {
+		},
+        bootstrap : {
+            deps :['jquery']
+        }
+    },
+		paths: {
 		jquery: '../jquery/jquery',
 		underscore:'../underscore/underscore',
 		backbone: '../backbone/backbone',
-		text: '../text/text'
+		text: '../text/text',
+        bootstrap: '../bootstrap/dist/js/bootstrap.min'
 	}
 });
 
