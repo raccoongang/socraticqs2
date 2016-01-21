@@ -25,7 +25,7 @@ define([
             },
 
             initialize: function(){
-                this.listenTo(this.model, 'change', this.render);
+                this.listenTo(this.model, 'change', this.backFromEdit);
                 this.listenTo(Comments, 'change', this.renderComments);
                 this.listenTo(Comments, 'reset', this.renderComments);
                 Comments.fetch({data: {issue_id:this.model.get('id')}, reset:true});
@@ -51,6 +51,11 @@ define([
                 commentFormView.render();
             },
 
+            backFromEdit: function(){
+              this.render();
+              this.renderComments();
+            },
+
             goBackToMainView: function(){
                 this.stopListening();
                 this.undelegateEvents();
@@ -59,7 +64,7 @@ define([
 
             editIssue: function(){
                 var view = new edit_issue({model: this.model, el: this.el});
-                this.listenToOnce(view, 'cancel', this.render);
+                this.listenToOnce(view, 'cancel', this.backFromEdit);
                 view.render();
             },
 

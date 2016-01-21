@@ -24,7 +24,7 @@ define([
                 'click .choices': 'filterByLabels',
                 'click #show_all_labels': 'addAll',
                 'click #open_issues': 'goToOpen',
-                'click #closed_issues': 'goToClosed'
+                'click #closed_issues': 'goToClosed',
             },
 
             initialize: function(){
@@ -40,6 +40,7 @@ define([
             },
 
             new_unit: function(param){
+                Issues.unit_lesson = param.unit_lesson;
                 Issues.fetch({data: param, reset:true});
             },
 
@@ -67,7 +68,6 @@ define([
                 for (var each in collection){
                     this.addOne(collection[each]);
                 }
-
             },
 
             addOpen: function() {
@@ -109,16 +109,16 @@ define([
             goToOpen: function(e){
                 e.preventDefault();
                 var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ui\/hack\/lesson\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/open/');
+                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/issues/open/');
                 Issues.trigger('open');
             },
 
             goToClosed: function(e){
                 e.preventDefault();
                 var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ui\/hack\/lesson\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/closed/');
+                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/issues/closed/');
                 Issues.trigger('closed');
             }
 

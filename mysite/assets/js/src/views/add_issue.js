@@ -27,7 +27,9 @@ define([
                 this.listenTo(Issues, 'add', function(){
                                             this.stopListening();
                                             this.undelegateEvents();});
-                this.model = new issue({'author':window.settings.user,'labels':[]});
+                this.model = new issue({'author':window.settings.user,
+                                        'labels':[],
+                                        'unit_lesson': Issues.unit_lesson});
                 this.for_template = this.model.toJSON();
                 this.for_template['all_users'] = Users.toJSON();
             },
@@ -39,8 +41,7 @@ define([
 		    },
 
              renderLabels: function(){
-                $
-                var view = new label_view({model: this.model});
+                var view = new label_view({model: this.for_template});
                 $('#labels').html(view.render().el);
                 view.renderNotModelLabels($('#all_labels'));
             },

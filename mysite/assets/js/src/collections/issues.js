@@ -10,9 +10,7 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
       },
 
       is_open: function() {
-         return this.filter(function( issue ) {
-             return issue.get('is_open');
-         });
+          return this.without.apply( this, this.is_close());
       },
 
       compareBy:'title',
@@ -22,7 +20,9 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
       },
 
       is_close:function() {
-         return this.without.apply( this, this.is_open());
+         return this.filter(function( issue ) {
+             return !issue.get('is_open');
+         });
       },
 
       onAdd: function(){
