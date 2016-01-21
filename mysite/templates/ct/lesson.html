@@ -1,6 +1,7 @@
 {% extends "ct/portal.html" %}
 {% load crispy_forms_tags %}
 {% load ct_extras %}
+{% load staticfiles %}
 
 {% comment %}
   Teacher's overview of a lesson
@@ -146,4 +147,13 @@ $( "#headtoggle" ).click(function() {
 
   </div><!-- @end #TeachTabDiv -->
 </div>
+
+
+<script>
+window.settings = {
+    'user': {{ user.id }}
+};
+</script>
+
+<script data-main="{% static 'js/app' %}" src="{% static 'js/lib/require.js' %}"></script>
 {% endblock %}
