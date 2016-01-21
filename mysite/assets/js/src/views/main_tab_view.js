@@ -22,19 +22,25 @@ define([
                 'click #byTitle': 'byTitle',
                 'click #byAuthor': 'byAuthor',
                 'click .choices': 'filterByLabels',
-                'click #show_all_labels': 'addAll'
+                'click #show_all_labels': 'addAll',
+                'click #open_issues': 'goToOpen',
+                'click #closed_issues': 'goToClosed'
             },
 
             initialize: function(){
-                Backbone.history.getFragment();
+                Backbone.on('unit_lesson', this.new_unit, this);
                 this.listenTo(Issues, 'reset', this.render);
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
                 this.filter = {is_open: true};
-                Issues.fetch({reset:true});
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
+                Backbone.history.loadUrl();
+            },
+
+            new_unit: function(param){
+                Issues.fetch({data: param, reset:true});
             },
 
             render: function(){
@@ -98,6 +104,22 @@ define([
             filterByLabels: function(event){
                 this.filter.label = parseInt(event.currentTarget.getAttribute('data'));
                 this.addAll();
+            },
+
+            goToOpen: function(e){
+                e.preventDefault();
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /\/ui\/hack\/lesson\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/open/');
+                Issues.trigger('open');
+            },
+
+            goToClosed: function(e){
+                e.preventDefault();
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /\/ui\/hack\/lesson\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/closed/');
+                Issues.trigger('closed');
             }
 
         });

@@ -6,7 +6,7 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
       url: '/api/issues/',
 
       initialize: function(){
-          this.on('add', this.onAdd, this)
+          this.on('add', this.onAdd, this);
       },
 
       is_open: function() {
@@ -27,7 +27,8 @@ define(['underscore', 'backbone', 'models/issue'], function(_, Backbone, issue) 
 
       onAdd: function(){
           console.log('Issue added')
-      }
+      },
+
     });
     return new IssuesCollection;
 });

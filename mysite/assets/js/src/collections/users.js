@@ -14,7 +14,7 @@ define(['underscore', 'backbone', 'models/user'], function(_, Backbone, user) {
       },
 
       onAdd: function(){
-          console.log('Comment added')
+          console.log('User added')
       }
     });
     return new Users;

@@ -25,7 +25,7 @@ router.register(r'api/course', CourseInfoView)
 urlpatterns = patterns(
     '',
     url(
-        r'^hack/$',
+        r'^hack/.*$',
         login_required(TemplateView.as_view(template_name='ui/sidebar.html')),
         name='entry_point'
     ),

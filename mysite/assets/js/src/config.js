@@ -29,7 +29,8 @@ require([
 ], function (Backbone, AppView, utils, Workspace) {
     // Main access point for our app
     var router = new Workspace();
-	Backbone.history.start();
+    Backbone.history.start({pushState: true,
+							root: '/'});
 
     var csrftoken = utils.getCookie('csrftoken');
     var oldSync = Backbone.sync;
@@ -44,4 +45,6 @@ require([
     };
 
     new AppView({el:$('#lesson_issues')});
+
+
 });
