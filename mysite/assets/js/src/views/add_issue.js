@@ -60,7 +60,7 @@ define([
                 this.getFormInfo()
                 var temp_model = new issue(this.for_template);
                 if (temp_model.isValid()){
-                    Issues.create(temp_model);
+                    Issues.create(temp_model,{wait:true});
                 }
                 else{
                     this.showErrors(temp_model.errors)

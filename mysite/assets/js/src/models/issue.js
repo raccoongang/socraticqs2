@@ -7,7 +7,8 @@ define(['underscore', 'backbone'], function(_, Backbone) {
           'title':'',
           'description':'',
           'author_name':'',
-          'assignee':''
+          'assignee':'',
+          'is_open':true,
         },
 
         initialize: function() {
