@@ -22,9 +22,10 @@ define([
                 'click #byTitle': 'byTitle',
                 'click #byAuthor': 'byAuthor',
                 'click .choices': 'filterByLabels',
-                'click #show_all_labels': 'addAll',
+                'click .show_all': 'showAll',
                 'click #open_issues': 'goToOpen',
                 'click #closed_issues': 'goToClosed',
+                'click .assignee_choices': 'filterByAssignee'
             },
 
             initialize: function(){
@@ -48,6 +49,7 @@ define([
                 this.$el.html(this.template({closed_count: Issues.is_close().length,
                                              open_count: Issues.is_open().length,
                                              all_labels: Labels.toJSON(),
+                                             all_users: Users.toJSON(),
                                              filter: this.filter}));
                 this.addAll();
             },
@@ -64,6 +66,10 @@ define([
                 if (this.filter.label){
                     var label = this.filter.label;
                     collection = _.filter(collection, function(issue){ return $.inArray(label,issue.get('labels')) >= 0; });
+                }
+                if (this.filter.assignee){
+                    var assignee = this.filter.assignee;
+                    collection = _.filter(collection, function(issue){ return assignee == issue.get('assignee')});
                 }
                 for (var each in collection){
                     this.addOne(collection[each]);
@@ -83,6 +89,13 @@ define([
                 $('#close_link_th').addClass('success');
                 this.addAll();
             },
+
+            showAll: function(event){
+                var field = event.currentTarget.getAttribute('data');
+                delete this.filter[field];
+                this.addAll();
+            },
+
             addIssue: function(){
                 var view = new add_issue_view({el: this.el});
                 this.listenToOnce(view, 'cancel', this.render);
@@ -104,6 +117,11 @@ define([
             filterByLabels: function(event){
                 this.filter.label = parseInt(event.currentTarget.getAttribute('data'));
                 this.addAll();
+            },
+
+            filterByAssignee: function(event){
+               this.filter.assignee = parseInt(event.currentTarget.getAttribute('data'));
+               this.addAll();
             },
 
             goToOpen: function(e){

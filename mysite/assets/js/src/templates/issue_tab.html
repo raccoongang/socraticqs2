@@ -59,7 +59,7 @@
                 </li>
             <% }); %>
             <li role="separator" class="divider"></li>
-            <li><a href="#" id="show_all_labels">Show all</a></li>
+            <li><a href="#" class="show_all" data="label">Show all</a></li>
           </ul>
       </div>
       <div class="btn-group">
@@ -67,8 +67,11 @@
             Assignee <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" id="dropdown_assignee">
+             <% _.each(all_users, function(x) { %>
+                <li><a href="#" data="<%= x.id %>" class="assignee_choices" > <%= x.username %></a></li>
+             <% } ); %>
             <li role="separator" class="divider"></li>
-            <li><a href="#" filter="all" field="assignee">Show all</a></li>
+            <li><a href="#" class="show_all" data="assignee">Show all</a></li>
           </ul>
       </div>
       <div class="btn-group">
