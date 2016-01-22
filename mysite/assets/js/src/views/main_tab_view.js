@@ -1,8 +1,8 @@
-'use strict';
 define([
     'jquery',
     'underscore',
     'backbone',
+    'bootstrap',
     'collections/issues',
     'collections/labels',
     'collections/users',
@@ -12,20 +12,21 @@ define([
     'text!templates/issue_tab.html'
     ],
 
-    function($, _, Backbone, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
+    function($, _, Backbone, Bootstrap, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
+        'use strict';
         var main_tab_view = Backbone.View.extend({
 
             template: _.template(tab_template),
 
             events:{
                 'click .col-sm-2': 'addIssue',
-                'click #byTitle': 'byTitle',
-                'click #byAuthor': 'byAuthor',
+                'click .sort_by': 'sortBy',
                 'click .choices': 'filterByLabels',
                 'click .show_all': 'showAll',
                 'click #open_issues': 'goToOpen',
                 'click #closed_issues': 'goToClosed',
-                'click .assignee_choices': 'filterByAssignee'
+                'click .assignee_choices': 'filterByAssignee',
+                'click .author_choices': 'filterByAuthor'
             },
 
             initialize: function(){
@@ -38,6 +39,9 @@ define([
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
                 Backbone.history.loadUrl();
+                console.log(Bootstrap);
+                $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this}, this.addRoute);
+                $('a[href="#lesson_issues"]').on('hide.bs.tab', this.removeRoute);
             },
 
             new_unit: function(param){
@@ -71,6 +75,10 @@ define([
                     var assignee = this.filter.assignee;
                     collection = _.filter(collection, function(issue){ return assignee == issue.get('assignee')});
                 }
+                if (this.filter.author){
+                    var author = this.filter.author;
+                    collection = _.filter(collection, function(issue){ return author == issue.get('author')});
+                }
                 for (var each in collection){
                     this.addOne(collection[each]);
                 }
@@ -91,6 +99,7 @@ define([
             },
 
             showAll: function(event){
+                event.preventDefault(event);
                 var field = event.currentTarget.getAttribute('data');
                 delete this.filter[field];
                 this.addAll();
@@ -102,25 +111,28 @@ define([
                 view.render();
             },
 
-            byAuthor: function(){
-                Issues.compareBy = 'author_name';
-                Issues.sort();
-                this.addAll();
-            },
-
-            byTitle: function(){
-                Issues.compareBy = 'title';
+            sortBy: function(event){
+                event.preventDefault(event);
+                Issues.compareBy = event.currentTarget.getAttribute('data');;
                 Issues.sort();
                 this.addAll();
             },
 
             filterByLabels: function(event){
+                event.preventDefault();
                 this.filter.label = parseInt(event.currentTarget.getAttribute('data'));
                 this.addAll();
             },
 
             filterByAssignee: function(event){
+               event.preventDefault();
                this.filter.assignee = parseInt(event.currentTarget.getAttribute('data'));
+               this.addAll();
+            },
+
+            filterByAuthor: function(event){
+               event.preventDefault();
+               this.filter.author = parseInt(event.currentTarget.getAttribute('data'));
                this.addAll();
             },
 
@@ -130,6 +142,22 @@ define([
                 var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
                 Backbone.history.navigate(firstPartOfPath+'/issues/open/');
                 Issues.trigger('open');
+            },
+
+            addRoute: function(e){
+                e.preventDefault();
+                var pathname = window.location.pathname;
+                var urlPart =  e.data.state.filter.is_open ? 'open' : 'closed';
+                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/issues/'+urlPart+'/');
+            },
+
+            removeRoute: function(e){
+                e.preventDefault();
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
+                Backbone.history.navigate(firstPartOfPath);
+
             },
 
             goToClosed: function(e){

@@ -17,6 +17,11 @@
 {% endif %}
 {% endblock %}
 
+{% block requirejs %}
+<script data-main="{% static 'js/app' %}" src="{% static 'js/lib/require.js' %}"></script>
+    <script src="{% static 'js/main.min.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 
 <ul class="nav nav-tabs">
@@ -155,5 +160,4 @@ window.settings = {
 };
 </script>
 
-<script data-main="{% static 'js/app' %}" src="{% static 'js/lib/require.js' %}"></script>
 {% endblock %}

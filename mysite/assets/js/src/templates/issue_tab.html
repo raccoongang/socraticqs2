@@ -42,8 +42,11 @@
             Author <span class="caret"></span>
           </button>
           <ul class="dropdown-menu" id="dropdown_author">
+            <% _.each(all_users, function(x) { %>
+                <li><a href="#" data="<%= x.id %>" class="author_choices" > <%= x.username %></a></li>
+             <% } ); %>
             <li role="separator" class="divider"></li>
-            <li><a href="#" filter="all" field="author">Show all</a></li>
+            <li><a href="#" class="show_all" data="author">Show all</a></li>
           </ul>
       </div>
       <div class="btn-group">
@@ -79,8 +82,8 @@
             Sort <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-              <li><a id="byTitle" href="#">By title</a></li>
-              <li><a id="byAuthor" href="#">By author</a></li>
+              <li><a data="title" class="sort_by" href="#">By title</a></li>
+              <li><a data="author_name" class="sort_by" href="#">By author</a></li>
           </ul>
       </div>
     </div>
