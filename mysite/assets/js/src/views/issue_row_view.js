@@ -5,7 +5,8 @@ define([
     'backbone',
     'views/issue_detail',
     'views/label_view',
-    'text!templates/issue_row.html'
+    'text!templates/issue_row.html',
+     "bootstrap"
     ],
 
     function($, _, Backbone, detail_view, label_view, row_template){
@@ -32,9 +33,15 @@ define([
                 return this;
 		    },
 
-            showDetails: function(){
-                this.detailView = new detail_view({model:this.model, el: this.parent.el});
-                this.detailView.render();
+            showDetails: function(e){
+                e.preventDefault();
+                if (this.model.get('auto_issue')){
+                    $('.nav-tabs a[href="#data_issues"]').tab('show');
+                }
+                else {
+                    this.detailView = new detail_view({model: this.model, el: this.parent.el});
+                    this.detailView.render();
+                }
             },
 
         });

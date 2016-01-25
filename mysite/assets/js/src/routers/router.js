@@ -1,8 +1,7 @@
 define(['jquery',
 	    'backbone',
-        'bootstrap',
 	    'collections/issues'],
-function ($, Backbone, Bootstrap, Issues) {
+function ($, Backbone, Issues) {
 	'use strict';
 
 	var IssueRouter = Backbone.Router.extend({

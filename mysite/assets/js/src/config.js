@@ -26,11 +26,12 @@ require.config({
 });
 
 require([
+	'jquery',
 	'backbone',
 	'views/main_tab_view',
 	'utils/utils',
     'routers/router'
-], function (Backbone, AppView, utils, Workspace) {
+], function ($, Backbone, AppView, utils, Workspace) {
     // Main access point for our app
     var router = new Workspace();
     Backbone.history.start({pushState: true,
@@ -47,6 +48,11 @@ require([
     	options.url = _url;
         return oldSync(method, model, options);
     };
+
+	$('.nav-tabs').append('<li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>');
+	$('.nav-tabs').append('<li role="presentation" id="data_tab"><a data-toggle="tab" href="#data_issues">Data</a></li>');
+	$('.tab-content').append('<div id="lesson_issues" class="tab-pane fade"></div>');
+	$('.tab-content').append('<div id="data_issues" class="tab-pane fade">kjhkjhkjhkjhkjh</div>');
 
     new AppView({el:$('#lesson_issues')});
 

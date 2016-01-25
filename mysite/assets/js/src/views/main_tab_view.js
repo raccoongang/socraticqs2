@@ -2,7 +2,6 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'bootstrap',
     'collections/issues',
     'collections/labels',
     'collections/users',
@@ -12,7 +11,7 @@ define([
     'text!templates/issue_tab.html'
     ],
 
-    function($, _, Backbone, Bootstrap, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
+    function($, _, Backbone, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
         'use strict';
         var main_tab_view = Backbone.View.extend({
 
