@@ -21,12 +21,9 @@ define([
             events:{
                 'click .col-sm-2': 'addIssue',
                 'click .sort_by': 'sortBy',
-                'click .choices': 'filterByLabels',
                 'click .show_all': 'showAll',
-                'click #open_issues': 'goToOpen',
-                'click #closed_issues': 'goToClosed',
-                'click .assignee_choices': 'filterByAssignee',
-                'click .author_choices': 'filterByAuthor'
+                'click .close_open_link': 'goToOpenClosed',
+                'click .choices': 'filterBy',
             },
 
             initialize: function(){
@@ -39,9 +36,8 @@ define([
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
                 Backbone.history.loadUrl();
-                console.log(Bootstrap);
-                $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this}, this.addRoute);
-                $('a[href="#lesson_issues"]').on('hide.bs.tab', this.removeRoute);
+                $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
+                $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.openCloseTab);
             },
 
             new_unit: function(param){
@@ -118,55 +114,33 @@ define([
                 this.addAll();
             },
 
-            filterByLabels: function(event){
+            filterBy: function(event){
                 event.preventDefault();
-                this.filter.label = parseInt(event.currentTarget.getAttribute('data'));
+                var type = event.currentTarget.getAttribute('data-type');
+                this.filter[type] = parseInt(event.currentTarget.getAttribute('data'));
                 this.addAll();
             },
 
-            filterByAssignee: function(event){
-               event.preventDefault();
-               this.filter.assignee = parseInt(event.currentTarget.getAttribute('data'));
-               this.addAll();
-            },
-
-            filterByAuthor: function(event){
-               event.preventDefault();
-               this.filter.author = parseInt(event.currentTarget.getAttribute('data'));
-               this.addAll();
-            },
-
-            goToOpen: function(e){
+            openCloseTab: function(e){
                 e.preventDefault();
                 var pathname = window.location.pathname;
                 var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/issues/open/');
-                Issues.trigger('open');
+                if (e.data.add) {
+                    var urlPart =  e.data.state.filter.is_open ? 'open' : 'closed';
+                    Backbone.history.navigate(firstPartOfPath+'/issues/'+urlPart+'/');}
+                else {
+                    Backbone.history.navigate(firstPartOfPath);
+                }
             },
 
-            addRoute: function(e){
+            goToOpenClosed: function(e){
                 e.preventDefault();
+                var type = e.currentTarget.getAttribute('data');
                 var pathname = window.location.pathname;
-                var urlPart =  e.data.state.filter.is_open ? 'open' : 'closed';
                 var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/issues/'+urlPart+'/');
+                Backbone.history.navigate(firstPartOfPath+'/issues/'+type+'/');
+                Issues.trigger(type);
             },
-
-            removeRoute: function(e){
-                e.preventDefault();
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath);
-
-            },
-
-            goToClosed: function(e){
-                e.preventDefault();
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/issues/closed/');
-                Issues.trigger('closed');
-            }
 
         });
         return main_tab_view;
