@@ -1,16 +1,18 @@
 'use strict';
-define(['underscore', 'backbone', 'models/searchItem'], function(_, Backbone, searchItem) {
+define(['underscore', 'backbone', 'models/searchItem', 'views/search_view'], function(_, Backbone, searchItem, searchView) {
     var SearchCollection = Backbone.Collection.extend({
       model: searchItem,
 
       url: '/ui/api/search/',
 
-      initialize: function(model, options){
-          this.text = options.text.replace(/\+/g, ' ');
-          this.query  = options.text
+      initialize: function(model, text){
+          this.text = text;
+          this.query  = text;
       },
 
+      render: function(){
 
+      },
 
       compareBy:'title',
 
@@ -23,5 +25,5 @@ define(['underscore', 'backbone', 'models/searchItem'], function(_, Backbone, se
           console.log('searchItem added')
       }
     });
-    return new SearchCollection;
+    return SearchCollection;
 });
