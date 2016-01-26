@@ -110,7 +110,7 @@ gulp.task('rbuild', function () {
       bootstrap: '../../../../node_modules/bootstrap/dist/js/bootstrap'
     }
   })
-    .pipe(uglify())
+    //.pipe(uglify())
     .pipe(gulp.dest('./mysite/assets/static/js/'));
 });
 

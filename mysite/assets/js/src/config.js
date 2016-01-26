@@ -29,9 +29,10 @@ require([
 	'jquery',
 	'backbone',
 	'views/main_tab_view',
+	'views/search_view',
 	'utils/utils',
     'routers/router'
-], function ($, Backbone, AppView, utils, Workspace) {
+], function (Backbone, AppView, SearchView, utils, Workspace) {
     // Main access point for our app
     var router = new Workspace();
     Backbone.history.start({pushState: true,
@@ -55,6 +56,6 @@ require([
 	$('.tab-content').append('<div id="data_issues" class="tab-pane fade">kjhkjhkjhkjhkjh</div>');
 
     new AppView({el:$('#lesson_issues')});
-
+	new SearchView({el:$('#search_box')});
 
 });
