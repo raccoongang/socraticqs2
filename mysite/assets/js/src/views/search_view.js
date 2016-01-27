@@ -38,11 +38,15 @@ define([
                 }
             },
 
-            //TRASH
             render: function () {
                 this.pathname = window.location.pathname;
                 $('nav + div').hide();
+<<<<<<< HEAD
                 Backbone.history.navigate('search='+this.search+'/');
+=======
+                var firstPartOfPath = this.pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+\/issues/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/?search='+this.search);
+>>>>>>> a97b0ea298f91497e6ac2f6982f8bb621dfedc0f
                 var $self_el = $(this.template());
                 var $self = this;
                 _.each(SearchCollection.toJSON(), function(data){
