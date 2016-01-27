@@ -29,17 +29,21 @@ define([
             },
 
             search: function (param) {
-                var search = (param.text) ? param.text : $('#searchText').val();
-                if (search.length >= 3) {
-                    SearchCollection.fetch({data: {text:search}, reset: true});
+                if (param.fromUrl == true) {
+                    $('#searchText').val(param.text);
+                }
+                this.search = (param.text) ? param.text : $('#searchText').val();
+                if (this.search.length >= 3) {
+                    SearchCollection.fetch({data: {text:this.search}, reset: true});
                 }
             },
 
             //TRASH
             render: function () {
-                console.log('asdfaf');
+                this.pathname = window.location.pathname;
                 $('nav + div').hide();
-                //this.$el.html(this.template());
+                var firstPartOfPath = this.pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+\/issues/ )[0];
+                Backbone.history.navigate(firstPartOfPath+'/search/?'+this.search+'/');
                 var $self_el = $(this.template());
                 var $self = this;
                 _.each(SearchCollection.toJSON(), function(data){
@@ -47,9 +51,11 @@ define([
                 });
                 $self_el.insertAfter('nav');
             },
+
             close_search: function(){
                 $('nav + div').remove();
                 $('nav + div').show();
+                Backbone.history.navigate(this.pathname);
 
             }
 

@@ -36,6 +36,10 @@ define([
                 Users.fetch({reset:true});
                 Backbone.history.loadUrl();
                 $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
+                $('a[href="#data_issues"]').on('show.bs.tab', function(){console.log('show data');});
+                $('a[href="#data_issues"]').on('shown.bs.tab', function(){console.log('shown data')});
+                $('a[href="#data_issues"]').on('hide.bs.tab', function(){console.log('hide data')});
+                $('a[href="#lesson_issues"]').on('show.bs.tab', function(){console.log('show lesson')});
                 $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.openCloseTab);
             },
 

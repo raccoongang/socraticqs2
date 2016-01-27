@@ -51,7 +51,7 @@ require([
     };
 
 	$('.nav-tabs').append('<li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>');
-	$('.nav-tabs').append('<li role="presentation" id="data_tab"><a data-toggle="tab" href="#data_issues">Data</a></li>');
+	$('.nav-tabs').append('<li role="presentation" id="data_tab"><a data-toggle="tab" href="#data_issues" id="data-link">Data</a></li>');
 	$('.tab-content').append('<div id="lesson_issues" class="tab-pane fade"></div>');
 	$('.tab-content').append('<div id="data_issues" class="tab-pane fade">kjhkjhkjhkjhkjh</div>');
     $('<div class="navbar-form navbar-left" role="search" id="search_box"> <div class="form-group"> <input type="text" class="form-control" placeholder="Search" id="searchText"> </div> <button type="submit" class="btn btn-default" id="search_button">Go</button></div>').insertBefore('.navbar-right');

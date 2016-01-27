@@ -1,12 +1,14 @@
 define(['jquery',
 	    'backbone',
+        'bootstrap',
 	    'collections/issues'],
-function ($, Backbone, Issues) {
+function ($, Backbone, Bootstrap, Issues) {
 	'use strict';
 
 	var IssueRouter = Backbone.Router.extend({
 		routes: {
             'ui/hack/(?*text)':'search',
+            'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id/issues/search/(?*text)(/)': 'search',
 			'ui/hack/lesson/:number(/)': 'getIssues',
 			'ui/hack/lesson/:number/:is_open(/)': 'is_open',
             'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id(/)': 'Issues',
@@ -15,10 +17,10 @@ function ($, Backbone, Issues) {
 
 		},
 
-        search: function (text) {
+        search: function (course_id, unit_id, concept_id, text) {
             text = (typeof text !== 'undefined' & text !== null) ? text : '';
             if (text.length > 0) {
-                Backbone.trigger('newSearch',{text:text});
+                Backbone.trigger('newSearch',{text:text, fromUrl: true});
 
             }
         },

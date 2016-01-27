@@ -33,10 +33,18 @@ define([
                 return this;
 		    },
 
+            makeDataTabActive: function(){
+                $('.nav-tabs > li.active').removeClass('active');
+                $('.tab-content > div.active').removeClass('active');
+                $('#data_tab').addClass('active');
+                $('#data_issues').addClass('active').removeClass('fade');
+            },
+
+
             showDetails: function(e){
                 e.preventDefault();
                 if (this.model.get('auto_issue')){
-                    $('.nav-tabs a[href="#data_issues"]').tab('show');
+                    this.makeDataTabActive();
                 }
                 else {
                     this.detailView = new detail_view({model: this.model, el: this.parent.el});
@@ -48,4 +56,4 @@ define([
 	return IssueRowView;
 });
 
-
+//TODO try to manually change active class for this tabs
