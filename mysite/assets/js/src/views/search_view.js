@@ -11,8 +11,11 @@ define([
 
     function ($, _, Backbone, SearchCollection, SearchTemplate, ItemTemplate) {
         var SearchView = Backbone.View.extend({
+
             template: _.template(SearchTemplate),
+
             item_template: _.template(ItemTemplate),
+
             events: {
                 "keyup #searchText": "search",
                 "click #search_button": "search",
@@ -34,16 +37,20 @@ define([
 
             //TRASH
             render: function () {
-                this.close_search();
-                this.$el.find("#result").html(this.template());
-                var $self_el = $(this.el);
+                console.log('asdfaf');
+                $('nav + div').hide();
+                //this.$el.html(this.template());
+                var $self_el = $(this.template());
                 var $self = this;
                 _.each(SearchCollection.toJSON(), function(data){
                     $self_el.find("#search_table").append($self.item_template(data));
-                })
+                });
+                $self_el.insertAfter('nav');
             },
             close_search: function(){
-                this.$el.find("#result").empty();
+                $('nav + div').remove();
+                $('nav + div').show();
+
             }
 
         });
