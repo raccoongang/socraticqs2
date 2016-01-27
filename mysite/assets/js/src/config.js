@@ -32,7 +32,7 @@ require([
 	'views/search_view',
 	'utils/utils',
     'routers/router'
-], function (Backbone, AppView, SearchView, utils, Workspace) {
+], function ($, Backbone, AppView, SearchView, utils, Workspace) {
     // Main access point for our app
     var router = new Workspace();
     Backbone.history.start({pushState: true,

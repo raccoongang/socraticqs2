@@ -1,9 +1,7 @@
 define(['jquery',
 	    'backbone',
-        'bootstrap',
-	    'collections/issues',
-        'collections/SearchCollection'],
-function ($, Backbone, Bootstrap, Issues, SearchCollection) {
+	    'collections/issues'],
+function ($, Backbone, Issues) {
 	'use strict';
 
 	var IssueRouter = Backbone.Router.extend({
@@ -20,14 +18,8 @@ function ($, Backbone, Bootstrap, Issues, SearchCollection) {
         search: function (text) {
             text = (typeof text !== 'undefined' & text !== null) ? text : '';
             if (text.length > 0) {
-                text = text.substr(5, text.length);
-                var collection = new SearchCollection([], text);
-                collection.fetch({
-                    'reset': true, error: function (collection, response, options) {
-                        console.log('Something take wrong');
-                        console.log(response.responseText);
-                    }
-                });
+                Backbone.trigger('newSearch',{text:text});
+
             }
         },
 

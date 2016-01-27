@@ -25,5 +25,5 @@ define(['underscore', 'backbone', 'models/searchItem', 'views/search_view'], fun
           console.log('searchItem added')
       }
     });
-    return SearchCollection;
+    return new SearchCollection;
 });
