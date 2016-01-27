@@ -126,22 +126,18 @@ define([
 
             openCloseTab: function(e){
                 e.preventDefault();
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
                 if (e.data.add) {
                     var urlPart =  e.data.state.filter.is_open ? 'open' : 'closed';
-                    Backbone.history.navigate(firstPartOfPath+'/issues/'+urlPart+'/');}
+                    Backbone.history.navigate('issues/'+urlPart+'/');}
                 else {
-                    Backbone.history.navigate(firstPartOfPath);
+                    Backbone.history.navigate();
                 }
             },
 
             goToOpenClosed: function(e){
                 e.preventDefault();
                 var type = e.currentTarget.getAttribute('data');
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /\/ct\/teach\/\w+\/\d+\/\w+\/\d+\/\w+\/\d+/ )[0];
-                Backbone.history.navigate(firstPartOfPath+'/issues/'+type+'/');
+                Backbone.history.navigate('issues/'+type+'/');
                 Issues.trigger(type);
             },
 
