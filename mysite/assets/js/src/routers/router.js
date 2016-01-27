@@ -7,13 +7,8 @@ function ($, Backbone, Bootstrap, Issues) {
 
 	var IssueRouter = Backbone.Router.extend({
 		routes: {
-<<<<<<< HEAD
             '(/)':'Issues',
             'search=*text(/)':'search',
-=======
-            'ui/hack/(?*text)':'search',
-            'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id/issues/?search=*text(/)': 'search',
->>>>>>> a97b0ea298f91497e6ac2f6982f8bb621dfedc0f
 			'ui/hack/lesson/:number(/)': 'getIssues',
 			'ui/hack/lesson/:number/:is_open(/)': 'is_open',
             'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id(/)': 'Issues',
