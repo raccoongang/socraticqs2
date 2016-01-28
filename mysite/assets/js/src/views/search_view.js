@@ -26,10 +26,11 @@ define([
                 Backbone.on('newSearch', this.search, this);
                 this.listenTo(SearchCollection, 'reset', this.render);
                 Backbone.history.loadUrl();
-                var $elf = this;
+                var $self = this;
                 $('body').on('click', '#close_search', function(){
-                    $elf.close_search();
+                    $self.close_search();
                 });
+                this.saved_url = '';
             },
 
             search: function (param) {
@@ -44,6 +45,10 @@ define([
 
             render: function () {
                 this.pathname = window.location.pathname;
+                var saved_url_lst = this.el.baseURI.split('#');
+                if (saved_url_lst.length > 1) {
+                    this.saved_url = saved_url_lst[1];
+                }
                 $('nav + div').hide();
                 Backbone.history.navigate('search='+this.search+'/');
                 var $self_el = $(this.template());
@@ -54,11 +59,11 @@ define([
                 $self_el.insertAfter('nav');
             },
 
-            close_search: function(){
+            close_search: function () {
                 $('nav + div').remove();
                 $('#searchText').val('');
-                Backbone.history.navigate(this.pathname);
-
+                $('nav + div').show();
+                Backbone.history.navigate(this.saved_url);
             }
 
         });
