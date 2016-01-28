@@ -26,6 +26,10 @@ define([
                 Backbone.on('newSearch', this.search, this);
                 this.listenTo(SearchCollection, 'reset', this.render);
                 Backbone.history.loadUrl();
+                var $elf = this;
+                $('body').on('click', '#close_search', function(){
+                    $elf.close_search();
+                });
             },
 
             search: function (param) {
@@ -52,7 +56,7 @@ define([
 
             close_search: function(){
                 $('nav + div').remove();
-                $('nav + div').show();
+                $('#searchText').val('');
                 Backbone.history.navigate(this.pathname);
 
             }
