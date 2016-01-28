@@ -33,7 +33,7 @@ define([
                     $('#searchText').val(param.text);
                 }
                 this.search = (param.text) ? param.text : $('#searchText').val();
-                if (this.search.length % 3 == 0) {
+                if (this.search.length % 3 == 0 && this.search.length !== 0) {
                     SearchCollection.fetch({data: {text:this.search}, reset: true});
                 }
             },
