@@ -29,10 +29,10 @@
 <hr>
 <table class="table">
     <thead>
-    <th id="open_link_th" <% if (filter.is_open) { %> class="success" <% } %> style="text-align: center;">
+    <th id="open_link_th" <% if (filter.is_open == 'open' ) { %> class="success" <% } %> style="text-align: center;">
         <a href="#" class="close_open_link" data="open"><span class="glyphicon glyphicon-exclamation-sign"></span> Open: <span id="open_span"><%= open_count %></span></a>
     </th>
-    <th id="close_link_th" <% if (!filter.is_open) { %> class="success" <% } %> style=" text-align: center;">
+    <th id="close_link_th" <% if (!filter.is_open == 'closed' ) { %> class="success" <% } %> style=" text-align: center;">
        <a href="#" class="close_open_link" data="closed"><span class="glyphicon glyphicon-ok"></span> Closed: <span id="closed_span"><%= closed_count %></span></a>
     </th>
     <th>
@@ -57,12 +57,12 @@
             <% _.each(all_labels, function(x) { %>
                 <li style="margin-left: 20px; margin-bottom: 15px;">
                     <h4>
-                        <a href="#label" data="<%= x.id %>"  data-type="label" class="choices label <%= x.color %>"> <%= x.title %></a>
+                        <a href="#label" data="<%= x.id %>"  data-type="labels__in" class="choices label <%= x.color %>"> <%= x.title %></a>
                     </h4>
                 </li>
             <% }); %>
             <li role="separator" class="divider"></li>
-            <li><a href="#" class="show_all" data="label">Show all</a></li>
+            <li><a href="#" class="show_all" data="labels__in">Show all</a></li>
           </ul>
       </div>
       <div class="btn-group">

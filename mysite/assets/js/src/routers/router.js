@@ -7,13 +7,10 @@ function ($, Backbone, Bootstrap, Issues) {
 
 	var IssueRouter = Backbone.Router.extend({
 		routes: {
-            '(/)':'Issues',
+            '(/)':'openIssues',
             'search=*text(/)':'search',
-			'ui/hack/lesson/:number(/)': 'getIssues',
-			'ui/hack/lesson/:number/:is_open(/)': 'is_open',
-            'ct/teach/courses/:course_id/units/:unit_id/concepts/:concept_id(/)': 'Issues',
             'issues(/)': 'openIssues',
-            'issues/:is_open(/)': 'is_open'
+            'issues/*params(/)': 'is_open'
 
 		},
 
@@ -32,27 +29,28 @@ function ($, Backbone, Bootstrap, Issues) {
           return parseInt(firstPartOfPath.match(/\d+/)[0]);
         },
 
-		is_open: function (is_open) {
+		is_open: function (params) {
+            var list_of_params = params.split('/');
+            for (var each in list_of_params) {
+                list_of_params[each]=list_of_params[each].split('=');
+            }
+            var dict_of_params = {};
+            for (var each in list_of_params) {
+                dict_of_params[list_of_params[each][0]]=list_of_params[each][1];
+            }
+
             $('a[href="#lesson_issues"]').tab('show');
             var concept_id = this.getUnitLessonId();
-            Backbone.trigger('unit_lesson',{unit_lesson: concept_id});
-			Issues.trigger(is_open);
+            console.log(dict_of_params);
+            Backbone.trigger('unit_lesson',dict_of_params);
+			Issues.trigger(dict_of_params['is_open']);
 		},
-
-		getIssues: function(number){
-            Backbone.trigger('unit_lesson',{unit_lesson: number});
-        },
-
-        Issues: function(course_id, unit_id, concept_id){
-            Backbone.trigger('unit_lesson',{unit_lesson: concept_id});
-        },
 
         openIssues: function(){
             $('a[href="#lesson_issues"]').tab('show');
             var concept_id = this.getUnitLessonId();
-            Backbone.trigger('unit_lesson',{unit_lesson: concept_id});
-        },
-
+            Backbone.trigger('unit_lesson',{unit_lesson: concept_id, is_open:'open'});
+        }
 	});
 
 	return IssueRouter;

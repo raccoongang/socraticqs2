@@ -31,21 +31,16 @@ define([
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
-                this.filter = {is_open: true};
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
-                Backbone.history.loadUrl();
                 $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
-                $('a[href="#data_issues"]').on('show.bs.tab', function(){console.log('show data');});
-                $('a[href="#data_issues"]').on('shown.bs.tab', function(){console.log('shown data')});
-                $('a[href="#data_issues"]').on('hide.bs.tab', function(){console.log('hide data')});
-                $('a[href="#lesson_issues"]').on('show.bs.tab', function(){console.log('show lesson')});
                 $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.openCloseTab);
+                Backbone.history.loadUrl();
             },
 
             new_unit: function(param){
-                Issues.unit_lesson = param.unit_lesson;
-                Issues.fetch({data: param, reset:true});
+                this.filter = param;
+                Issues.fetch({data: this.filter, reset:true});
             },
 
             render: function(){
@@ -65,7 +60,8 @@ define([
 
             addAll: function(){
                 $('#table_of_issues').empty();
-                var collection = Issues.where({is_open: this.filter.is_open});
+                var is_open = this.filter.is_open == 'open' ? true : false;
+                var collection = Issues.where({is_open: is_open});
                 if (this.filter.label){
                     var label = this.filter.label;
                     collection = _.filter(collection, function(issue){ return $.inArray(label,issue.get('labels')) >= 0; });
@@ -84,14 +80,14 @@ define([
             },
 
             addOpen: function() {
-                this.filter.is_open = true;
+                this.filter.is_open = 'open';
                 $('#open_link_th').addClass('success');
                 $('#close_link_th').removeClass('success');
                 this.addAll();
             },
 
             addClosed: function() {
-                this.filter.is_open = false;
+                this.filter.is_open = 'closed';
                 $('#open_link_th').removeClass('success');
                 $('#close_link_th').addClass('success');
                 this.addAll();
@@ -101,7 +97,8 @@ define([
                 event.preventDefault(event);
                 var field = event.currentTarget.getAttribute('data');
                 delete this.filter[field];
-                this.addAll();
+                this.changeUrl();
+                Issues.fetch({data: this.filter, reset:true});
             },
 
             addIssue: function(){
@@ -112,23 +109,35 @@ define([
 
             sortBy: function(event){
                 event.preventDefault(event);
-                Issues.compareBy = event.currentTarget.getAttribute('data');;
+                Issues.compareBy = event.currentTarget.getAttribute('data');
                 Issues.sort();
                 this.addAll();
             },
 
             filterBy: function(event){
+
                 event.preventDefault();
                 var type = event.currentTarget.getAttribute('data-type');
                 this.filter[type] = parseInt(event.currentTarget.getAttribute('data'));
-                this.addAll();
+                Issues.fetch({data: this.filter, reset:true});
+                this.changeUrl();
+            },
+
+            changeUrl: function(){
+                var url = 'issues/';
+                for (var each in this.filter){
+                    if (each != 'unit_lesson') {
+                        url += each + '=' + this.filter[each] + '/';
+                    }
+                }
+                Backbone.history.navigate(url);
             },
 
             openCloseTab: function(e){
                 e.preventDefault();
                 if (e.data.add) {
-                    var urlPart =  e.data.state.filter.is_open ? 'open' : 'closed';
-                    Backbone.history.navigate('issues/'+urlPart+'/');}
+                    e.data.state.changeUrl();
+                    }
                 else {
                     Backbone.history.navigate();
                 }
@@ -137,7 +146,8 @@ define([
             goToOpenClosed: function(e){
                 e.preventDefault();
                 var type = e.currentTarget.getAttribute('data');
-                Backbone.history.navigate('issues/'+type+'/');
+                this.filter.is_open = type;
+                this.changeUrl();
                 Issues.trigger(type);
             },
 
