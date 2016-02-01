@@ -25,7 +25,7 @@ function ($, Backbone, Bootstrap, Issues) {
 
         getUnitLessonId: function(){
           var pathname = window.location.pathname;
-          var firstPartOfPath = pathname.match( /concepts\/\d+/ )[0];
+          var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ )[0];
           return parseInt(firstPartOfPath.match(/\d+/)[0]);
         },
 
@@ -48,8 +48,8 @@ function ($, Backbone, Bootstrap, Issues) {
 
         openIssues: function(){
             $('a[href="#lesson_issues"]').tab('show');
-            var concept_id = this.getUnitLessonId();
-            Backbone.trigger('unit_lesson',{unit_lesson: concept_id, is_open:'open'});
+            var ul_id = this.getUnitLessonId();
+            Backbone.trigger('unit_lesson',{unit_lesson: ul_id, is_open:'open'});
         }
 	});
 
