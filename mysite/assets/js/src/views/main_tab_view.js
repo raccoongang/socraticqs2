@@ -127,7 +127,7 @@ define([
                 var url = 'issues/';
                 for (var each in this.filter){
                     if (each != 'unit_lesson') {
-                        url += each + '=' + this.filter[each] + '&';
+                        url += each + '=' + this.filter[each] + '/';
                     }
                 }
                 Backbone.history.navigate(url);

@@ -43,7 +43,7 @@
           </button>
           <ul class="dropdown-menu" id="dropdown_author">
             <% _.each(all_users, function(x) { %>
-                <li><a href="#" data="<%= x.id %>"  data-type="author" class="choices" > <%= x.username %></a></li>
+                <li><a href="#" data="<%= x.id %>"  data-type="author" class="<% if (filter.author == x.id ) { %>selected <% } %>choices" > <%= x.username %></a></li>
              <% } ); %>
             <li role="separator" class="divider"></li>
             <li><a href="#" class="show_all" data="author">Show all</a></li>
@@ -57,7 +57,7 @@
             <% _.each(all_labels, function(x) { %>
                 <li style="margin-left: 20px; margin-bottom: 15px;">
                     <h4>
-                        <a href="#label" data="<%= x.id %>"  data-type="labels__in" class="choices label <%= x.color %>"> <%= x.title %></a>
+                        <a href="#label" data="<%= x.id %>"  data-type="labels__in" class="<% if (filter.labels__in == x.id) { %>selected <% } %>choices label <%= x.color %>"> <%= x.title %></a>
                     </h4>
                 </li>
             <% }); %>
@@ -71,7 +71,7 @@
           </button>
           <ul class="dropdown-menu" id="dropdown_assignee">
              <% _.each(all_users, function(x) { %>
-                <li><a href="#" data="<%= x.id %>" data-type="assignee" class="choices" > <%= x.username %></a></li>
+                <li><a href="#" data="<%= x.id %>" data-type="assignee" class="<% if (filter.assignee == x.id ) { %>selected <% } %>choices" > <%= x.username %></a></li>
              <% } ); %>
             <li role="separator" class="divider"></li>
             <li><a href="#" class="show_all" data="assignee">Show all</a></li>
@@ -97,4 +97,3 @@
     </table>
 
     </div>
-

@@ -20,6 +20,11 @@
 {% block requirejs %}
 <script data-main="{% static 'js/app' %}" src="{% static 'js/lib/require.js' %}"></script>
     <script src="{% static 'js/main.min.js' %}"></script>
+<style>
+.selected {
+    background-color: #4fc1e9;
+}
+</style>
 {% endblock %}
 
 {% block content %}
