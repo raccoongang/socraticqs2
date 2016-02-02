@@ -29,7 +29,9 @@ define([
                                             this.undelegateEvents();});
                 this.model = new issue({'author':window.settings.user,
                                         'labels':[],
-                                        'unit_lesson': Issues.unit_lesson});
+                                        'unit_lesson': Issues.unit_lesson,
+                                        'unit': Issues.unit,
+                                        'course': Issues.course});
                 this.for_template = this.model.toJSON();
                 this.for_template['all_users'] = Users.toJSON();
             },

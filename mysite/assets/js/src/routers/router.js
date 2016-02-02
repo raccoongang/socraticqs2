@@ -18,16 +18,26 @@ function ($, Backbone, Bootstrap, Issues) {
             text = (typeof text !== 'undefined' & text !== null) ? text : '';
             if (text.length > 0) {
                 Backbone.trigger('newSearch',{text:text, fromUrl: true, });
-                var concept_id = this.getUnitLessonId();
-                Backbone.trigger('unit_lesson',{unit_lesson: concept_id});
+                var concept_id = this.getId();
+                Backbone.trigger('unit_lesson', concept_id);
             }
         },
 
-        getUnitLessonId: function(){
+        getId: function(){
           var pathname = window.location.pathname;
-          var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ )[0];
-          return parseInt(firstPartOfPath.match(/\d+/)[0]);
-        },
+          var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+          if (firstPartOfPath){
+              return {'unit_lesson':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+          }
+          firstPartOfPath = pathname.match( /units\/\d+/ );
+          if (firstPartOfPath){
+              return {'unit':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+          }
+          firstPartOfPath = pathname.match( /courses\/\d+/ );
+          if (firstPartOfPath){
+              return {'course':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+          }
+         },
 
 		is_open: function (params) {
             var list_of_params = params.split('/');
@@ -40,8 +50,10 @@ function ($, Backbone, Bootstrap, Issues) {
             }
 
             $('a[href="#lesson_issues"]').tab('show');
-            var concept_id = this.getUnitLessonId();
-            console.log(dict_of_params);
+            var concept_id = this.getId();
+            for (var attrname in concept_id) {
+                dict_of_params[attrname] = concept_id[attrname];
+            }
             Backbone.trigger('unit_lesson',dict_of_params);
 			Issues.trigger(dict_of_params['is_open']);
 		},
@@ -52,8 +64,9 @@ function ($, Backbone, Bootstrap, Issues) {
         },
 
         getIssues: function(){
-            var ul_id = this.getUnitLessonId();
-            Backbone.trigger('unit_lesson',{unit_lesson: ul_id, is_open:'open'});
+            var ul_id = this.getId();
+            ul_id['is_open']='open';
+            Backbone.trigger('unit_lesson',ul_id);
         }
 	});
 

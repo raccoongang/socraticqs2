@@ -40,6 +40,9 @@ define([
 
             new_unit: function(param){
                 this.filter = param;
+                Issues.unit_lesson = param['unit_lesson'];
+                Issues.unit = param['unit'];
+                Issues.course = param['course'];
                 Issues.fetch({data: this.filter, reset:true});
             },
 
@@ -115,7 +118,6 @@ define([
             },
 
             filterBy: function(event){
-
                 event.preventDefault();
                 var type = event.currentTarget.getAttribute('data-type');
                 this.filter[type] = parseInt(event.currentTarget.getAttribute('data'));
@@ -125,8 +127,9 @@ define([
 
             changeUrl: function(){
                 var url = 'issues/';
+                var exclude = ['unit_lesson', 'unit', 'course'];
                 for (var each in this.filter){
-                    if (each != 'unit_lesson') {
+                    if ($.inArray(each, exclude) == -1) {
                         url += each + '=' + this.filter[each] + '/';
                     }
                 }

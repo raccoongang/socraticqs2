@@ -10,7 +10,7 @@ class IssuesView(viewsets.ModelViewSet):
     """
     queryset = Issue.objects.all()
     serializer_class = IssueSerializer
-    filters = ['unit_lesson', 'labels__in', 'author', 'assignee']
+    filters = ['unit_lesson', 'labels__in', 'author', 'assignee', 'unit', 'course']
 
     def get_queryset(self):
         queryset = super(IssuesView, self).get_queryset()
