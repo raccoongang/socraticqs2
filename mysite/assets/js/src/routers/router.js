@@ -7,7 +7,7 @@ function ($, Backbone, Bootstrap, Issues) {
 
 	var IssueRouter = Backbone.Router.extend({
 		routes: {
-            '(/)':'openIssues',
+            '(/)':'getIssues',
             'search=*text(/)':'search',
             'issues(/)': 'openIssues',
             'issues/*params(/)': 'is_open'
@@ -47,7 +47,11 @@ function ($, Backbone, Bootstrap, Issues) {
 		},
 
         openIssues: function(){
+            this.getIssues();
             $('a[href="#lesson_issues"]').tab('show');
+        },
+
+        getIssues: function(){
             var ul_id = this.getUnitLessonId();
             Backbone.trigger('unit_lesson',{unit_lesson: ul_id, is_open:'open'});
         }
