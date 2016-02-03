@@ -135,17 +135,21 @@ class LessonInfoSerializer(serializers.ModelSerializer):
     """
     title = serializers.SerializerMethodField()
     text = serializers.SerializerMethodField()
+    raw_text = serializers.SerializerMethodField()
     added_by = serializers.SerializerMethodField()
 
     class Meta:
         model = UnitLesson
-        fields = ('id', 'title', 'text', 'added_by', 'order')
+        fields = ('id', 'title', 'text', 'raw_text', 'added_by', 'order')
 
     def get_title(self, obj):
         return Lesson.objects.filter(id=obj.lesson.id).first().title
 
     def get_text(self, obj):
         return mark_safe(md2html(Lesson.objects.filter(id=obj.lesson.id).first().text))
+
+    def get_raw_text(self, obj):
+        return Lesson.objects.filter(id=obj.lesson.id).first().text
 
     def get_added_by(self, obj):
         return obj.addedBy.username

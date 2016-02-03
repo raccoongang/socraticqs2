@@ -40,9 +40,17 @@ define([
 
             new_unit: function(param){
                 this.filter = param;
-                Issues.unit_lesson = param['unit_lesson'];
-                Issues.unit = param['unit'];
-                Issues.course = param['course'];
+                //TODO get rid of this fuckin shit and make it simplier
+                if (param['unit_lesson']){
+                    Issues.unit_lesson = param['unit_lesson'];
+                    delete this.filter['unit'];
+                    delete this.filter['course'];}
+                else if (param['unit']) {Issues.unit = param['unit'];
+                         delete this.filter['unit_lesson'];
+                         delete this.filter['course'];}
+                else {Issues.course = param['course'];
+                      delete this.filter['unit_lesson'];
+                      delete this.filter['unit'];}
                 Issues.fetch({data: this.filter, reset:true});
             },
 

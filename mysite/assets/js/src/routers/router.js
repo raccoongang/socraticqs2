@@ -25,18 +25,20 @@ function ($, Backbone, Bootstrap, Issues) {
 
         getId: function(){
           var pathname = window.location.pathname;
+          var return_dict = {};
           var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
           if (firstPartOfPath){
-              return {'unit_lesson':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+              return_dict['unit_lesson'] = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
           }
           firstPartOfPath = pathname.match( /units\/\d+/ );
           if (firstPartOfPath){
-              return {'unit':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+              return_dict['unit'] = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
           }
           firstPartOfPath = pathname.match( /courses\/\d+/ );
           if (firstPartOfPath){
-              return {'course':parseInt(firstPartOfPath[0].match(/\d+/)[0])};
+              return_dict['course'] = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
           }
+          return return_dict;
          },
 
 		is_open: function (params) {

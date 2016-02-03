@@ -31,7 +31,7 @@ define([
                                         'labels':[],
                                         'unit_lesson': Issues.unit_lesson,
                                         'unit': Issues.unit,
-                                        'course': Issues.course});
+                                        'concept': Issues.concept});
                 this.for_template = this.model.toJSON();
                 this.for_template['all_users'] = Users.toJSON();
             },

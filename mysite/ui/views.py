@@ -131,6 +131,30 @@ class LessonInfoView(viewsets.ModelViewSet):
             queryset = queryset.filter(unit_id=self.request.GET['unit_id'])
         return queryset
 
+    def update(self, request, pk):
+        ul = get_object_or_404(UnitLesson, id=pk)
+        title = request.data.get('title')
+        text = request.data.get('raw_text')
+        print text
+        Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
+        serializer = LessonInfoSerializer(ul)
+        return Response(serializer.data)
+
+    def create(self, request):
+        title = request.data.get('title')
+        text = request.data.get('raw_text')
+        user_id = request.data.get('author')
+        unit_id = request.data.get('unit_id')
+        print user_id
+        lesson = Lesson.objects.create(title=title,
+                                       text=text,
+                                       treeID=1,
+                                       addedBy=User.objects.get(id=user_id))
+        unit = Unit.objects.get(id=unit_id)
+        ul = UnitLesson.create_from_lesson(lesson, unit)
+        serializer = LessonInfoSerializer(ul)
+        return Response(serializer.data)
+
 
 class ConceptInfoView(viewsets.ModelViewSet):
     """
