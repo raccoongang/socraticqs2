@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, InstructorsSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, InstructorsSerializer, UnitConceptSerializer
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -215,3 +215,27 @@ class InstructorView(viewsets.ModelViewSet):
         queryset = super(InstructorView, self).get_queryset()
         queryset = queryset.filter(id__in=set([role.user.id for role in Role.objects.filter(role=Role.INSTRUCTOR)]))
         return queryset
+
+
+class UnitConceptView(viewsets.ModelViewSet):
+    """
+    API for Concept
+    Response:
+    {
+    }
+    """
+    queryset = UnitLesson.objects.all()
+    serializer_class = UnitConceptSerializer
+
+    def get_queryset(self):
+        queryset = super(UnitConceptView, self).get_queryset()
+
+        if 'unit_id' in self.kwargs:
+            unit_id = self.kwargs['unit_id']
+            queryset.filter(unit_id=unit_id).exclude(lesson__isnull=True).exclude(lesson__concept__isnull=True)
+        return queryset
+
+    def update(self, request, *args, **kwargs):
+        result = super(UnitConceptView, self, request, *args, **kwargs).update()
+
+

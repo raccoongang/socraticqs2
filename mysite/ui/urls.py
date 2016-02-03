@@ -11,7 +11,8 @@ from ui.views import (
     ConceptInfoView,
     SearchView,
     CourseInfoView,
-    InstructorView
+    InstructorView,
+    UnitConceptView
 
 )
 
@@ -20,6 +21,8 @@ router.register(r'api/lesson', LessonInfoView)
 router.register(r'api/concept', ConceptInfoView)
 router.register(r'api/search', SearchView, base_name='search')
 router.register(r'api/course', CourseInfoView)
+router.register(r'api/(?P<unit_id>\d+)/unit_concept', UnitConceptView)
+
 
 
 urlpatterns = patterns(
