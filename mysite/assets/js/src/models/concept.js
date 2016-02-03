@@ -1,22 +1,22 @@
 'use strict';
-define(['underscore', 'backbone'], function(_, Backbone) {
+define(['underscore', 'backbone'], function (_, Backbone) {
     var concept = Backbone.Model.extend({
 
-       defaults:{
-          'title':'',
-          'description':'',
-          'author_name':'',
+        defaults: {
+            'title': '',
+            'text': '',
+            'added_by': '',
         },
 
-        initialize: function() {
+        initialize: function () {
         },
 
-        clear: function() {
+        clear: function () {
             this.destroy();
             this.view.remove();
         },
 
-        validate: function(attrs, options) {
+        validate: function (attrs, options) {
             var errors = this.errors = {};
             if (!attrs.title) errors.title = 'Title is required';
             if (!_.isEmpty(errors)) return errors;

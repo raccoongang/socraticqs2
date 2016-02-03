@@ -30,9 +30,10 @@ require([
 	'backbone',
 	'views/main_tab_view',
 	'views/search_view',
+	'views/concept_view',
 	'utils/utils',
     'routers/router'
-], function ($, Backbone, AppView, SearchView, utils, Workspace) {
+], function ($, Backbone, AppView, SearchView, ConceptView, utils, Workspace) {
     // Main access point for our app
     var router = new Workspace();
     Backbone.history.start();
@@ -51,11 +52,15 @@ require([
 
 	$('.nav-tabs').append('<li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>');
 	$('.nav-tabs').append('<li role="presentation" id="data_tab"><a data-toggle="tab" href="#data_issues" id="data-link">Data</a></li>');
+	$('.nav-tabs').append('<li role="presentation" id="concept_tab"><a data-toggle="tab" href="#concept_issues" id="concept-link">Concept</a></li>');
 	$('.tab-content').append('<div id="lesson_issues" class="tab-pane fade"></div>');
 	$('.tab-content').append('<div id="data_issues" class="tab-pane fade">kjhkjhkjhkjhkjh</div>');
-    $('<div class="navbar-form navbar-left" role="search" id="search_box"> <div class="form-group"> <input type="text" class="form-control" placeholder="Search" id="searchText"> </div> <button type="submit" class="btn btn-default" id="search_button">Go</button></div>').insertBefore('.navbar-right');
+	$('.tab-content').append('<div id="concept_issue" class="tab-pane fade">Some </div>');
+	$('<div class="navbar-form navbar-left" role="search" id="search_box"> <div class="form-group"> <input type="text" class="form-control" placeholder="Search" id="searchText"> </div> <button type="submit" class="btn btn-default" id="search_button">Go</button></div>').insertBefore('.navbar-right');
 
     new AppView({el:$('#lesson_issues')});
 	new SearchView({el:$('#search_box')});
+	new ConceptView({el:$('#concept_tabs')});
+	console.log("Bla=ba");
 
 });

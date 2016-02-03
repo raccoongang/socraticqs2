@@ -201,13 +201,32 @@ class UnitConceptSerializer(serializers.ModelSerializer):
     Concept Serialize
     """
     title = serializers.SerializerMethodField()
+    text = serializers.SerializerMethodField()
+    added_by = serializers.SerializerMethodField()
 
     class Meta:
         model = Concept
-        fields = ('id', 'title')
+        fields = ('id', 'title', 'text', 'added_by')
 
     def get_title(self, obj):
         if obj.lesson.concept:
             return obj.lesson.concept.title
         else:
             return ""
+
+    def get_text(self, obj):
+        if obj.lesson:
+            return obj.lesson.text
+        else:
+            return ""
+
+    def get_added_by(self, obj):
+        if obj.lesson.concept:
+            return obj.lesson.concept.addedBy.username
+        else:
+            return ""
+
+    def save(self, **kwargs):
+        import pdb;pdb.set_trace()
+        result = super(UnitConceptSerializer, self, **kwargs).save()
+
