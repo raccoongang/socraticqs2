@@ -198,3 +198,20 @@ class InstructorsSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username')
+
+
+class UnitConceptSerializer(serializers.ModelSerializer):
+    """
+    Concept Serialize
+    """
+    title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Concept
+        fields = ('id', 'title')
+
+    def get_title(self, obj):
+        if obj.lesson.concept:
+            return obj.lesson.concept.title
+        else:
+            return ""

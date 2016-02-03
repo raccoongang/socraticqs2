@@ -11,8 +11,8 @@ from ui.views import (
     ConceptInfoView,
     SearchView,
     CourseSidebarView,
-    InstructorView
-
+    InstructorView,
+    UnitConceptView,
 )
 
 router = SimpleRouter()
@@ -20,6 +20,7 @@ router.register(r'api/lesson', LessonInfoView)
 router.register(r'api/concept', ConceptInfoView)
 router.register(r'api/search', SearchView, base_name='search')
 router.register(r'api/courses', CourseView)
+router.register(r'api/(?P<unit_id>\d+)/unit_concept', UnitConceptView)
 
 
 urlpatterns = patterns(
