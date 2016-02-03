@@ -90,7 +90,7 @@ class UnitContentSerializer(serializers.HyperlinkedModelSerializer):
         return ConceptsSerializer(many=True).to_representation(obj.get_related_concepts().keys())
 
 
-class CourseSerializer(serializers.ModelSerializer):
+class CourseSidebarSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ('id', 'title',)
@@ -173,7 +173,7 @@ class ConceptInfoSerializer(serializers.ModelSerializer):
         return obj.addedBy.username
 
 
-class CourseInfoSerializer(serializers.ModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
     """
     Serializer for retrive course data
     """
@@ -181,7 +181,7 @@ class CourseInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ('title', 'description', 'added_by')
+        fields = ('id', 'title', 'description', 'added_by', 'addedBy')
 
     def get_added_by(self, obj):
         return obj.addedBy.username

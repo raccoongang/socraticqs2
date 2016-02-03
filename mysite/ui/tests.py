@@ -267,6 +267,7 @@ class SearchUnitLessonTest(TestCase):
         self.assertContains(response, 'Test find')
         self.assertNotContains(response, 'Not to find')
 
+
 class CourseInfoAPIUnitsTests(TestCase):
 
     def setUp(self):
@@ -275,11 +276,18 @@ class CourseInfoAPIUnitsTests(TestCase):
         self.course = Course(title='title', description='description', addedBy=self.user)
         self.course.save()
 
-
     def test_get_course_info(self):
         self.client.login(username='username', password='top_secret')
         result = self.client.get(reverse('ui:course-detail', kwargs={'pk': self.course.id}))
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), dict)
-        self.assertEqual(json.loads(result.content),
-                         {u'description': u'description', u'added_by': u'username', u'title': u'title'})
+        self.assertEqual(
+            json.loads(result.content),
+            {
+                'description': u'description',
+                'added_by': u'username',
+                'title': u'title',
+                'addedBy': self.user.id,
+                'id': self.course.id
+            }
+        )

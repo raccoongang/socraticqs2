@@ -10,7 +10,7 @@ from ui.views import (
     LessonInfoView,
     ConceptInfoView,
     SearchView,
-    CourseInfoView,
+    CourseSidebarView,
     InstructorView
 
 )
@@ -19,7 +19,7 @@ router = SimpleRouter()
 router.register(r'api/lesson', LessonInfoView)
 router.register(r'api/concept', ConceptInfoView)
 router.register(r'api/search', SearchView, base_name='search')
-router.register(r'api/course', CourseInfoView)
+router.register(r'api/courses', CourseView)
 
 
 urlpatterns = patterns(
@@ -35,7 +35,7 @@ urlpatterns = patterns(
         UnitContentView.as_view({'get': 'retrieve', 'put': 'append'}),
         name='unit_content'
     ),
-    url(r'^api/courses/', CourseView.as_view({'get': 'list'}), name='course_list'),
+    url(r'^api/courses_for_sidebar/', CourseSidebarView.as_view({'get': 'list'}), name='course_list'),
     url(r'^api/assignee/', InstructorView.as_view({'get': 'list'}), name='assignee_list'),
     url(r'^', include(router.urls)),
 )

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseInfoSerializer, InstructorsSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -39,7 +39,7 @@ class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
         return queryset
 
 
-class CourseView(mixins.ListModelMixin, viewsets.GenericViewSet):
+class CourseSidebarView(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     API returning courses item(lesson, concept)
 
@@ -52,11 +52,11 @@ class CourseView(mixins.ListModelMixin, viewsets.GenericViewSet):
     ]
 
     """
-    serializer_class = CourseSerializer
+    serializer_class = CourseSidebarSerializer
     queryset = Course.objects.all()
 
     def get_queryset(self):
-        queryset = super(CourseView, self).get_queryset()
+        queryset = super(CourseSidebarView, self).get_queryset()
         if self.request.user:
             queryset = Course.objects.filter(addedBy=self.request.user)
         return queryset
@@ -189,7 +189,7 @@ class SearchView(mixins.ListModelMixin, viewsets.GenericViewSet):
         return queryset
 
 
-class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+class CourseView(viewsets.ModelViewSet):
     """
     API for getting course data
 
@@ -200,8 +200,18 @@ class CourseInfoView(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     "added_by"
     }
     """
-    serializer_class = CourseInfoSerializer
+    serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    filters = ['addedBy']
+
+    def get_queryset(self):
+        queryset = super(CourseView, self).get_queryset()
+        query_filter = {}
+        for each in self.filters:
+            if each in self.request.GET:
+                query_filter[each] = self.request.GET[each]
+        queryset = queryset.filter(**query_filter)
+        return queryset
 
 
 class InstructorView(viewsets.ModelViewSet):
