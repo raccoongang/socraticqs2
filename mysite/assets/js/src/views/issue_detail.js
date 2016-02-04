@@ -29,7 +29,7 @@ define([
                 this.listenTo(Comments, 'change', this.renderComments);
                 this.listenTo(Comments, 'reset', this.renderComments);
                 Comments.fetch({data: {issue_id:this.model.get('id')}, reset:true});
-                var url = 'issues/issue=' + this.model.id;
+                var url = 'issues/' + this.model.id;
                 Backbone.history.navigate(url);
             },
 

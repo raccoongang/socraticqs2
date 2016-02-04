@@ -10,6 +10,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
 	var IssueRouter = Backbone.Router.extend({
 		routes: {
             '(/)':'getIssues',
+            'issues/:issue_id(/)': 'showIssueDetail',
             'search=*text(/)':'search',
             'issues(/)': 'openIssues',
             'issues/*params(/)': 'is_open',
@@ -58,11 +59,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
                 dict_of_params[list_of_params[each][0]]=list_of_params[each][1];
             }
 
-            if (dict_of_params['issue']){
-                this.showIssueDetail(dict_of_params['issue']);
-                return
-            }
-            $('a[href="#lesson_issues"]').tab('show');
+                     $('a[href="#lesson_issues"]').tab('show');
             var concept_id = this.getId();
             for (var attrname in concept_id) {
                 dict_of_params[attrname] = concept_id[attrname];
@@ -72,6 +69,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
 		},
 
         showIssueDetail: function(issue_id){
+            console.log(issue_id);
             var model = new issue({id:issue_id});
             model.fetch();
             this.listenToOnce(model, 'change', function () {
