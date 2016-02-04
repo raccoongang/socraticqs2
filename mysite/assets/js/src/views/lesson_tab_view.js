@@ -29,6 +29,7 @@ define([
             render: function () {
                 this.model = Lessons.get(Lessons.unit_lesson)
                 this.$el.html(this.template(this.model.toJSON()));
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,'#lesson_content']);
 		    },
 
             get_lesson: function(param){
