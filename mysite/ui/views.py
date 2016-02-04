@@ -285,7 +285,7 @@ class ConceptView(viewsets.ModelViewSet):
 
     # TODO this is not working - fix
     def create(self, request, *args, **kwargs):
-        unit_id = self.request.POST.get('unit_id')
+        unit_id = self.request.data.get('unit_id')
         if not unit_id:
             return HttpResponseBadRequest('You should provide unit_id')
 
@@ -294,12 +294,12 @@ class ConceptView(viewsets.ModelViewSet):
             request.data.get('title'),
             request.data.get('text'),
             unit,
-            User.objects.get(id=request.data.get('added_by'))
+            request.user
         )
 
         lesson = Lesson.objects.create(title=request.data.get('title'),
                                        text=request.data.get('text'),
-                                       addedBy=User.objects.get(id=request.data.get('added_by')))
+                                       addedBy=request.user)
         lesson.save_root(concept)
         ul = UnitLesson.create_from_lesson(lesson, unit)
 
