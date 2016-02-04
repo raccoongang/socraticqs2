@@ -276,6 +276,10 @@ class ConceptView(viewsets.ModelViewSet):
         title = request.data.get('title')
         text = request.data.get('text')
         Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
+        concept = Lesson.objects.get(id=ul.lesson.id).concept
+        concept.title = title
+        concept.text = text
+        concept.save()
         serializer = ConceptInfoSerializer(ul)
         return Response(serializer.data)
 
