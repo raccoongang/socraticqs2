@@ -20,7 +20,7 @@ define([
             events:{
                 'click #issue_detail_cancel_button': 'goBackToMainView',
                 'click #open_button': 'openIssue',
-                'click #close_button': 'closeIssue',
+                'click #lesson_issues': 'closeIssue',
                 'click #edit_issue': 'editIssue'
             },
 
@@ -29,6 +29,8 @@ define([
                 this.listenTo(Comments, 'change', this.renderComments);
                 this.listenTo(Comments, 'reset', this.renderComments);
                 Comments.fetch({data: {issue_id:this.model.get('id')}, reset:true});
+                var url = 'issues/issue=' + this.model.id;
+                Backbone.history.navigate(url);
             },
 
             render: function () {
@@ -73,7 +75,7 @@ define([
             },
 
             closeIssue: function(){
-                this.model.save({is_open: false});
+                console.log('asdfasdf');
             }
         });
 	return IssueDetailView;

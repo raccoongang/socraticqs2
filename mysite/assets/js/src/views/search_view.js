@@ -25,7 +25,7 @@ define([
             initialize: function () {
                 Backbone.on('newSearch', this.search, this);
                 this.listenTo(SearchCollection, 'reset', this.render);
-                Backbone.history.loadUrl();
+                //Backbone.history.loadUrl();
                 var $self = this;
                 $('body').on('click', '#close_search', function(){
                     $self.close_search();

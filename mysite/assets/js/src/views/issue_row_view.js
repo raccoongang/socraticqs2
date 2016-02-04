@@ -3,13 +3,14 @@ define([
     'jquery',
     'underscore',
     'backbone',
+    'collections/issues',
     'views/issue_detail',
     'views/label_view',
     'text!templates/issue_row.html',
      "bootstrap"
     ],
 
-    function($, _, Backbone, detail_view, label_view, row_template){
+    function($, _, Backbone, Issues, detail_view, label_view, row_template){
         var IssueRowView = Backbone.View.extend({
             tagName: 'tr',
 
@@ -24,6 +25,7 @@ define([
             initialize: function () {
                 this.listenTo(this.model, 'change', this.render);
                 this.listenTo(this.model, 'destroy', this.remove);
+                this.listenTo(this, 'show', this.showDetails);
             },
 
             render: function () {
@@ -42,7 +44,7 @@ define([
 
 
             showDetails: function(e){
-                e.preventDefault();
+                if (e){e.preventDefault();}
                 if (this.model.get('auto_issue')){
                     this.makeDataTabActive();
                 }

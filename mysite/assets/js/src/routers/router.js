@@ -1,8 +1,10 @@
 define(['jquery',
 	    'backbone',
         'bootstrap',
-	    'collections/issues'],
-function ($, Backbone, Bootstrap, Issues) {
+	    'models/issue',
+        'collections/issues',
+        'views/issue_detail'],
+function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
 	'use strict';
 
 	var IssueRouter = Backbone.Router.extend({
@@ -10,9 +12,14 @@ function ($, Backbone, Bootstrap, Issues) {
             '(/)':'getIssues',
             'search=*text(/)':'search',
             'issues(/)': 'openIssues',
-            'issues/*params(/)': 'is_open'
+            'issues/*params(/)': 'is_open',
 
 		},
+
+        initialize: function(options) {
+             $('a[href="#lesson_issues"]').on('click', {state: this}, this.openIssues);
+
+        },
 
         search: function (text) {
             text = (typeof text !== 'undefined' & text !== null) ? text : '';
@@ -51,6 +58,10 @@ function ($, Backbone, Bootstrap, Issues) {
                 dict_of_params[list_of_params[each][0]]=list_of_params[each][1];
             }
 
+            if (dict_of_params['issue']){
+                this.showIssueDetail(dict_of_params['issue']);
+                return
+            }
             $('a[href="#lesson_issues"]').tab('show');
             var concept_id = this.getId();
             for (var attrname in concept_id) {
@@ -60,8 +71,24 @@ function ($, Backbone, Bootstrap, Issues) {
 			Issues.trigger(dict_of_params['is_open']);
 		},
 
-        openIssues: function(){
-            this.getIssues();
+        showIssueDetail: function(issue_id){
+            var model = new issue({id:issue_id});
+            model.fetch();
+            this.listenToOnce(model, 'change', function () {
+                            $('a[href="#lesson_issues"]').tab('show');
+                            this.detailView = new detail_view({model: model, el: $('#lesson_issues')});
+                            this.detailView.render();
+                            });
+
+        },
+
+        openIssues: function(e){
+            if (e) {
+                e.data.state.getIssues();
+            }
+            else {
+                this.getIssues();
+            }
             $('a[href="#lesson_issues"]').tab('show');
         },
 
@@ -69,7 +96,9 @@ function ($, Backbone, Bootstrap, Issues) {
             var ul_id = this.getId();
             ul_id['is_open']='open';
             Backbone.trigger('unit_lesson',ul_id);
-        }
+        },
+
+
 	});
 
 	return IssueRouter;

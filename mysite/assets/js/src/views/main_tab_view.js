@@ -33,13 +33,14 @@ define([
                 this.listenTo(Issues, 'closed', this.addClosed);
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
-                $('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
+                //$('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
                 $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.openCloseTab);
-                Backbone.history.loadUrl();
+                Backbone.history.start();
             },
 
             new_unit: function(param){
                 this.filter = param;
+                this.changeUrl();
                 //TODO get rid of this fuckin shit and make it simplier
                 if (param['unit_lesson']){
                     Issues.unit_lesson = param['unit_lesson'];
@@ -67,6 +68,9 @@ define([
                 var view = new issue_row_view({model: issue});
                 view.parent = this;
 			    $('#table_of_issues').append(view.render().el);
+                if (issue.id == this.filter['issue']){
+                    view.trigger('show');
+                }
             },
 
             addAll: function(){
@@ -87,6 +91,10 @@ define([
                 }
                 for (var each in collection){
                     this.addOne(collection[each]);
+                }
+                if (this.filter.issue) {
+                    console.log('show issue');
+                    Backbone.trigger('show_issue', {'issue':this.filter.issue});
                 }
             },
 
@@ -135,23 +143,20 @@ define([
 
             changeUrl: function(){
                 var url = 'issues/';
-                var exclude = ['unit_lesson', 'unit', 'course'];
+                var exclude = ['unit_lesson', 'unit', 'course', 'issue'];
                 for (var each in this.filter){
                     if ($.inArray(each, exclude) == -1) {
                         url += each + '=' + this.filter[each] + '/';
                     }
                 }
+
                 Backbone.history.navigate(url);
             },
 
             openCloseTab: function(e){
-                e.preventDefault();
-                if (e.data.add) {
-                    e.data.state.changeUrl();
-                    }
-                else {
+
                     Backbone.history.navigate();
-                }
+
             },
 
             goToOpenClosed: function(e){

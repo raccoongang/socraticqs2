@@ -11,6 +11,8 @@ define(['underscore', 'backbone'], function(_, Backbone) {
           'is_open':true,
         },
 
+        urlRoot: '/api/issues/',
+
         initialize: function() {
         },
 
