@@ -2,6 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
+from django.http.response import HttpResponseBadRequest
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
@@ -251,26 +252,25 @@ class InstructorView(viewsets.ModelViewSet):
         return queryset
 
 
-class UnitConceptView(viewsets.ModelViewSet):
+class ConceptView(viewsets.ModelViewSet):
     """
     API for Concept
     Response:
     {
     }
     """
-    queryset = UnitLesson.objects.all()
+    queryset = UnitLesson.objects.filter(lesson__concept__isnull=False)
     serializer_class = ConceptInfoSerializer
 
     def get_queryset(self):
-        queryset = super(UnitConceptView, self).get_queryset()
+        queryset = super(ConceptView, self).get_queryset()
 
-        if 'unit_id' in self.kwargs:
-            unit_id = self.kwargs['unit_id']
-            queryset = queryset.filter(unit_id=unit_id) \
-                               .exclude(lesson__isnull=True) \
-                               .exclude(lesson__concept__isnull=True)
+        if 'unit_id' in self.request.GET:
+            unit_id = self.request.GET['unit_id']
+            queryset = queryset.filter(unit_id=unit_id)
         return queryset
 
+    # TODO this is not working - fix
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
         title = request.data.get('title')
@@ -279,12 +279,19 @@ class UnitConceptView(viewsets.ModelViewSet):
         serializer = ConceptInfoSerializer(ul)
         return Response(serializer.data)
 
+    # TODO this is not working - fix
     def create(self, request, *args, **kwargs):
-        unit = Unit.objects.get(id=self.kwargs['unit_id'])
-        concept = Concept.new_concept(request.data.get('title'),
-                            request.data.get('text'),
-                            unit,
-                            User.objects.get(id=request.data.get('added_by')))
+        unit_id = self.request.POST.get('unit_id')
+        if not unit_id:
+            return HttpResponseBadRequest('You should provide unit_id')
+
+        unit = Unit.objects.get(id=unit_id)
+        concept = Concept.new_concept(
+            request.data.get('title'),
+            request.data.get('text'),
+            unit,
+            User.objects.get(id=request.data.get('added_by'))
+        )
 
         lesson = Lesson.objects.create(title=request.data.get('title'),
                                        text=request.data.get('text'),
