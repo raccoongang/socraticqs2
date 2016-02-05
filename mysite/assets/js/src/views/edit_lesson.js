@@ -5,7 +5,7 @@ define([
     'backbone',
     'models/lesson',
     'collections/lessons',
-    'text!templates/edit_lesson.html'
+    'text!templates/edit_add_lesson.html'
     ],
 
     function($, _, Backbone, lesson, Lessons, edit_lesson){
@@ -26,7 +26,9 @@ define([
 
             render: function () {
                 this.$el.empty();
-                this.$el.html(this.template(this.model.toJSON()));
+                var for_template = this.model.toJSON();
+                for_template.concepts = Concepts.toJSON();
+                this.$el.html(this.template(for_template));
 		    },
 
             getFormInfo: function(){

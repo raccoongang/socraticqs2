@@ -33,8 +33,7 @@ define([
                 this.listenTo(Issues, 'closed', this.addClosed);
                 Labels.fetch({reset:true});
                 Users.fetch({reset:true});
-                //$('a[href="#lesson_issues"]').on('shown.bs.tab', {state: this, add: true}, this.openCloseTab);
-                $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.openCloseTab);
+                $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.closeTab);
                 Backbone.history.start();
             },
 
@@ -91,10 +90,6 @@ define([
                 }
                 for (var each in collection){
                     this.addOne(collection[each]);
-                }
-                if (this.filter.issue) {
-                    console.log('show issue');
-                    Backbone.trigger('show_issue', {'issue':this.filter.issue});
                 }
             },
 
@@ -153,10 +148,8 @@ define([
                 Backbone.history.navigate(url);
             },
 
-            openCloseTab: function(e){
-
-                    Backbone.history.navigate();
-
+            closeTab: function(e){
+                Backbone.history.navigate();
             },
 
             goToOpenClosed: function(e){

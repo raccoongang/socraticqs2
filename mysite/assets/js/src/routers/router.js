@@ -14,11 +14,13 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
             'search=*text(/)':'search',
             'issues(/)': 'openIssues',
             'issues/*params(/)': 'is_open',
+            'lesson(/)': 'openLesson'
 
 		},
 
         initialize: function(options) {
              $('a[href="#lesson_issues"]').on('click', {state: this}, this.openIssues);
+             $('a[href="#lesson_content"]').on('click', {state: this}, this.openLesson);
 
         },
 
@@ -78,6 +80,18 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
                             this.detailView.render();
                             });
 
+        },
+
+        openLesson: function(e){
+            if (e) {
+                var ul_id = e.data.state.getId();
+            }
+            else {
+                var ul_id = this.getId();
+            }
+
+            Backbone.trigger('lesson',ul_id);
+            $('a[href="#lesson_content"]').tab('show');
         },
 
         openIssues: function(e){

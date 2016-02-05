@@ -162,10 +162,14 @@ class ConceptInfoSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
     text = serializers.SerializerMethodField()
     added_by = serializers.SerializerMethodField()
+    concept_id = serializers.SerializerMethodField()
 
     class Meta:
         model = UnitLesson
-        fields = ('id', 'title', 'text', 'added_by')
+        fields = ('id', 'concept_id', 'title', 'text', 'added_by')
+
+    def get_concept_id(self, obj):
+        return obj.lesson.concept.id
 
     def get_title(self, obj):
         return obj.lesson.concept.title

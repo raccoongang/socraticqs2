@@ -5,12 +5,13 @@ define([
     'backbone',
     'collections/users',
     'collections/lessons',
+    'collections/concepts',
     'views/edit_lesson',
     'views/add_lesson',
     'text!templates/lesson_detail.html'
     ],
 
-    function($, _, Backbone, Users, Lessons, edit_lesson, add_lesson, lesson_detail_template){
+    function($, _, Backbone, Users, Lessons, Concepts, edit_lesson, add_lesson, lesson_detail_template){
         var LessonDetailView = Backbone.View.extend({
             template: _.template(lesson_detail_template),
 
@@ -21,9 +22,11 @@ define([
             },
 
             initialize: function(){
-                Backbone.on('unit_lesson', this.get_lesson, this);
+                Backbone.on('lesson', this.get_lesson, this);
                 this.listenTo(Lessons, 'reset', this.render);
                 this.listenTo(Lessons, 'change', this.render);
+                $('a[href="#lesson_content"]').on('hide.bs.tab', {add: false}, this.closeTab);
+
             },
 
             render: function () {
@@ -35,7 +38,9 @@ define([
             get_lesson: function(param){
                 Lessons.unit = param['unit'];
                 Lessons.unit_lesson = param['unit_lesson'];
-                Lessons.fetch({data: {'unit': Lessons.unit}, reset:true});
+                Lessons.fetch({data: {'ul_id': Lessons.unit_lesson}, reset:true});
+                Concepts.fetch({data:{'unit_id': Lessons.unit}, reset:true});
+                Backbone.history.navigate('lesson');
             },
 
             backFromEdit: function(){
@@ -53,6 +58,10 @@ define([
                 this.listenToOnce(view, 'cancel', this.render);
                 view.render();
             },
+
+            closeTab: function(){
+                Backbone.history.navigate();
+            }
 
         });
 	return LessonDetailView;
