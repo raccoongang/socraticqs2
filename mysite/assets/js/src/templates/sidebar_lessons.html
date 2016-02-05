@@ -1,0 +1,6 @@
+<h3>Lessons</h3>
+<ul>
+<% _.each(all, function(x) {%>
+    <li><label data="<%= x.id %>" class="label"> <%= x.title %></label></li>
+<% } ); %>
+</ul>

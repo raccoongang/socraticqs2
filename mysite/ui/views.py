@@ -128,9 +128,15 @@ class LessonInfoView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = UnitLesson.objects.all()
+        if 'unit_id' in self.request.GET:
+            queryset = UnitLesson.objects.filter(unit__id=self.request.GET['unit_id'])
         if 'ul_id' in self.request.GET:
             queryset = UnitLesson.objects.filter(id=self.request.GET['ul_id'])
+        print queryset
         return queryset
+
+    def get_object(self):
+        return UnitLesson.objects.filter(id=self.kwargs[self.lookup_field]).first()
 
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
@@ -281,7 +287,6 @@ class ConceptView(viewsets.ModelViewSet):
         Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
         concept = Lesson.objects.get(id=ul.lesson.id).concept
         concept.title = title
-        concept.text = text
         concept.save()
         serializer = ConceptInfoSerializer(ul)
         return Response(serializer.data)

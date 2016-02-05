@@ -3,8 +3,9 @@ define(['underscore', 'backbone'], function(_, Backbone) {
     var lesson = Backbone.Model.extend({
 
        defaults:{
-            'title':''
         },
+
+        urlRoot: '/ui/api/lesson/',
 
         initialize: function() {
         },

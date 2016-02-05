@@ -6,31 +6,35 @@ define([
     'collections/users',
     'collections/lessons',
     'collections/concepts',
+    'models/lesson',
     'views/edit_lesson',
     'views/add_lesson',
-    'text!templates/lesson_detail.html'
+    'text!templates/lesson_detail.html',
+    'text!templates/sidebar_lessons.html'
     ],
 
-    function($, _, Backbone, Users, Lessons, Concepts, edit_lesson, add_lesson, lesson_detail_template){
+    function($, _, Backbone, Users, Lessons, Concepts, lesson, edit_lesson, add_lesson, lesson_detail_template, sidebar_lesson_template){
         var LessonDetailView = Backbone.View.extend({
             template: _.template(lesson_detail_template),
+
+            sidebar_template: _.template(sidebar_lesson_template),
 
             events:{
                 'click #edit_lesson': 'editLesson',
                 'click #add_lesson': 'addLesson'
-
+                'click label': 'foo'
             },
+
+            model: {},
 
             initialize: function(){
                 Backbone.on('lesson', this.get_lesson, this);
-                this.listenTo(Lessons, 'reset', this.render);
-                this.listenTo(Lessons, 'change', this.render);
+                this.listenTo(Lessons,'reset', this.lessonsInSidebar);
                 $('a[href="#lesson_content"]').on('hide.bs.tab', {add: false}, this.closeTab);
 
             },
 
             render: function () {
-                this.model = Lessons.get(Lessons.unit_lesson)
                 $('#title').text(this.model.get('title'));
                 this.$el.html(this.template(this.model.toJSON()));
                 MathJax.Hub.Queue(["Typeset",MathJax.Hub,'#lesson_content']);
@@ -38,8 +42,10 @@ define([
 
             get_lesson: function(param){
                 Lessons.unit = param['unit'];
-                Lessons.unit_lesson = param['unit_lesson'];
-                Lessons.fetch({data: {'ul_id': Lessons.unit_lesson}, reset:true});
+                Lessons.fetch({data: {'unit_id':Lessons.unit}, reset:true});
+                this.model = new lesson({'id':param['unit_lesson']});
+                this.listenTo(this.model, 'change', this.render);
+                this.model.fetch();
                 Concepts.fetch({data:{'unit_id': Lessons.unit}, reset:true});
                 Backbone.history.navigate('lesson');
             },
@@ -62,6 +68,14 @@ define([
 
             closeTab: function(){
                 Backbone.history.navigate();
+            },
+
+            lessonsInSidebar: function(){
+                $('#sidebar_lessons').html(this.sidebar_template({all:Lessons.toJSON()}));
+            },
+
+            foo: function(){
+                console.log('asdfsdfsaf')
             }
 
         });

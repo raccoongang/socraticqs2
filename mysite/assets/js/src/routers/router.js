@@ -71,7 +71,6 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
 		},
 
         showIssueDetail: function(issue_id){
-            console.log(issue_id);
             var model = new issue({id:issue_id});
             model.fetch();
             this.listenToOnce(model, 'change', function () {
@@ -92,6 +91,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
 
             Backbone.trigger('lesson',ul_id);
             $('a[href="#lesson_content"]').tab('show');
+            Backbone.history.navigate('lesson/');
         },
 
         openIssues: function(e){
@@ -102,6 +102,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
                 this.getIssues();
             }
             $('a[href="#lesson_issues"]').tab('show');
+            Backbone.history.navigate('issues/')
         },
 
         getIssues: function(){
