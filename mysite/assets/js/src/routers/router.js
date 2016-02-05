@@ -108,6 +108,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
             var ul_id = this.getId();
             ul_id['is_open']='open';
             Backbone.trigger('unit_lesson',ul_id);
+            Backbone.trigger('lesson',ul_id);
         },
 
 

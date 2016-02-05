@@ -4,11 +4,12 @@ define([
     'underscore',
     'backbone',
     'models/lesson',
+    'collections/concepts',
     'collections/lessons',
     'text!templates/edit_add_lesson.html'
     ],
 
-    function($, _, Backbone, lesson, Lessons, edit_lesson){
+    function($, _, Backbone, lesson, Concepts, Lessons, edit_lesson){
         var EditLessonView = Backbone.View.extend({
 
             template: _.template(edit_lesson),

@@ -35,13 +35,12 @@ require([
     'routers/router'
 ], function ($, Backbone, AppView, SearchView, LessonView, utils, Workspace) {
     // Main access point for our app
-
+    $('.nav-tabs').append('<li role="presentation" id="lesson_tab"><a data-toggle="tab" href="#lesson_content" id="lesson-link">Details</a></li>');
     $('.nav-tabs').append('<li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>');
 	$('.nav-tabs').append('<li role="presentation" id="data_tab"><a data-toggle="tab" href="#data_issues" id="data-link">Data</a></li>');
-    $('.nav-tabs').append('<li role="presentation" id="lesson_tab"><a data-toggle="tab" href="#lesson_content" id="lesson-link">Lesson</a></li>');
 	$('.tab-content').append('<div id="lesson_issues" class="tab-pane fade"></div>');
-	$('.tab-content').append('<div id="data_issues" class="tab-pane fade">kjhkjhkjhkjhkjh</div>');
-   	$('.tab-content').append('<div id="lesson_content" class="tab-pane fade">lesson</div>');
+	$('.tab-content').append('<div id="data_issues" class="tab-pane fade"></div>');
+   	$('.tab-content').append('<div id="lesson_content" class="tab-pane fade"></div>');
 
     var router = new Workspace();
 
@@ -58,12 +57,12 @@ require([
     };
 
 
-    $('<div class="navbar-form navbar-left" role="search" id="search_box"> <div class="form-group"> <input type="text" class="form-control" placeholder="Search" id="searchText"> </div> <button type="submit" class="btn btn-default" id="search_button">Go</button></div>').insertBefore('.navbar-right');
+    $('<div class="navbar-form navbar-right" role="search" id="search_box"> <div class="form-group"> <input type="text" class="form-control" placeholder="Search" id="searchText"> </div> <button type="submit" class="btn btn-default" id="search_button">Go</button></div>').insertBefore('.navbar-right');
     //$('nav').next('div').andSelf().wrapAll('<div class="container-fluid" style="padding-left: 300px;"/>');
     //$('body').append('<nav class="navmenu navmenu-default navmenu-fixed-left" role="navigation">sadf</nav>');
 
-	new SearchView({el:$('#search_box')});
     new LessonView({el:$('#lesson_content')});
+	new SearchView({el:$('#search_box')});
     new AppView({el:$('#lesson_issues')});
 
 });

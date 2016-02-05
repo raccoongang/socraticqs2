@@ -27,7 +27,7 @@ urlpatterns = patterns(
     '',
     url(
         r'^hack/.*$',
-        login_required(TemplateView.as_view(template_name='ui/sidebar.html')),
+        login_required(TemplateView.as_view(template_name='ui/hack.html')),
         name='entry_point'
     ),
     url(r'^api/courses/(?P<course_id>\d+)/units/$', CourseUnitsView.as_view({'get': 'list'}), name='units_list'),
