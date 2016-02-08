@@ -31,9 +31,10 @@ require([
 	'views/main_tab_view',
 	'views/search_view',
     'views/lesson_tab_view',
+    'views/sidebar_view',
 	'utils/utils',
     'routers/router'
-], function ($, Backbone, AppView, SearchView, LessonView, utils, Workspace) {
+], function ($, Backbone, AppView, SearchView, LessonView, SidebarView, utils, Workspace) {
     // Main access point for our app
     $('.nav-tabs').append('<li role="presentation" id="lesson_tab"><a data-toggle="tab" href="#lesson_content" id="lesson-link">Details</a></li>');
     $('.nav-tabs').append('<li role="presentation" id="issues_tab"><a data-toggle="tab" href="#lesson_issues">Issues</a></li>');
@@ -63,6 +64,7 @@ require([
 
     new LessonView({el:$('#lesson_content')});
 	new SearchView({el:$('#search_box')});
+    new SidebarView({el:$('#sidebar_lessons')});
     new AppView({el:$('#lesson_issues')});
 
 });

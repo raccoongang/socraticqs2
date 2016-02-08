@@ -128,6 +128,7 @@ class LessonInfoView(viewsets.ModelViewSet):
     queryset = Lesson.objects.all()
 
     def get_queryset(self):
+        self.serializer_class = LessonTitleSerializer
         queryset = UnitLesson.objects.all()
         if 'unit_id' in self.request.GET:
             queryset = UnitLesson.objects.filter(unit__id=self.request.GET['unit_id'])
@@ -165,10 +166,6 @@ class LessonInfoView(viewsets.ModelViewSet):
         ul = UnitLesson.create_from_lesson(lesson, unit)
         serializer = LessonInfoSerializer(ul)
         return Response(serializer.data)
-
-    def list(self, request, *args, **kwargs):
-        self.serializer_class = LessonTitleSerializer
-        return super(LessonInfoView, self).list(request, *args, **kwargs)
 
 
 class ConceptInfoView(viewsets.ModelViewSet):

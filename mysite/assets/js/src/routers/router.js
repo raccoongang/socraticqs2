@@ -21,6 +21,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
         initialize: function(options) {
              $('a[href="#lesson_issues"]').on('click', {state: this}, this.openIssues);
              $('a[href="#lesson_content"]').on('click', {state: this}, this.openLesson);
+             Backbone.history.on('checkurl', this.openLesson, this);
 
         },
 
