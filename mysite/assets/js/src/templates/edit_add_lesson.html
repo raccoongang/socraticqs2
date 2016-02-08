@@ -9,6 +9,7 @@
         <label>Text</label>
         <textarea class="form-control inp" name="text" rows="3"><%= raw_text %></textarea>
     </div>
+    <% if (typeof concepts != 'undefined') { %>
     <div class="form-group">
         <label>Concepts</label>
         <select name="concept_id" class="form-control">
@@ -18,6 +19,7 @@
             <% } ); %>
         </select>
     </div>
+    <% } %>
     <hr>
 </form>
 <button class="btn btn-success" id="ok_button">Ok</button>

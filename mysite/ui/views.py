@@ -143,7 +143,7 @@ class LessonInfoView(viewsets.ModelViewSet):
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
         title = request.data.get('title')
-        text = request.data.get('raw_text')
+        text = request.data.get('text')
         Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
         serializer = LessonInfoSerializer(ul)
         return Response(serializer.data)
