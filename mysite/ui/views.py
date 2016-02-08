@@ -125,15 +125,13 @@ class LessonInfoView(viewsets.ModelViewSet):
     ]
     """
     serializer_class = LessonInfoSerializer
-    queryset = Lesson.objects.all()
+    queryset = UnitLesson.objects.filter(order__isnull=False)
 
     def get_queryset(self):
         self.serializer_class = LessonTitleSerializer
-        queryset = UnitLesson.objects.all()
+        queryset = super(LessonInfoView, self).get_queryset()
         if 'unit_id' in self.request.GET:
-            queryset = UnitLesson.objects.filter(unit__id=self.request.GET['unit_id'])
-        if 'ul_id' in self.request.GET:
-            queryset = UnitLesson.objects.filter(id=self.request.GET['ul_id'])
+            queryset = queryset.filter(unit_id=self.request.GET['unit_id'])
         print queryset
         return queryset
 

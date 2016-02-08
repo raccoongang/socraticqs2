@@ -51,7 +51,7 @@ define([
 
             goToLesson: function(event){
                 var unit_lesson = event.currentTarget.getAttribute('data');
-                var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/concepts/'+unit_lesson+'/#lesson';
+                var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/lessons/'+unit_lesson+'/#lesson';
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
             }
