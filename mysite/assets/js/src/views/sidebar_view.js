@@ -34,8 +34,13 @@ define([
 		    },
 
             getLessonUnit: function(param){
-                Lessons.unit = param['unit'];
-                Lessons.course = param['course'];
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                Lessons.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                firstPartOfPath = pathname.match( /units\/\d+/ );
+                Lessons.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                firstPartOfPath = pathname.match( /courses\/\d+/ );
+                Lessons.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 Lessons.fetch({data: {'unit_id':Lessons.unit}, reset:true});
             },
 
