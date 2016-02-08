@@ -6,17 +6,19 @@ define([
     'collections/lessons',
     'collections/concepts',
     'views/add_lesson',
+    'views/add_concept',
     'text!templates/sidebar_template.html',
 
     ],
 
-    function($, _, Backbone, Lessons, Concepts, add_lesson, sidebar_template){
+    function($, _, Backbone, Lessons, Concepts, add_lesson, add_concept, sidebar_template){
         var SideBarView = Backbone.View.extend({
 
             template: _.template(sidebar_template),
             events: {
                 'click label':'goToLesson',
                 'click #add_lesson': 'addLesson',
+                'click #add_concept': 'addConcept',
                 'click label_concept':'goToConcept',
             },
 
@@ -24,7 +26,9 @@ define([
                 Backbone.on('lesson', this.getLessonUnit, this);
                 Backbone.on('concept', this.getConceptUnit, this);
                 this.listenTo(Lessons, 'reset', this.lessonsInSidebar);
+                this.listenTo(Concepts, 'reset', this.lessonsInSidebar);
 
+                this.lessonsInSidebar();
             },
 
             render: function () {
@@ -50,7 +54,7 @@ define([
                 Concepts.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 firstPartOfPath = pathname.match( /courses\/\d+/ );
                 Concepts.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                Concepts.fetch({data: {'unit_id':Lessons.unit}, reset:true});
+                Concepts.fetch({data: {'unit_id':Concepts.unit}, reset:true});
             },
 
             lessonsInSidebar: function(){
@@ -87,9 +91,13 @@ define([
                 this.view = new add_lesson({el:$('#lesson_content')});
                 this.view.render();
             },
+            addConcept: function(){
+              console.log("Add concept");
+              $('#lesson_content').show();
+              this.view = new add_concept({el:$('#lesson_content')});
+              this.view.render();
+            }
 
         });
 	return SideBarView;
 });
-
-
