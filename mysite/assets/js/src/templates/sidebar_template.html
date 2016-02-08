@@ -1,6 +1,7 @@
 <h3>Lessons</h3>
 <ul>
-<% _.each(all, function(x) {%>
+<% _.each(all_lessons, function(x) {%>
     <li><label data="<%= x.id %>" class="label label_lesson"> <%= x.title %></label></li>
 <% } ); %>
 </ul>
+<button class="btn btn-warning pull-left" id="add_lesson">Add</button>

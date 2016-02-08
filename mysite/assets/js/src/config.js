@@ -62,9 +62,9 @@ require([
     //$('nav').next('div').andSelf().wrapAll('<div class="container-fluid" style="padding-left: 300px;"/>');
     //$('body').append('<nav class="navmenu navmenu-default navmenu-fixed-left" role="navigation">sadf</nav>');
 
+    new SidebarView({el:$('#sidebar')});
     new LessonView({el:$('#lesson_content')});
 	new SearchView({el:$('#search_box')});
-    new SidebarView({el:$('#sidebar_lessons')});
     new AppView({el:$('#lesson_issues')});
 
 });
