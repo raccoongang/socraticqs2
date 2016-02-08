@@ -1,14 +1,14 @@
 'use strict';
-define(['underscore', 'backbone', 'models/issue'], function (_, Backbone, issue) {
+define(['underscore', 'backbone', 'models/concept'], function (_, Backbone, Concept) {
     var fetch = Backbone.Collection.prototype.fetch;
     Backbone.Collection.prototype.fetch = function () {
         this.trigger('beforeFetch');
         return fetch.apply(this, arguments);
     };
     var ConceptCollection = Backbone.Collection.extend({
-        model: issue,
+        model: Concept,
 
-        url: '/api//unit_concept/',
+        url: '/ui/api/concept/',
 
         initialize: function () {
             this.on('add', this.onAdd, this);
@@ -17,18 +17,15 @@ define(['underscore', 'backbone', 'models/issue'], function (_, Backbone, issue)
 
         },
 
-        is_open: function () {
-            return this.without.apply(this, this.is_close());
-        },
 
         compareBy: 'title',
 
-        comparator: function (issue) {
-            return issue.get(this.compareBy);
+        comparator: function (concept) {
+            return Concept.get(this.compareBy);
         },
 
         onAdd: function () {
-            console.log('Is a live')
+            console.log('Added Concept')
         },
         beforeFetch: function () {
             console.log("Before fetch");

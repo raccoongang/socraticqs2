@@ -31,7 +31,7 @@ define([
 
             render: function () {
                 $('#title').text(this.model.get('title'));
-                this.$el.html(this.template(this.model.toJSON()));
+                //this.$el.html(this.template(this.model.toJSON()));
                 MathJax.Hub.Queue(["Typeset",MathJax.Hub,'#lesson_content']);
 		    },
 

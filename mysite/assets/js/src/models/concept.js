@@ -3,10 +3,8 @@ define(['underscore', 'backbone'], function (_, Backbone) {
     var concept = Backbone.Model.extend({
 
         defaults: {
-            'title': '',
-            'text': '',
-            'added_by': '',
         },
+        urlRoot: '/ui/api/concept/',
 
         initialize: function () {
         },

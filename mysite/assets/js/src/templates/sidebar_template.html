@@ -1,3 +1,4 @@
+    <div id='lessons'>
 <h3>Lessons</h3>
 <ul>
 <% _.each(all_lessons, function(x) {%>
@@ -5,3 +6,14 @@
 <% } ); %>
 </ul>
 <button class="btn btn-warning pull-left" id="add_lesson">Add</button>
+    </div>
+    <div class='empty'>&nbsp;<div>
+    <div id='concepts' style='magrin-top:20px;'>
+<h3>Concepts</h3>
+<ul>
+<% _.each(all_concepts, function(x) {%>
+    <li><label data="<%= x.id %>" class="label label_concept"> <%= x.title %></label></li>
+<% } ); %>
+</ul>
+<button class="btn btn-warning pull-left" id="add_concept">Add</button>
+</div>

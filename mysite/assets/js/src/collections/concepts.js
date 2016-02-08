@@ -16,7 +16,7 @@ define(['underscore', 'backbone', 'models/concept'], function(_, Backbone, conce
       },
 
       onAdd: function(){
-          console.log('Is a live')
+          console.log('Is a concept');
       },
 
     });

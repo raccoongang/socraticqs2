@@ -1,0 +1,7 @@
+<h3>Concepts</h3>
+<ul>
+<% _.each(all_concepts, function(x) {%>
+    <li><label data="<%= x.id %>" class="label label_concept"> <%= x.title %></label></li>
+<% } ); %>
+</ul>
+<button class="btn btn-warning pull-left" id="add_concept">Add</button>
