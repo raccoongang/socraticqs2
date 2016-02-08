@@ -4,33 +4,28 @@ define([
     'underscore',
     'backbone',
     'collections/lessons',
-    'text!templates/sidebar_lessons.html',
+    'views/add_lesson',
+    'text!templates/sidebar_template.html',
     ],
 
-    function($, _, Backbone, Lessons, sidebar_template){
+    function($, _, Backbone, Lessons, add_lesson, sidebar_template){
         var SideBarView = Backbone.View.extend({
 
             template: _.template(sidebar_template),
 
             events: {
-                'click label':'goToLesson'
+                'click label':'goToLesson',
+                'click #add_lesson': 'addLesson',
+
             },
 
             initialize: function () {
                 Backbone.on('lesson', this.getLessonUnit, this);
                 this.listenTo(Lessons, 'reset', this.lessonsInSidebar);
-                console.log("i'm alive");
             },
 
             render: function () {
-                this.$el.empty();
-                var labels = this.model.labels;
-                for (var each in labels) {
-                    var label = Labels.getLabelById(labels[each]).toJSON();
-                    var new_label = this.template(label);
-                    this.$el.append(new_label);
-                }
-                return this;
+
 		    },
 
             getLessonUnit: function(param){
@@ -51,7 +46,7 @@ define([
                                       lesson.title = lesson.title.substring(0, 23) + '...';
                                     }
                                 });
-                this.$el.html(this.template({all:lessons}));
+                this.$el.html(this.template({all_lessons:lessons}));
             },
 
             goToLesson: function(event){
@@ -59,7 +54,13 @@ define([
                 var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/lessons/'+unit_lesson+'/#lesson';
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
-            }
+            },
+
+            addLesson: function(){
+                this.view = new add_lesson({el:$('#lesson_content')});
+                this.view.render();
+            },
+
         });
 	return SideBarView;
 });

@@ -18,7 +18,6 @@ define([
 
             events:{
                 'click #edit_lesson': 'editLesson',
-                'click #add_lesson': 'addLesson',
             },
 
             model: {},
@@ -51,12 +50,6 @@ define([
             editLesson: function(){
                 var view = new edit_lesson({model: this.model, el: this.el});
                 this.listenToOnce(view, 'cancel', this.backFromEdit);
-                view.render();
-            },
-
-            addLesson: function(){
-                var view = new add_lesson({el: this.el});
-                this.listenToOnce(view, 'cancel', this.render);
                 view.render();
             },
 

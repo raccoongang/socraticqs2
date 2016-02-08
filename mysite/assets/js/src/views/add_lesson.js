@@ -28,7 +28,6 @@ define([
                                         'unit_id':Lessons.unit,
                                         'title':'',
                                         'raw_text':''});
-
             },
 
             render: function () {
