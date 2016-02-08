@@ -20,13 +20,10 @@ define([
             },
 
             initialize: function () {
-              this.listenTo(Lessons, 'add', function(){
-                                            this.stopListening();
-                                            this.undelegateEvents();});
-              this.listenTo(this.model, 'change', this.goBackToMainView);
+              this.listenTo(Lessons, 'add', this.goBackToMainView);
               this.model = new lesson({'unit_id':Lessons.unit,
-                                       'title':'',
-                                       'raw_text':''});
+                                        'title':'',
+                                        'raw_text':''});
             },
 
             render: function () {
@@ -55,7 +52,9 @@ define([
              goBackToMainView: function(){
                 this.stopListening();
                 this.undelegateEvents();
-                this.trigger('cancel');
+                var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/lessons/'+this.model.id+'/#lesson';
+                window.history.pushState("", "", url);
+                Backbone.history.trigger('checkurl');
             },
 
             showErrors: function(errors){
