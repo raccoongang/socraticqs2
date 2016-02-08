@@ -172,7 +172,7 @@ class ConceptInfoSerializer(serializers.ModelSerializer):
         return obj.lesson.concept.id
 
     def get_title(self, obj):
-        return obj.lesson.concept.title
+        return obj.lesson.title
 
     def get_text(self, obj):
         return mark_safe(md2html(obj.lesson.text))
@@ -209,16 +209,17 @@ class ConceptTitleSerializer(serializers.ModelSerializer):
     Concept Serialize
     """
     title = serializers.SerializerMethodField()
+    concept_id = serializers.SerializerMethodField()
 
     class Meta:
-        model = Concept
-        fields = ('id', 'title')
+        model = UnitLesson
+        fields = ('concept_id', 'title')
 
     def get_title(self, obj):
-        if obj.lesson.concept:
-            return obj.lesson.concept.title
-        else:
-            return ""
+        return obj.lesson.title
+
+    def get_concept_id(self, obj):
+        return obj.lesson.concept.id
 
 
 class LessonTitleSerializer(serializers.ModelSerializer):

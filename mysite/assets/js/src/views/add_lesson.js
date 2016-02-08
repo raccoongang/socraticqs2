@@ -24,10 +24,9 @@ define([
                                             this.stopListening();
                                             this.undelegateEvents();});
               this.listenTo(this.model, 'change', this.goBackToMainView);
-              this.model = new lesson({'author':window.settings.user,
-                                        'unit_id':Lessons.unit,
-                                        'title':'',
-                                        'raw_text':''});
+              this.model = new lesson({'unit_id':Lessons.unit,
+                                       'title':'',
+                                       'raw_text':''});
             },
 
             render: function () {
