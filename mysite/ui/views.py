@@ -6,7 +6,8 @@ from django.http.response import HttpResponseBadRequest
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
-    ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer, ConceptTitleSerializer
+    ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer, ConceptTitleSerializer, \
+    LessonTitleSerializer
 
 
 class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -164,6 +165,10 @@ class LessonInfoView(viewsets.ModelViewSet):
         ul = UnitLesson.create_from_lesson(lesson, unit)
         serializer = LessonInfoSerializer(ul)
         return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        self.serializer_class = LessonTitleSerializer
+        return super(LessonInfoView, self).list(request, *args, **kwargs)
 
 
 class ConceptInfoView(viewsets.ModelViewSet):

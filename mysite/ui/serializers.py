@@ -219,3 +219,17 @@ class ConceptTitleSerializer(serializers.ModelSerializer):
             return obj.lesson.concept.title
         else:
             return ""
+
+
+class LessonTitleSerializer(serializers.ModelSerializer):
+    """
+    Lesson list Serialize
+    """
+    title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UnitLesson
+        fields = ('id', 'title')
+
+    def get_title(self, obj):
+        return obj.lesson.title
