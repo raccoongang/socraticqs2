@@ -28,7 +28,6 @@ define([
             render: function () {
                 this.$el.empty();
                 var for_template = this.model.toJSON();
-                for_template.concepts = Concepts.toJSON();
                 this.$el.html(this.template(for_template));
 		    },
 

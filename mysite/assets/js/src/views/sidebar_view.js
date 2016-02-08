@@ -88,7 +88,7 @@ define([
             },
 
             addLesson: function(){
-                this.view = new add_lesson({el:$('#lesson_content')});
+                this.view = new add_lesson({el:$('.tab-content > div.active')});
                 this.view.render();
             },
             addConcept: function(){

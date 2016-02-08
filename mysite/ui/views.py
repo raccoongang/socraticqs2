@@ -3,8 +3,11 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.http.response import HttpResponseBadRequest
+from django.utils import timezone
 
 from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept
+from ct.forms import NewLessonForm
+from ct.views import create_unit_lesson
 from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
     ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer, ConceptTitleSerializer, \
     LessonTitleSerializer
@@ -132,7 +135,6 @@ class LessonInfoView(viewsets.ModelViewSet):
         queryset = super(LessonInfoView, self).get_queryset()
         if 'unit_id' in self.request.GET:
             queryset = queryset.filter(unit_id=self.request.GET['unit_id'])
-        print queryset
         return queryset
 
     def get_object(self):
@@ -141,7 +143,7 @@ class LessonInfoView(viewsets.ModelViewSet):
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
         title = request.data.get('title')
-        text = request.data.get('raw_text')
+        text = request.data.get('text')
         Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
         serializer = LessonInfoSerializer(ul)
         return Response(serializer.data)
@@ -149,21 +151,26 @@ class LessonInfoView(viewsets.ModelViewSet):
     def create(self, request):
         title = request.data.get('title')
         text = request.data.get('raw_text')
-        user_id = request.data.get('author')
         unit_id = request.data.get('unit_id')
-        concept_id = request.data.get('concept')
-        print concept_id
+        concept_id = request.data.get('concept_id')
+        unit = Unit.objects.get(id=int(unit_id))
         concept = Concept.objects.get(id=int(concept_id))
 
-        lesson = Lesson.objects.create(title=title,
-                                       text=text,
-                                       treeID=1,
-                                       concept=concept,
-                                       addedBy=User.objects.get(id=user_id))
-        unit = Unit.objects.get(id=unit_id)
-        ul = UnitLesson.create_from_lesson(lesson, unit)
-        serializer = LessonInfoSerializer(ul)
-        return Response(serializer.data)
+        request.data['kind'] = 'base'
+        request.data['medium'] = 'reading'
+        lessonForm = NewLessonForm(request.data)
+
+        if lessonForm.is_valid():
+            lesson = lessonForm.save(commit=False)
+            lesson.commitTime = timezone.now()
+            lesson.changeLog = 'initial commit'
+            lesson.addedBy = request.user
+            ul = create_unit_lesson(lesson, concept, unit, None)
+
+            serializer = LessonInfoSerializer(ul)
+            return Response(serializer.data)
+        else:
+            return HttpResponseBadRequest('Bad request.')
 
 
 class ConceptInfoView(viewsets.ModelViewSet):
@@ -268,18 +275,22 @@ class ConceptView(viewsets.ModelViewSet):
     {
     }
     """
-    queryset = UnitLesson.objects.filter(lesson__concept__isnull=False)
+    queryset = UnitLesson.objects.all()
     serializer_class = ConceptInfoSerializer
 
     def get_queryset(self):
         queryset = super(ConceptView, self).get_queryset()
 
         if 'unit_id' in self.request.GET:
-            unit_id = self.request.GET['unit_id']
-            queryset = queryset.filter(unit_id=unit_id)
+            unit = Unit.objects.filter(id=self.request.GET['unit_id']).first()
+            queryset = []
+            concepts = unit.get_related_concepts().keys()
+            for concept in concepts:
+                for ul in UnitLesson.objects.filter(lesson__concept=concept):
+                    if ul.unit_id == int(self.request.GET['unit_id']):
+                        queryset.append(ul)
         return queryset
 
-    # TODO this is not working - fix
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
         title = request.data.get('title')
@@ -291,7 +302,6 @@ class ConceptView(viewsets.ModelViewSet):
         serializer = ConceptInfoSerializer(ul)
         return Response(serializer.data)
 
-    # TODO this is not working - fix
     def create(self, request, *args, **kwargs):
         unit_id = self.request.data.get('unit_id')
         if not unit_id:

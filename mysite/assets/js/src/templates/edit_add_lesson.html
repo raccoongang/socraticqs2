@@ -7,17 +7,19 @@
     </div>
     <div class="form-group">
         <label>Text</label>
-        <textarea class="form-control inp" name="raw_text" rows="3"><%= raw_text %></textarea>
+        <textarea class="form-control inp" name="text" rows="3"><%= raw_text %></textarea>
     </div>
+    <% if (typeof concepts != 'undefined') { %>
     <div class="form-group">
         <label>Concepts</label>
-        <select name="concept" class="form-control">
+        <select name="concept_id" class="form-control">
             <% _.each(concepts, function(x) {%>
                 <option value="<%= x.concept_id %>">
                     <%= x.title %></option>
             <% } ); %>
         </select>
     </div>
+    <% } %>
     <hr>
 </form>
 <button class="btn btn-success" id="ok_button">Ok</button>
