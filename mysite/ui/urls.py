@@ -16,11 +16,11 @@ from ui.views import (
 )
 
 router = SimpleRouter()
-router.register(r'api/lesson', LessonInfoView)
-router.register(r'api/concept', ConceptInfoView)
+router.register(r'api/lesson', LessonInfoView, base_name='lessons')
+router.register(r'api/concept', ConceptInfoView, base_name='concept')
 router.register(r'api/search', SearchView, base_name='search')
-router.register(r'api/courses', CourseView)
-router.register(r'api/concepts', ConceptView)
+router.register(r'api/courses', CourseView, base_name='courses')
+router.register(r'api/concepts', ConceptView, base_name='concepts')
 
 
 urlpatterns = patterns(
