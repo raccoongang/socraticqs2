@@ -289,6 +289,9 @@ class ConceptView(viewsets.ModelViewSet):
                 for ul in UnitLesson.objects.filter(lesson__concept=concept):
                     if ul.unit_id == int(self.request.GET['unit_id']):
                         queryset.append(ul)
+        else:
+            queryset = queryset.filter(lesson__concept__isnull=False)
+
         return queryset
 
     def update(self, request, pk):

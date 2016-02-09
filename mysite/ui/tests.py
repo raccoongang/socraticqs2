@@ -216,7 +216,7 @@ class LessonContentAPIUnitsTests(TestCase):
 
     def test_get_list_lesson_case(self):
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:lesson-list'))
+        result = self.client.get(reverse('ui:lessons-list') + '?unit_id=%s' % self.unit.id)
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), list)
 
@@ -237,7 +237,7 @@ class ConceptContentAPIUnitsTests(TestCase):
 
     def test_get_list_concept_case(self):
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:unitlesson-list'))
+        result = self.client.get(reverse('ui:concepts-list'))
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), list)
 
@@ -278,7 +278,7 @@ class CourseInfoAPIUnitsTests(TestCase):
 
     def test_get_course_info(self):
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:course-detail', kwargs={'pk': self.course.id}))
+        result = self.client.get(reverse('ui:courses-detail', kwargs={'pk': self.course.id}))
         self.assertEqual(result.status_code, 200)
         self.assertIsInstance(json.loads(result.content), dict)
         self.assertEqual(
