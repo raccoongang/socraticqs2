@@ -14,8 +14,8 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
             'search=*text(/)':'search',
             'issues(/)': 'openIssues',
             'issues/*params(/)': 'is_open',
+            'concept(/)': 'openConcept',
             'lesson(/)': 'openLesson'
-
 		},
 
         initialize: function(options) {
@@ -94,7 +94,18 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
             $('a[href="#lesson_content"]').tab('show');
             Backbone.history.navigate('lesson/');
         },
+        openConcept:function(e){
+            if (e) {
+                var ul_id = e.data.state.getId();
+            }
+            else {
+                var ul_id = this.getId();
+            }
 
+            Backbone.trigger('concept',ul_id);
+            $('a[href="#lesson_content"]').tab('show');
+            Backbone.history.navigate('concept/');
+        },
         openIssues: function(e){
             if (e) {
                 e.data.state.getIssues();

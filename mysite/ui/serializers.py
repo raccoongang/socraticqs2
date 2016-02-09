@@ -213,7 +213,7 @@ class ConceptTitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UnitLesson
-        fields = ('concept_id', 'title')
+        fields = ('id', 'concept_id', 'title')
 
     def get_title(self, obj):
         return obj.lesson.title

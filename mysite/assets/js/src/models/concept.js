@@ -4,7 +4,7 @@ define(['underscore', 'backbone'], function (_, Backbone) {
 
         defaults: {
         },
-        urlRoot: '/ui/api/concept/',
+        urlRoot: '/ui/api/concepts/',
 
         initialize: function () {
         },

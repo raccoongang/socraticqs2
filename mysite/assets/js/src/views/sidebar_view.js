@@ -19,7 +19,7 @@ define([
                 'click label':'goToLesson',
                 'click #add_lesson': 'addLesson',
                 'click #add_concept': 'addConcept',
-                'click label_concept':'goToConcept',
+                //'click label_concept':'goToConcept',
             },
 
             initialize: function () {
@@ -44,15 +44,9 @@ define([
                 firstPartOfPath = pathname.match( /courses\/\d+/ );
                 Lessons.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 Lessons.fetch({data: {'unit_id':Lessons.unit}, reset:true});
-            },
 
-            getConceptUnit: function(param){
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
                 Concepts.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                firstPartOfPath = pathname.match( /units\/\d+/ );
                 Concepts.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                firstPartOfPath = pathname.match( /courses\/\d+/ );
                 Concepts.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 Concepts.fetch({data: {'unit_id':Concepts.unit}, reset:true});
             },
@@ -60,6 +54,7 @@ define([
             lessonsInSidebar: function(){
                 var lessons = Lessons.toJSON();
                 var concepts = Concepts.toJSON();
+                window.con = concepts;
                 _.each(lessons, function(lesson){
                                     if(lesson.title.length > 25) {
                                       lesson.title = lesson.title.substring(0, 23) + '...';
@@ -75,14 +70,11 @@ define([
 
             goToLesson: function(event){
                 var unit_lesson = event.currentTarget.getAttribute('data');
-                var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/lessons/'+unit_lesson+'/#lesson';
-                window.history.pushState("", "", url);
-                Backbone.history.trigger('checkurl');
-            },
-
-            goToConcept: function(event){
-                var unit_lesson = event.currentTarget.getAttribute('data');
-                var url = '/ui/hack/courses/'+Concepts.course+'/units/'+Concepts.unit+'/concepts/'+unit_lesson+'/#concept';
+                if(event.currentTarget.getAttribute('class').indexOf('label_concept') >=0 ){
+                    var url = '/ui/hack/courses/'+Concepts.course+'/units/'+Concepts.unit+'/concepts/'+unit_lesson+'/#concept';
+                }else {
+                    var url = '/ui/hack/courses/' + Lessons.course + '/units/' + Lessons.unit + '/lessons/' + unit_lesson + '/#lesson';
+                }
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
             },

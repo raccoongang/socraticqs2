@@ -297,7 +297,7 @@ class ConceptView(viewsets.ModelViewSet):
     def update(self, request, pk):
         ul = get_object_or_404(UnitLesson, id=pk)
         title = request.data.get('title')
-        text = request.data.get('text')
+        text = request.data.get('raw_text')
         Lesson.objects.filter(id=ul.lesson.id).update(title=title, text=text)
         concept = Lesson.objects.get(id=ul.lesson.id).concept
         concept.title = title
@@ -313,13 +313,13 @@ class ConceptView(viewsets.ModelViewSet):
         unit = Unit.objects.get(id=unit_id)
         concept = Concept.new_concept(
             request.data.get('title'),
-            request.data.get('text'),
+            request.data.get('raw_text'),
             unit,
             request.user
         )
 
         lesson = Lesson.objects.create(title=request.data.get('title'),
-                                       text=request.data.get('text'),
+                                       text=request.data.get('raw_text'),
                                        addedBy=request.user)
         lesson.save_root(concept)
         ul = UnitLesson.create_from_lesson(lesson, unit)
