@@ -12,8 +12,7 @@ define([
     'text!templates/sidebar_template.html',
     ],
 
-    function($, _, Backbone, Lessons, Courses, Units, add_lesson, sidebar_template){
-    function($, _, Backbone, Lessons, Concepts, add_lesson, add_concept, sidebar_template){
+    function($, _, Backbone, Lessons, Courses, Units, Concepts, add_lesson, add_concept, sidebar_template){
         var SideBarView = Backbone.View.extend({
 
             template: _.template(sidebar_template),
@@ -30,14 +29,9 @@ define([
             initialize: function () {
                 Backbone.on('sidebar', this.getCourses, this);
                 this.listenTo(Lessons, 'reset', this.render);
+                this.listenTo(Concepts, 'reset', this.render);
                 this.listenTo(Courses, 'reset', this.getUnits);
                 this.listenTo(Units, 'reset', this.getLesson);
-                Backbone.on('lesson', this.getLessonUnit, this);
-                Backbone.on('concept', this.getConceptUnit, this);
-                this.listenTo(Lessons, 'reset', this.lessonsInSidebar);
-                this.listenTo(Concepts, 'reset', this.lessonsInSidebar);
-
-                this.lessonsInSidebar();
             },
 
             getCourses: function(){
@@ -64,16 +58,7 @@ define([
                 if (firstPartOfPath) {
                     this.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
-                firstPartOfPath = pathname.match( /units\/\d+/ );
-                Lessons.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                firstPartOfPath = pathname.match( /courses\/\d+/ );
-                Lessons.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                Lessons.fetch({data: {'unit_id':Lessons.unit}, reset:true});
 
-                Concepts.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                Concepts.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                Concepts.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
-                Concepts.fetch({data: {'unit_id':Concepts.unit}, reset:true});
                 if (firstPartOfPath){
                    this.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
@@ -83,6 +68,8 @@ define([
                     window.history.pushState("", "", url);
                 }
                 Lessons.fetch({data: {'unit_id':this.unit}, reset:true});
+                Concepts.fetch({data: {'unit_id':this.unit}, reset:true});
+
 
             },
 
@@ -98,28 +85,27 @@ define([
                                       lesson.title = lesson.title.substring(0, 23) + '...';
                                     }
                                 });
-                this.$el.html(this.template({all_lessons:lessons,
-                                             lesson: this.unit_lesson,
-                                             all_units:units,
-                                             unit: this.unit,
-                                             all_courses:courses,
-                                             course: this.course}));
                 _.each(concepts, function(concept){
                                     if(concept.title.length > 25) {
                                       concept.title = concept.title.substring(0, 23) + '...';
                                     }
                                 });
-                this.$el.html(this.template({all_lessons:lessons, all_concepts:concepts}));
+                this.$el.html(this.template({all_lessons:lessons,
+                                             all_concepts:concepts,
+                                             lesson: this.unit_lesson,
+                                             all_units:units,
+                                             unit: this.unit,
+                                             all_courses:courses,
+                                             course: this.course}));
             },
 
             goToLesson: function(event){
                 var unit_lesson = event.currentTarget.getAttribute('data');
                 if(event.currentTarget.getAttribute('class').indexOf('label_concept') >=0 ){
-                    var url = '/ui/hack/courses/'+Concepts.course+'/units/'+Concepts.unit+'/concepts/'+unit_lesson+'/#concept';
+                    var url = '/ui/hack/courses/'+this.course +'/units/'+ this.unit +'/concepts/'+unit_lesson+'/#concept';
                 }else {
-                    var url = '/ui/hack/courses/' + Lessons.course + '/units/' + Lessons.unit + '/lessons/' + unit_lesson + '/#lesson';
+                    var url = '/ui/hack/courses/' + this.course + '/units/' + this.unit + '/lessons/' + unit_lesson + '/#lesson';
                 }
-                var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/lessons/'+unit_lesson+'/#lesson';
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
             },
@@ -143,7 +129,6 @@ define([
                 this.view.render();
             },
             addConcept: function(){
-              console.log("Add concept");
               this.view = new add_concept({el:$('.tab-content > div.active')});
               this.view.render();
             }

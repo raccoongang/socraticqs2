@@ -1,4 +1,3 @@
-    <div id='lessons'>
 <% if (all_courses) { %>
 <h3>Courses</h3>
 <select id="courses_select">
@@ -20,6 +19,7 @@
 <% } %>
 
 <% if (all_lessons) { %>
+    <div id='lessons'>
 <h3>Lessons</h3>
 <ul>
 <% _.each(all_lessons, function(x) {%>
