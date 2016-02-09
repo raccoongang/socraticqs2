@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from ct.models import CourseUnit, Course, UnitLesson
 from issues.models import Issue, IssueLabel, IssueComment
-from ui.serializers import CourseSerializer, UnitsSerializer, LessonInfoSerializer
+from ui.serializers import CourseSerializer, UnitSerializer, LessonInfoSerializer
 
 
 class IssueSerializer(serializers.ModelSerializer):
@@ -20,7 +20,7 @@ class IssueSerializer(serializers.ModelSerializer):
         if type(obj.related) == Course:
             return CourseSerializer(obj.related).data
         elif type(obj.related) == CourseUnit:
-            return UnitsSerializer(obj.related).data
+            return UnitSerializer(obj.related).data
         elif type(obj.related) == UnitLesson:
             return LessonInfoSerializer(obj.related).data
 

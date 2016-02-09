@@ -6,24 +6,18 @@ from ct.models import CourseUnit, Unit, UnitLesson, Concept, Course, Lesson
 from ct.templatetags.ct_extras import md2html
 
 
-class UnitsSerializer(serializers.HyperlinkedModelSerializer):
+class UnitSerializer(serializers.ModelSerializer):
     """Serializer for list of Units
 
     In current implementation this is a CourseUnit models
     that hides Unit.
     """
-    unit_id = serializers.SerializerMethodField()
+    unit_id = serializers.IntegerField()
     unit_title = serializers.SerializerMethodField()
 
     class Meta:
         model = CourseUnit
         fields = ('unit_id', 'unit_title', 'order')
-
-    def get_unit_id(self, obj):
-        """
-        Return CourseUnit -> unit.id
-        """
-        return obj.unit.id
 
     def get_unit_title(self, obj):
         """
