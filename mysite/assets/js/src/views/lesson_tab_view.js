@@ -48,6 +48,7 @@ define([
             },
 
             editLesson: function(){
+                console.log("tot");
                 var view = new edit_lesson({model: this.model, el: this.el});
                 this.listenToOnce(view, 'cancel', this.backFromEdit);
                 view.render();

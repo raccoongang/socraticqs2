@@ -93,8 +93,7 @@ define([
             },
             addConcept: function(){
               console.log("Add concept");
-              $('#lesson_content').show();
-              this.view = new add_concept({el:$('#lesson_content')});
+              this.view = new add_concept({el:$('.tab-content > div.active')});
               this.view.render();
             }
 

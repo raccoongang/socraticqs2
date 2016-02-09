@@ -31,7 +31,6 @@ define([
 
             render: function () {
                 this.$el.empty();
-                this.$el.attr("class", 'tab-pane');
                 var for_template = this.model.toJSON();
                 for_template.concepts = Concepts.toJSON();
                 this.$el.html(this.template(for_template));
