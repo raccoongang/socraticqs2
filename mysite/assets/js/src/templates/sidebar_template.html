@@ -1,8 +1,29 @@
     <div id='lessons'>
+<% if (all_courses) { %>
+<h3>Courses</h3>
+<select id="courses_select">
+<% _.each(all_courses, function(x) {%>
+    <option value="<%= x.id %>" <% if (x.id == course) {%> selected <% } %> ><%= x.title %></option>
+<% } ); %>
+</select>
+<hr>
+<% } %>
+
+<% if (all_units) { %>
+<h3>Units</h3>
+<select id="units_select">
+<% _.each(all_units, function(x) {%>
+    <option value="<%= x.unit_id %>" <% if (x.unit_id == unit) {%> selected <% } %> > <%= x.unit_title %></option>
+<% } ); %>
+</select>
+<hr>
+<% } %>
+
+<% if (all_lessons) { %>
 <h3>Lessons</h3>
 <ul>
 <% _.each(all_lessons, function(x) {%>
-    <li><label data="<%= x.id %>" class="label label_lesson"> <%= x.title %></label></li>
+    <li><label class="label <% if (x.id == lesson) {%> label-info <% } %>" data="<%= x.id %>" class="label label_lesson"> <%= x.title %></span></li>
 <% } ); %>
 </ul>
 <button class="btn btn-warning pull-left" id="add_lesson">Add</button>
@@ -17,3 +38,4 @@
 </ul>
 <button class="btn btn-warning pull-left" id="add_concept">Add</button>
 </div>
+<% } %>

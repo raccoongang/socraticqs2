@@ -35,6 +35,7 @@ function ($, Backbone, Bootstrap, issue, Issues, detail_view) {
         },
 
         getId: function(){
+          Backbone.trigger('sidebar');
           var pathname = window.location.pathname;
           var return_dict = {};
           var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );

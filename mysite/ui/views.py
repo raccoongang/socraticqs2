@@ -5,15 +5,15 @@ from django.contrib.auth.models import User
 from django.http.response import HttpResponseBadRequest
 from django.utils import timezone
 
-from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept
+from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept, CourseUnit
 from ct.forms import NewLessonForm
 from ct.views import create_unit_lesson
-from ui.serializers import UnitsSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
+from ui.serializers import UnitSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
     ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer, ConceptTitleSerializer, \
     LessonTitleSerializer
 
 
-class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
+class UnitView(mixins.ListModelMixin, viewsets.GenericViewSet):
     """API for getting course units
 
     Response format:
@@ -31,13 +31,13 @@ class CourseUnitsView(mixins.ListModelMixin, viewsets.GenericViewSet):
       },
     ]
     """
-    queryset = Course.objects.all()
-    serializer_class = UnitsSerializer
+    queryset = CourseUnit.objects.all()
+    serializer_class = UnitSerializer
 
     def get_queryset(self):
-        queryset = super(CourseUnitsView, self).get_queryset()
-        course_id = self.kwargs.get('course_id')
-        if course_id:
+        queryset = super(UnitView, self).get_queryset()
+        if self.request.GET.get('course_id'):
+            course_id = self.request.GET.get('course_id')
             course = Course.objects.filter(id=course_id).first()
             if course:
                 queryset = course.get_course_units(publishedOnly=False)

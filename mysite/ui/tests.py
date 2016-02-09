@@ -7,10 +7,10 @@ from django.core.urlresolvers import reverse
 from ct.models import Course, Lesson, Concept, UnitLesson, Unit
 
 
-class CourseUnitsTests(TestCase):
+class UnitsTests(TestCase):
     """
     Tests for GET and only GET for
-    'ui:units_list' API.
+    'ui:units-list' API.
     """
     def setUp(self):
         self.client = Client()
@@ -24,14 +24,14 @@ class CourseUnitsTests(TestCase):
         Test that only GET http method is allowed.
         """
         self.client.login(username='username', password='top_secret')
-        result = self.client.post(reverse('ui:units_list', kwargs={'course_id': self.course.id}), {'key': 'value'})
+        result = self.client.post(reverse('ui:units-list'), {'key': 'value'})
         self.assertEqual(result.status_code, 405)
 
     def test_only_auth_users(self):
         """
         Test that API allowed only for logged in users.
         """
-        result = self.client.get(reverse('ui:units_list', kwargs={'course_id': self.course.id}))
+        result = self.client.get(reverse('ui:units-list'))
         self.assertEqual(result.status_code, 403)
 
     def test_positive_case(self):
@@ -39,7 +39,7 @@ class CourseUnitsTests(TestCase):
         Check positive case for logged in user.
         """
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:units_list', kwargs={'course_id': self.course.id}))
+        result = self.client.get(reverse('ui:units-list'), {'course_id': self.course.id})
         self.assertEqual(result.status_code, 200)
 
     def test_check_result_content(self):
@@ -47,7 +47,7 @@ class CourseUnitsTests(TestCase):
         Test result content returned by API.
         """
         self.client.login(username='username', password='top_secret')
-        result = self.client.get(reverse('ui:units_list', kwargs={'course_id': self.course.id}))
+        result = self.client.get(reverse('ui:units-list'), {'course_id': self.course.id})
         self.assertEqual(
             json.loads(result.content),
             [
