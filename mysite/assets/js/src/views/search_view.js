@@ -49,20 +49,23 @@ define([
                 if (saved_url_lst.length > 1) {
                     this.saved_url = saved_url_lst[1];
                 }
-                $('nav + div').hide();
+                //$('nav + div').hide();
                 Backbone.history.navigate('search='+this.search+'/');
                 var $self_el = $(this.template());
                 var $self = this;
                 _.each(SearchCollection.toJSON(), function(data){
                     $self_el.find("#search_table").append($self.item_template(data));
                 });
+                if($(".container").length > 1){
+                    $('nav + div').remove();
+                }
                 $self_el.insertAfter('nav');
             },
 
             close_search: function () {
                 $('nav + div').remove();
                 $('#searchText').val('');
-                $('nav + div').show();
+                //$('nav + div').show();
                 Backbone.history.navigate(this.saved_url);
             }
 
