@@ -39,10 +39,14 @@ define([
                 if (firstPartOfPath) {
                     this.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
+                firstPartOfPath = pathname.match( /units\/\d+/ );
+                if (firstPartOfPath){
+                   this.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                }
                 this.model = new lesson({'id':this.unit_lesson});
                 this.listenTo(this.model, 'change', this.render);
                 this.model.fetch();
-                Concepts.fetch({data:{'unit_id': Lessons.unit}, reset:true});
+                Concepts.fetch({data:{'unit_id': this.unit}, reset:true});
             },
 
             editLesson: function(){
