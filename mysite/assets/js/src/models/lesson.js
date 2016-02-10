@@ -18,6 +18,7 @@ define(['underscore', 'backbone'], function(_, Backbone) {
         validate: function(attrs, options) {
             var errors = this.errors = {};
             if (!attrs.title) errors.title = 'Title is required';
+            if (!attrs.text) errors.text = 'Text is required';
             if (!_.isEmpty(errors)) return errors;
         }
     });

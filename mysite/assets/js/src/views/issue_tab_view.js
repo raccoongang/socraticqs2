@@ -25,29 +25,50 @@ define([
                 'click .choices': 'filterBy',
             },
 
-            initialize: function(params){
+            initialize: function(){
                 Backbone.on('unit_lesson', this.new_unit, this);
                 this.listenTo(Issues, 'reset', this.render);
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
-                $('a[href="'+this.$el.attr("id")+'"]').on('shown.bs.tab', this.openTab);
-                this.new_unit(params.params);
+                console.log('a[href="'+this.$el.attr("id")+'"]');
+                $('a[href="#'+this.$el.attr("id")+'"]').on('show.bs.tab', this, this.changeUrl);
+                this.new_unit();
+                if (this.$el.hasClass('active')){this.changeUrl()};
             },
 
-            new_unit: function(param){
-                this.filter = param;
+            getFilterFromUrl: function(){
+                this.filter = {is_open:'open'};
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                this.filter.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                var backbone_path = Backbone.history.getFragment();
+                if (backbone_path.length > 2 ) {
+                    var list_of_params = backbone_path.split('/');
+                    for (var each in list_of_params) {
+                        list_of_params[each] = list_of_params[each].split('=');
+                    }
+                    for (var each in list_of_params) {
+                        this.filter[list_of_params[each][0]] = list_of_params[each][1];
+                    }
+                }
+            },
+
+            new_unit: function(){
+                this.getFilterFromUrl();
                 //TODO get rid of this fuckin shit and make it simplier
-                if (param['unit_lesson']){
-                    Issues.unit_lesson = param['unit_lesson'];
-                    delete this.filter['unit'];
-                    delete this.filter['course'];}
-                else if (param['unit']) {Issues.unit = param['unit'];
-                         delete this.filter['unit_lesson'];
-                         delete this.filter['course'];}
-                else {Issues.course = param['course'];
-                      delete this.filter['unit_lesson'];
-                      delete this.filter['unit'];}
+                //if (param['unit_lesson']){
+                //    Issues.unit_lesson = param['unit_lesson'];
+                //    delete this.filter['unit'];
+                //    delete this.filter['course'];}
+                //else if (param['unit']) {Issues.unit = param['unit'];
+                //         delete this.filter['unit_lesson'];
+                //         delete this.filter['course'];}
+                //else {Issues.course = param['course'];
+                //      delete this.filter['unit_lesson'];
+                //      delete this.filter['unit'];}
+
+                Issues.unit_lesson = this.filter.unit_lesson;
                 Issues.fetch({data: this.filter, reset:true});
             },
 
@@ -119,7 +140,7 @@ define([
             },
 
             sortBy: function(event){
-                event.preventDefault(event);
+                event.preventDefault();
                 Issues.compareBy = event.currentTarget.getAttribute('data');
                 Issues.sort();
                 this.addAll();
@@ -133,19 +154,17 @@ define([
                 this.changeUrl();
             },
 
-            changeUrl: function(){
+            changeUrl: function(e){
+                if (e) {var filter = e.data.filter;}
+                else {var filter = this.filter; }
                 var url = 'issues/';
                 var exclude = ['unit_lesson', 'unit', 'course', 'issue'];
-                for (var each in this.filter){
+                for (var each in filter){
                     if ($.inArray(each, exclude) == -1) {
-                        url += each + '=' + this.filter[each] + '/';
+                        url += each + '=' + filter[each] + '/';
                     }
                 }
                 Backbone.history.navigate(url);
-            },
-
-            openTab: function(e){
-                Backbone.history.navigate('issues/');
             },
 
             goToOpenClosed: function(e){

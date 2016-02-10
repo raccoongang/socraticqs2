@@ -18,9 +18,9 @@ define([
             template: _.template(issue_detail_template),
 
             events:{
-                'click #issue_detail_cancel_button': 'goBackToMainView',
+                'click #cancel_button': 'goBackToMainView',
                 'click #open_button': 'openIssue',
-                'click #lesson_issues': 'closeIssue',
+                'click #close_button': 'closeIssue',
                 'click #edit_issue': 'editIssue'
             },
 
@@ -31,6 +31,8 @@ define([
                 this.listenTo(Comments, 'change', this.renderComments);
                 this.listenTo(Comments, 'reset', this.renderComments);
                 Comments.fetch({data: {issue_id:params.issue_id}, reset:true});
+                $('a[href="#'+this.$el.attr("id")+'"]').on('show.bs.tab', this, this.changeUrl);
+
 
             },
 
@@ -71,7 +73,18 @@ define([
             },
 
             closeIssue: function(){
-                console.log('asdfasdf');
+                this.model.save({is_open: false});
+            },
+
+            changeUrl: function(e){
+                var url = 'issue/'+ e.data.model.id;
+                Backbone.history.navigate(url);
+            },
+
+            goBackToMainView: function(event) {
+                event.preventDefault();
+                Backbone.history.navigate();
+                Backbone.trigger('issues_list');
             }
         });
 	return IssueDetailView;
