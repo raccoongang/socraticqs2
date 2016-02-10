@@ -17,7 +17,6 @@ define([
             template: _.template(row_template),
 
             events: {
-                'click a': 'showDetails',
             },
 
             detailView:'',

@@ -13,7 +13,7 @@ define([
 
     function($, _, Backbone, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
         'use strict';
-        var main_tab_view = Backbone.View.extend({
+        var issue_tab_view = Backbone.View.extend({
 
             template: _.template(tab_template),
 
@@ -31,26 +31,44 @@ define([
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
-                Labels.fetch({reset:true});
-                Users.fetch({reset:true});
-                $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.closeTab);
-                Backbone.history.start();
+                console.log('a[href="'+this.$el.attr("id")+'"]');
+                $('a[href="#'+this.$el.attr("id")+'"]').on('show.bs.tab', this, this.changeUrl);
+                this.new_unit();
+                if (this.$el.hasClass('active')){this.changeUrl()};
             },
 
-            new_unit: function(param){
-                this.filter = param;
-                this.changeUrl();
+            getFilterFromUrl: function(){
+                this.filter = {is_open:'open'};
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                this.filter.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                var backbone_path = Backbone.history.getFragment();
+                if (backbone_path.length > 2 ) {
+                    var list_of_params = backbone_path.split('/');
+                    for (var each in list_of_params) {
+                        list_of_params[each] = list_of_params[each].split('=');
+                    }
+                    for (var each in list_of_params) {
+                        this.filter[list_of_params[each][0]] = list_of_params[each][1];
+                    }
+                }
+            },
+
+            new_unit: function(){
+                this.getFilterFromUrl();
                 //TODO get rid of this fuckin shit and make it simplier
-                if (param['unit_lesson']){
-                    Issues.unit_lesson = param['unit_lesson'];
-                    delete this.filter['unit'];
-                    delete this.filter['course'];}
-                else if (param['unit']) {Issues.unit = param['unit'];
-                         delete this.filter['unit_lesson'];
-                         delete this.filter['course'];}
-                else {Issues.course = param['course'];
-                      delete this.filter['unit_lesson'];
-                      delete this.filter['unit'];}
+                //if (param['unit_lesson']){
+                //    Issues.unit_lesson = param['unit_lesson'];
+                //    delete this.filter['unit'];
+                //    delete this.filter['course'];}
+                //else if (param['unit']) {Issues.unit = param['unit'];
+                //         delete this.filter['unit_lesson'];
+                //         delete this.filter['course'];}
+                //else {Issues.course = param['course'];
+                //      delete this.filter['unit_lesson'];
+                //      delete this.filter['unit'];}
+
+                Issues.unit_lesson = this.filter.unit_lesson;
                 Issues.fetch({data: this.filter, reset:true});
             },
 
@@ -66,14 +84,14 @@ define([
             addOne: function(issue){
                 var view = new issue_row_view({model: issue});
                 view.parent = this;
-			    $('#table_of_issues').append(view.render().el);
+			    this.$el.find('#table_of_issues').append(view.render().el);
                 if (issue.id == this.filter['issue']){
                     view.trigger('show');
                 }
             },
 
             addAll: function(){
-                $('#table_of_issues').empty();
+                this.$el.find('#table_of_issues').empty();
                 var is_open = this.filter.is_open == 'open' ? true : false;
                 var collection = Issues.where({is_open: is_open});
                 if (this.filter.label){
@@ -122,7 +140,7 @@ define([
             },
 
             sortBy: function(event){
-                event.preventDefault(event);
+                event.preventDefault();
                 Issues.compareBy = event.currentTarget.getAttribute('data');
                 Issues.sort();
                 this.addAll();
@@ -136,20 +154,17 @@ define([
                 this.changeUrl();
             },
 
-            changeUrl: function(){
+            changeUrl: function(e){
+                if (e) {var filter = e.data.filter;}
+                else {var filter = this.filter; }
                 var url = 'issues/';
                 var exclude = ['unit_lesson', 'unit', 'course', 'issue'];
-                for (var each in this.filter){
+                for (var each in filter){
                     if ($.inArray(each, exclude) == -1) {
-                        url += each + '=' + this.filter[each] + '/';
+                        url += each + '=' + filter[each] + '/';
                     }
                 }
-
                 Backbone.history.navigate(url);
-            },
-
-            closeTab: function(e){
-                Backbone.history.navigate();
             },
 
             goToOpenClosed: function(e){
@@ -161,6 +176,6 @@ define([
             },
 
         });
-        return main_tab_view;
+        return issue_tab_view;
     }
 );

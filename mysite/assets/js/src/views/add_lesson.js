@@ -19,9 +19,11 @@ define([
                 "click #cancel_button": "goBackToMainView",
             },
 
-            initialize: function () {
+            initialize: function (params) {
+              this.unit = params.unit;
+              this.course = params.course;
               this.listenTo(Lessons, 'add', this.goBackToMainView);
-              this.model = new lesson({'unit_id':Lessons.unit,
+              this.model = new lesson({'unit_id':this.unit,
                                         'title':'',
                                         'raw_text':''});
             },
@@ -52,7 +54,7 @@ define([
              goBackToMainView: function(){
                 this.stopListening();
                 this.undelegateEvents();
-                var url = '/ui/hack/courses/'+Lessons.course+'/units/'+Lessons.unit+'/lessons/'+this.model.id+'/#lesson';
+                var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/lessons/'+this.model.id+'/#lesson';
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
             },

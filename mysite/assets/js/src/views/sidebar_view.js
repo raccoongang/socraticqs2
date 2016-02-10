@@ -34,9 +34,9 @@ define([
             },
 
             getUnits: function(){
-                var pathname = window.location.pathname;
+                this.pathname = window.location.pathname;
 
-                var firstPartOfPath = pathname.match( /courses\/\d+/ );
+                var firstPartOfPath = this.pathname.match( /courses\/\d+/ );
                 if (firstPartOfPath){
                     this.course = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
@@ -48,19 +48,17 @@ define([
 
 
             getLesson: function(){
-                var pathname = window.location.pathname;
-                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                var firstPartOfPath = this.pathname.match( /(concepts|lessons|errors)\/\d+/ );
                 if (firstPartOfPath) {
                     this.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
-                firstPartOfPath = pathname.match( /units\/\d+/ );
+
+                firstPartOfPath = this.pathname.match( /units\/\d+/ );
                 if (firstPartOfPath){
                    this.unit = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
                 }
                 else {
                     this.unit = Units.first().get('unit_id');
-                    var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/';
-                    window.history.pushState("", "", url);
                 }
                 Lessons.fetch({data: {'unit_id':this.unit}, reset:true});
 
@@ -68,6 +66,17 @@ define([
 
             render: function(){
                 this.$el.empty();
+                var firstPartOfPath = this.pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                if (firstPartOfPath) {
+                    this.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                }
+                else {
+                    this.unit_lesson = Lessons.first().get('id');
+                    var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/lessons/'+this.unit_lesson+'/';
+                    window.history.pushState("", "", url);
+                    //TODO improve that part to get rid of second fetching
+                    Backbone.history.trigger('checkurl');
+                }
                 var lessons = Lessons.toJSON();
                 var courses = Courses.toJSON();
                 var units = Units.toJSON();
@@ -86,7 +95,7 @@ define([
 
             goToLesson: function(event){
                 var unit_lesson = event.currentTarget.getAttribute('data');
-                var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/lessons/'+unit_lesson+'/#lesson';
+                var url = '/ui/hack/courses/'+this.course+'/units/'+this.unit+'/lessons/'+unit_lesson+'/';
                 window.history.pushState("", "", url);
                 Backbone.history.trigger('checkurl');
             },
@@ -95,18 +104,20 @@ define([
                 var unit = event.currentTarget.value;
                 var url = '/ui/hack/courses/'+this.course+'/units/'+unit+'/';
                 window.history.pushState("", "", url);
-                Backbone.history.trigger('checkurl');
+                this.getUnits();
             },
 
             goToCourse: function(event){
                 var course = event.currentTarget.value;
                 var url = '/ui/hack/courses/'+course+'/';
                 window.history.pushState("", "", url);
-                Backbone.history.trigger('checkurl');
+                this.getCourses();
             },
 
             addLesson: function(){
-                this.view = new add_lesson({el:$('.tab-content > div.active')});
+                this.view = new add_lesson({el:$('.tab-content > div.active'),
+                                            course: this.course,
+                                            unit: this.unit});
                 this.view.render();
             },
 

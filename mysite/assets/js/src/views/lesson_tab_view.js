@@ -22,38 +22,35 @@ define([
 
             model: {},
 
-            initialize: function(){
-                Backbone.on('lesson', this.get_lesson, this);
-                this.listenTo(Lessons,'reset', this.lessonsInSidebar);
-                $('a[href="#lesson_content"]').on('hide.bs.tab', {add: false}, this.closeTab);
-
+            initialize: function() {
+                this.get_lesson();
+                $('a[href="#'+this.$el.attr("id")+'"]').on('shown.bs.tab', this.openTab);
             },
 
             render: function () {
                 $('#title').text(this.model.get('title'));
                 this.$el.html(this.template(this.model.toJSON()));
-                MathJax.Hub.Queue(["Typeset",MathJax.Hub,'#lesson_content']);
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,'#details']);
 		    },
 
-            get_lesson: function(param){
-                this.model = new lesson({'id':param['unit_lesson']});
+            get_lesson: function(){
+                var pathname = window.location.pathname;
+                var firstPartOfPath = pathname.match( /(concepts|lessons|errors)\/\d+/ );
+                if (firstPartOfPath) {
+                    this.unit_lesson = parseInt(firstPartOfPath[0].match(/\d+/)[0]);
+                }
+                this.model = new lesson({'id':this.unit_lesson});
                 this.listenTo(this.model, 'change', this.render);
                 this.model.fetch();
                 Concepts.fetch({data:{'unit_id': Lessons.unit}, reset:true});
-                Backbone.history.navigate('lesson');
-            },
-
-            backFromEdit: function(){
-              this.render();
             },
 
             editLesson: function(){
                 var view = new edit_lesson({model: this.model, el: this.el});
-                this.listenToOnce(view, 'cancel', this.backFromEdit);
                 view.render();
             },
 
-            closeTab: function(){
+            openTab: function(){
                 Backbone.history.navigate();
             },
 
