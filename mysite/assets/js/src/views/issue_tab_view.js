@@ -13,7 +13,7 @@ define([
 
     function($, _, Backbone, Issues, Labels, Users, Comments, issue_row_view, add_issue_view, tab_template){
         'use strict';
-        var main_tab_view = Backbone.View.extend({
+        var issue_tab_view = Backbone.View.extend({
 
             template: _.template(tab_template),
 
@@ -25,21 +25,18 @@ define([
                 'click .choices': 'filterBy',
             },
 
-            initialize: function(){
+            initialize: function(params){
                 Backbone.on('unit_lesson', this.new_unit, this);
                 this.listenTo(Issues, 'reset', this.render);
                 this.listenTo(Issues, 'add', this.render);
                 this.listenTo(Issues, 'open', this.addOpen);
                 this.listenTo(Issues, 'closed', this.addClosed);
-                Labels.fetch({reset:true});
-                Users.fetch({reset:true});
-                $('a[href="#lesson_issues"]').on('hide.bs.tab', {add: false}, this.closeTab);
-                Backbone.history.start();
+                $('a[href="'+this.$el.attr("id")+'"]').on('shown.bs.tab', this.openTab);
+                this.new_unit(params.params);
             },
 
             new_unit: function(param){
                 this.filter = param;
-                this.changeUrl();
                 //TODO get rid of this fuckin shit and make it simplier
                 if (param['unit_lesson']){
                     Issues.unit_lesson = param['unit_lesson'];
@@ -66,14 +63,14 @@ define([
             addOne: function(issue){
                 var view = new issue_row_view({model: issue});
                 view.parent = this;
-			    $('#table_of_issues').append(view.render().el);
+			    this.$el.find('#table_of_issues').append(view.render().el);
                 if (issue.id == this.filter['issue']){
                     view.trigger('show');
                 }
             },
 
             addAll: function(){
-                $('#table_of_issues').empty();
+                this.$el.find('#table_of_issues').empty();
                 var is_open = this.filter.is_open == 'open' ? true : false;
                 var collection = Issues.where({is_open: is_open});
                 if (this.filter.label){
@@ -144,12 +141,11 @@ define([
                         url += each + '=' + this.filter[each] + '/';
                     }
                 }
-
                 Backbone.history.navigate(url);
             },
 
-            closeTab: function(e){
-                Backbone.history.navigate();
+            openTab: function(e){
+                Backbone.history.navigate('issues/');
             },
 
             goToOpenClosed: function(e){
@@ -161,6 +157,6 @@ define([
             },
 
         });
-        return main_tab_view;
+        return issue_tab_view;
     }
 );

@@ -1,0 +1,23 @@
+<h1 id="title"></h1>
+<ul class="nav nav-tabs">
+    <% if (details) { %>
+        <li role="presentation" id="lesson_tab"><a data-toggle="tab" href="#details" id="lesson-link">Details</a></li>
+    <% }  %>
+    <% if (issues) { %>
+        <li role="presentation" id="issues_tab"><a data-toggle="tab" href="#issues">Issues</a></li>
+    <% }  %>
+    <% if (data) { %>
+        <li role="presentation" id="data_tab"><a data-toggle="tab" href="#data" id="data-link">Data</a></li>
+    <% }  %>
+</ul>
+<div class="tab-content">
+    <% if (details) { %>
+        <div id="details" class="tab-pane fade"></div>
+    <% }  %>
+    <% if (issues) { %>
+   	    <div id="issues" class="tab-pane fade"></div>
+    <% }  %>
+    <% if (data) { %>
+	    <div id="data" class="tab-pane fade"></div>
+    <% }  %>
+</div>

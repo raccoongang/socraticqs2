@@ -3,27 +3,21 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'collections/users',
-    'collections/lessons',
-    'collections/concepts',
-    'models/lesson',
-    'views/edit_lesson',
-    'views/add_lesson',
+    'models/unit',
     'text!templates/lesson_detail.html',
     ],
 
-    function($, _, Backbone, Users, Lessons, Concepts, lesson, edit_lesson, add_lesson, lesson_detail_template){
+    function($, _, Backbone, Users, Lessons, Concepts, unit){
         var LessonDetailView = Backbone.View.extend({
             template: _.template(lesson_detail_template),
 
             events:{
-                'click #edit_lesson': 'editLesson',
             },
 
             model: {},
 
             initialize: function() {
-                this.get_lesson();
+                this.get_unit();
                 $('a[href="#'+this.$el.attr("id")+'"]').on('shown.bs.tab', this.openTab);
             },
 
@@ -50,8 +44,12 @@ define([
                 view.render();
             },
 
-            openTab: function(){
+            closeTab: function(){
                 Backbone.history.navigate();
+            },
+
+            openTab: function(){
+                Backbone.history.navigate('lesson/');
             },
 
         });

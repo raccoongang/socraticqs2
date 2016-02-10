@@ -3,7 +3,7 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'collections/issues',
+    'models/issue',
     'collections/users',
     'collections/comments',
     'views/edit_issue',
@@ -13,7 +13,7 @@ define([
     'text!templates/issue_detail.html'
     ],
 
-    function($, _, Backbone, Issues, Users, Comments, edit_issue, label_view, comments_view, add_comment_view, issue_detail_template){
+    function($, _, Backbone, issue, Users, Comments, edit_issue, label_view, comments_view, add_comment_view, issue_detail_template){
         var IssueDetailView = Backbone.View.extend({
             template: _.template(issue_detail_template),
 
@@ -24,13 +24,14 @@ define([
                 'click #edit_issue': 'editIssue'
             },
 
-            initialize: function(){
+            initialize: function(params){
+                this.model = new issue({id:params.issue_id});
+                this.model.fetch();
                 this.listenTo(this.model, 'change', this.backFromEdit);
                 this.listenTo(Comments, 'change', this.renderComments);
                 this.listenTo(Comments, 'reset', this.renderComments);
-                Comments.fetch({data: {issue_id:this.model.get('id')}, reset:true});
-                var url = 'issues/' + this.model.id;
-                Backbone.history.navigate(url);
+                Comments.fetch({data: {issue_id:params.issue_id}, reset:true});
+
             },
 
             render: function () {
@@ -58,11 +59,6 @@ define([
               this.renderComments();
             },
 
-            goBackToMainView: function(){
-                this.stopListening();
-                this.undelegateEvents();
-                Issues.trigger('reset');
-            },
 
             editIssue: function(){
                 var view = new edit_issue({model: this.model, el: this.el});
