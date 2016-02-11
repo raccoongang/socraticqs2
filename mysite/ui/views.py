@@ -5,12 +5,12 @@ from django.contrib.auth.models import User
 from django.http.response import HttpResponseBadRequest
 from django.utils import timezone
 
-from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept, CourseUnit
+from ct.models import Course, Unit, UnitLesson, Lesson, Role, Concept, CourseUnit, ConceptGraph
 from ct.forms import NewLessonForm
 from ct.views import create_unit_lesson
 from ui.serializers import UnitSerializer, UnitContentSerializer, CourseSerializer, LessonInfoSerializer, \
     ConceptInfoSerializer, SearchSerializer, CourseSidebarSerializer, InstructorsSerializer, ConceptTitleSerializer, \
-    LessonTitleSerializer
+    LessonTitleSerializer, RelatedConceptSerializer
 
 
 class UnitView(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -330,3 +330,23 @@ class ConceptView(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         self.serializer_class = ConceptTitleSerializer
         return super(ConceptView, self).list(request, *args, **kwargs)
+
+
+class RelatedLessonView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = LessonTitleSerializer
+    queryset = UnitLesson.objects.all()
+
+    def get_queryset(self):
+        queryset = super(RelatedLessonView, self).get_queryset()
+        return queryset
+
+
+class RelatedConceptView(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = RelatedConceptSerializer
+    queryset = Concept.objects.all()
+
+    def get_queryset(self):
+        queryset = super(RelatedConceptView, self).get_queryset()
+        if 'related_id' in self.request.GET:
+            queryset = ConceptGraph.objects.filter(toConcept__id=self.request.GET['related_id'])
+        return queryset

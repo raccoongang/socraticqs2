@@ -228,3 +228,30 @@ class LessonTitleSerializer(serializers.ModelSerializer):
 
     def get_title(self, obj):
         return obj.lesson.title
+
+
+class RelatedConceptSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Concept
+        fields = ('id', 'title')
+
+    def get_id(self, obj):
+        return obj.fromConcept.id
+
+    def get_title(self, obj):
+        return obj.fromConcept.title
+
+
+class RelatedLessonSerializer(serializers.ModelSerializer):
+
+    ul_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = ('id', 'ul_id', 'title')
+
+    def get_ul_id(self, obj):
+        return obj.id
