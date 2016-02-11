@@ -3,6 +3,7 @@ define([
     'jquery',
     'underscore',
     'backbone',
+    'mathjax',
     'collections/users',
     'collections/lessons',
     'collections/concepts',
@@ -12,7 +13,7 @@ define([
     'text!templates/lesson_detail.html',
     ],
 
-    function($, _, Backbone, Users, Lessons, Concepts, lesson, edit_lesson, add_lesson, lesson_detail_template){
+    function($, _, Backbone, MathJax, Users, Lessons, Concepts, lesson, edit_lesson, add_lesson, lesson_detail_template){
         var LessonDetailView = Backbone.View.extend({
             template: _.template(lesson_detail_template),
 
