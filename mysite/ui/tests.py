@@ -2,9 +2,10 @@ import json
 
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
+from django.test.client import encode_multipart
 from django.core.urlresolvers import reverse
 
-from ct.models import Course, Lesson, Concept, UnitLesson, Unit
+from ct.models import Course, Lesson, Concept, UnitLesson, Unit, Role
 
 
 class UnitsTests(TestCase):
@@ -12,6 +13,7 @@ class UnitsTests(TestCase):
     Tests for GET and only GET for
     'ui:units-list' API.
     """
+
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -65,6 +67,7 @@ class UnitContentTests(TestCase):
     Tests for GET and only GET for
     'ui:unit_content' API.
     """
+
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -119,9 +122,9 @@ class UnitContentTests(TestCase):
         self.assertEqual(result.status_code, 200)
         ul_lesson = self.lesson.unitlesson_set.first()
         result = self.client.put(
-           reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}),
-           data='{"ul_id": "%s", "order": "0"}' % ul_lesson.id,
-           content_type='application/json'
+            reverse('ui:unit_content', kwargs={'unit_id': self.unit.id}),
+            data='{"ul_id": "%s", "order": "0"}' % ul_lesson.id,
+            content_type='application/json'
         )
         self.assertEqual(result.status_code, 200)
 
@@ -176,7 +179,6 @@ class UnitContentTests(TestCase):
 
 
 class CourseAPIUnitsTests(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -201,7 +203,6 @@ class CourseAPIUnitsTests(TestCase):
 
 
 class LessonContentAPIUnitsTests(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -222,7 +223,6 @@ class LessonContentAPIUnitsTests(TestCase):
 
 
 class ConceptContentAPIUnitsTests(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -269,7 +269,6 @@ class SearchUnitLessonTest(TestCase):
 
 
 class CourseInfoAPIUnitsTests(TestCase):
-
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user(username='username', password='top_secret')
@@ -291,3 +290,64 @@ class CourseInfoAPIUnitsTests(TestCase):
                 'id': self.course.id
             }
         )
+
+
+class InstructorViewUnitsTets(TestCase):
+    def setUp(self):
+        self.client = Client()
+        User.objects.create_user(username='username', password='top_secret')
+        self.user = User.objects.create_user(username='admin', password='admin')
+        self.course = Course(title='title', description='description', addedBy=self.user)
+        self.course.save()
+        self.role = Role(role=Role.INSTRUCTOR, course=self.course, user=self.user)
+        self.role.save()
+        self.user.save()
+
+    def test_get_list(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:assignee_list'))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(json.loads(result.content), list)
+        self.assertEqual(
+            json.loads(result.content),
+            [{u'username': u'admin', u'id': 2}]
+        )
+
+
+class ConceptViewUnitsTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='username', password='top_secret')
+        self.unit = Unit(title='utitle', addedBy=self.user)
+        self.unit.save()
+        self.concept = Concept.new_concept('concept title', 'concept text', self.unit, self.user)
+
+    def test_get_list(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:concepts-list'))
+        self.assertEqual(result.status_code, 200)
+        self.assertIsInstance(json.loads(result.content), list)
+        self.assertEqual(
+            json.loads(result.content),
+            [{u'concept_id': self.concept.id, u'title': u'concept title'}]
+        )
+
+    def test_post_concept(self):
+        self.client.login(username='username', password='top_secret')
+        data = {'title': 'title', 'text': 'text', 'unit_id': self.unit.id}
+        result = self.client.post(reverse('ui:concepts-list'), data)
+        self.assertEqual(result.status_code, 200)
+
+    def test_detail_concept(self):
+        self.client.login(username='username', password='top_secret')
+        result = self.client.get(reverse('ui:concepts-detail', kwargs={'pk': self.concept.id}))
+        self.assertEqual(result.status_code, 200)
+
+    def test_update_concept(self):
+        self.client.login(username='username', password='top_secret')
+        data = {'title': 'new title', 'text': 'new text',}
+        content = encode_multipart('BoUnDaRyStRiNg', data)
+        content_type = 'multipart/form-data; boundary=BoUnDaRyStRiNg'
+        result = self.client.put(reverse('ui:concepts-detail', kwargs={'pk': self.concept.id}),
+                                 content, content_type=content_type)
+        self.assertEqual(result.status_code, 200)
