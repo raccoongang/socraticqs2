@@ -92,7 +92,7 @@ def make_tab(path, current, label, url):
 
 def filter_tabs(tabs, filterLabels):
     return [t for t in tabs if t[0] in filterLabels]
-    
+
 def lesson_tabs(path, current, unitLesson,
                 tabs=('Home:', 'Tasks', 'Concepts', 'Errors', 'FAQ', 'Edit'),
                 studentTabs=('Study:', 'Tasks', 'Concepts', 'Errors', 'FAQ'),
@@ -124,17 +124,17 @@ def auto_tabs(path, current, unitLesson, **kwargs):
                    'lessons':lesson_tabs}
     currentType = get_path_type(path)
     return tabFuncs[currentType](path, current, unitLesson, **kwargs)
-    
 
-    
+
+
 def unit_tabs(path, current,
               tabs=('Tasks:', 'Concepts', 'Lessons', 'Resources', 'Edit'), **kwargs):
     return make_tabs(path, current, tabs, tail=2, **kwargs)
-    
+
 def unit_tabs_student(path, current,
               tabs=('Study:', 'Tasks', 'Lessons', 'Concepts', 'Resources'), **kwargs):
     return make_tabs(path, current, tabs, tail=2, **kwargs)
-    
+
 def course_tabs(path, current, tabs=('Home:', 'Edit'), **kwargs):
     return make_tabs(path, current, tabs, tail=2, baseToken='courses',
                      **kwargs)
@@ -388,7 +388,7 @@ def edit_course(request, course_id):
             kwargs = dict(course_id=course_id)
             defaultURL = reverse('ct:course', kwargs=kwargs)
             return pageData.fsm_redirect(request, 'update_Course', defaultURL,
-                                         reverseArgs=kwargs, course=course) 
+                                         reverseArgs=kwargs, course=course)
     else:
         courseform = CourseTitleForm(instance=course)
     set_crispy_action(request.path, courseform)
@@ -750,14 +750,17 @@ def _lessons(request, pageData, concept=None, msg='',
                 lessonTable = unit.reorder_exercise(oldOrder, newOrder,
                                                     lessonTable)
         elif 'ulID' in request.POST:
-            ul = UnitLesson.objects.get(pk=int(request.POST.get('ulID')))
-            if selectULFunc:
-                ul = selectULFunc(ul, concept, unit, request.user, parentUL)
-                if isinstance(ul, UnitLesson):
+            try:
+                ul = UnitLesson.objects.get(pk=int(request.POST.get('ulID')))
+                if selectULFunc:
+                    ul = selectULFunc(ul, concept, unit, request.user, parentUL)
+                    if isinstance(ul, UnitLesson):
+                        return ul
+                    msg = ul # treat as error message to display
+                else:
                     return ul
-                msg = ul # treat as error message to display
-            else:
-                return ul
+            except UnitLesson.DoesNotExist:
+                msg = 'This error is Missing'
         elif 'title' in request.POST: # create new lesson
             lessonForm = newLessonFormClass(request.POST)
             if lessonForm.is_valid():
@@ -850,7 +853,7 @@ def unit_tasks(request, course_id, unit_id):
                            dict(unit=unit, taskTable=taskTable,
                                 courseUnit=cu), fsmGroups=fsmGroups)
 
-    
+
 
 
 def copy_unit_lesson(ul, concept, unit, addedBy, parentUL):
@@ -871,7 +874,7 @@ def unit_lessons(request, course_id, unit_id, lessonTable=None,
                         navTabs=unit_tabs(request.path, currentTab))
     if lessonTable is None:
         lessonTable = unit.get_exercises()
-    r = _lessons(request, pageData, msg=msg, 
+    r = _lessons(request, pageData, msg=msg,
                   unit=unit, showReorderForm=showReorderForm,
                   lessonTable=lessonTable, selectULFunc=copy_unit_lesson, **kwargs)
     if isinstance(r, UnitLesson):
@@ -948,7 +951,7 @@ def ul_teach(request, course_id, unit_id, ul_id):
                 initial = UnitLesson.RESOURCE_ROLE
             roleForm = LessonRoleForm(initial)
     elif ul.kind == UnitLesson.COMPONENT: # offer option to add to this unit
-        addForm = push_button(request, 'add', 'Add to this Courselet') 
+        addForm = push_button(request, 'add', 'Add to this Courselet')
         if not addForm:
             ulNew = unit.append(ul, request.user)
             kwargs = dict(course_id=course_id, unit_id=unit_id, ul_id=ulNew.pk)
@@ -1014,7 +1017,7 @@ def ul_tasks(request, course_id, unit_id, ul_id):
                   dict(unitLesson=ul, unit=unit, errorTable=errorTable,
                        newInquiries=newInquiries))
 
-    
+
 @login_required
 def edit_lesson(request, course_id, unit_id, ul_id):
     unit, ul, _, pageData = ul_page_data(request, unit_id, ul_id, 'Edit',
@@ -1115,7 +1118,7 @@ def ul_errors(request, course_id, unit_id, ul_id, showNETable=True):
     for em in ul.get_errors():
         if em not in errorModels:
             seTable.append((em, fmt_count(0, n or 1)))
-    r = _lessons(request, pageData, concept, msg, unit=unit, 
+    r = _lessons(request, pageData, concept, msg, unit=unit,
                   seTable=seTable, templateFile='ct/errors.html',
                   showNovelErrors=showNovelErrors,
                   novelErrors=novelErrors, responseFilterForm=neForm,
@@ -1131,7 +1134,7 @@ def ul_errors(request, course_id, unit_id, ul_id, showNETable=True):
         seTable.append((r, fmt_count(0, n or 1)))
         return _lessons(request, pageData, concept,
             msg='Successfully added error model.  Thank you!',
-            ignorePOST=True, unit=unit, seTable=seTable, 
+            ignorePOST=True, unit=unit, seTable=seTable,
             templateFile='ct/errors.html', novelErrors=novelErrors,
             creationInstructions=creationInstructions,
             newLessonFormClass=NewErrorForm)
@@ -1290,8 +1293,8 @@ def lesson_next_url(request, ul, course_id):
     except UnitLesson.DoesNotExist:
         return get_base_url(request.path, ['tasks']) # exit to unit tasks view
     return nextUL.get_study_url(course_id)
-    
-        
+
+
 def lesson(request, course_id, unit_id, ul_id, redirectQuestions=True):
     'show student a reading assignment'
     unit, ul, _, pageData = ul_page_data(request, unit_id, ul_id, 'Study', includeText=False)
@@ -1316,7 +1319,7 @@ def lesson_read(request, course_id, unit_id, ul_id):
     present lesson as passive reading assignment
     """
     return lesson(request, course_id, unit_id, ul_id, redirectQuestions=False)
-    
+
 def ul_tasks_student(request, course_id, unit_id, ul_id):
     'suggest next steps on this question'
     unit, ul, _, pageData = ul_page_data(request, unit_id, ul_id, 'Tasks')
@@ -1342,7 +1345,7 @@ def ul_tasks_student(request, course_id, unit_id, ul_id):
                            dict(unitLesson=ul, unit=unit,
                                 responseTable=responseTable,
                                 errorTable=errorTable))
-    
+
 def ul_errors_student(request, course_id, unit_id, ul_id):
     return ul_errors(request, course_id, unit_id, ul_id, showNETable=False)
 
