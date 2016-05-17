@@ -104,6 +104,11 @@ $( "#noverrtoggle" ).click(function() {
 </form>
 {% endif %}
 
+{% if foundNothing %}
+<h2>Search Results</h2>
+<p>Nothing found...</p>
+{% endif %}
+
 {% if lessonSet %}
 <h2>Search Results</h2>
 If one of these is relevant to this concept,
