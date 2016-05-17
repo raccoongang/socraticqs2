@@ -33,7 +33,14 @@ from fsm.models import FSM, FSMState, KLASS_NAME_DICT
 
 def check_instructor_auth(course, request):
     'return 403 if not course instructor, else None'
-    role = course.get_user_role(request.user, justOne=False)
+    try:
+        role = course.get_user_role(request.user, justOne=False)
+    except KeyError:
+        return render(
+            request,
+            'lti/error.html',
+            {'message': 'You have no access to this Course'}
+        )
     if not isinstance(role, list):
         role = [role]
     if not Role.INSTRUCTOR in role:
@@ -327,6 +334,8 @@ def course_view(request, course_id):
     course = get_object_or_404(Course, pk=course_id)
     if is_teacher_url(request.path):
         notInstructor = check_instructor_auth(course, request)
+        if isinstance(notInstructor, HttpResponse):
+            return notInstructor
         if notInstructor: # redirect students to live session or student page
             return HttpResponseRedirect(reverse('ct:course_student', args=(course.id,)))
         navTabs = course_tabs(request.path, 'Home')
