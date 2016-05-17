@@ -21,6 +21,21 @@
 $( "#headtoggle" ).click(function() {
   $( "#headdiv" ).toggle();
 });
+
+
+$(document).on("click", "#meTo-button", function(e) {
+    e.preventDefault();
+
+    $.ajax({
+        url: $("#form-meTo").attr("action"),
+        method: 'POST',
+        dataType: 'json',
+        data: $("#form-meTo").serialize(),
+    }).success(function(data) {
+        $("#inquiry_count").html(data.inquiry_count+" other people also have this question.");
+        $("#meTo-button").addClass('disabled');
+    });
+});
 </script>
 {% endif %}
 
@@ -40,17 +55,21 @@ $( "#headtoggle" ).click(function() {
 (View <a href="{{ actionTarget |get_object_url:unitLesson }}faq/">
 all FAQs for this lesson</a>)<br>
 
-<h2>Discussion: {{ inquiry.title }}</h2> 
-{% if pageData.numPeople %}
+<h2>Discussion: {{ inquiry.title }}</h2>
+<div style="margin-bottom: 5pt">
+  <span id="inquiry_count">
+  {% if pageData.numPeople %}
   {{ pageData.numPeople }} other people also have this question.
-{% endif %}
-{% if user != inquiry.author %}
-  <form action="{{ actionTarget }}" method="post"
-   style=" display:inline!important;">
+  {% endif %}
+  </span>
+  {% if user != inquiry.author %}
+  <form action="{{ actionTarget }}" method="post" id="form-meTo"
+        style=" display:inline!important;">
   {% csrf_token %}
   <input type="hidden" name="task" value="meToo" />
-  <input type="submit" value="Me too!" />
+  <input type="submit" class="btn{% if already_voted %} disabled{% endif %}" id="meTo-button" value="Me too!" />
   </form>
+</div>
 {% endif %}
 
 <table class="table table-bordered">
@@ -84,7 +103,7 @@ all FAQs for this lesson</a>)<br>
   <tr class="warning"><td>
     Were you falling into the following error model?
     {{ se.errorModel.lesson.text|md2html }}
-    (Click here to 
+    (Click here to
     <a href="{{ actionTarget |get_object_url:se.errorModel }}">
     learn more about this issue</a>).
   </td></tr>
@@ -105,7 +124,7 @@ all FAQs for this lesson</a>)<br>
   <tbody>
   <tr class="success"><td>
     This exercise may help you understand this issue better.
-    (Click here to 
+    (Click here to
     <a href="{{ actionTarget |get_object_url:ul }}">
     try the exercise</a>).
   </td></tr>
@@ -138,7 +157,7 @@ all FAQs for this lesson</a>)<br>
         {{ se.atime|display_datetime }})</b><br>
         Were you falling into the following error model?
         {{ se.errorModel.lesson.text|md2html }}
-        (Click here to 
+        (Click here to
         <a href="{{ actionTarget |get_object_url:se.errorModel }}">
         learn more about this issue</a>).
         </td></tr>
