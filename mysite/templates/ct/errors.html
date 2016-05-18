@@ -21,6 +21,17 @@
 $( "#headtoggle" ).click(function() {
   $( "#headdiv" ).toggle();
 });
+
+$(document).on("submit", "#search-form", function(e) {
+  var input_len = $('#search-form > input').val().length;
+    if (input_len > 300) {
+      e.preventDefault();
+      $("#js-validation-error").text('The input field cannot contain more than 300 characters! Current length: ' + input_len);
+    }
+    else {
+      $("#js-validation-error").text('');
+    }
+});
 </script>
 {% endif %}
 
@@ -98,10 +109,11 @@ $( "#noverrtoggle" ).click(function() {
 
 {{ msg }}
 {% if searchForm %}
-<form action="{{ actionTarget }}" method="get">
+<form action="{{ actionTarget }}" method="get" id="search-form">
 {{ searchForm }}
 <input type="submit" value="Search" />
 </form>
+<span style="color:red" id="js-validation-error"></span>
 {% endif %}
 
 {% if lessonSet %}
