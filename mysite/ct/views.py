@@ -755,7 +755,11 @@ def _lessons(request, pageData, concept=None, msg='',
     lessonSet = foundNothing = ()
     if request.method == 'POST' and not ignorePOST:
         if 'clID' in request.POST:
-            update_concept_link(request, conceptLinks, unit)
+            try:
+                update_concept_link(request, conceptLinks, unit)
+            except UnitLesson.DoesNotExist as e:  # check for deleted UnitLesson
+                # TODO decide do we need to delete ConceptLink with Lesson or Concept
+                msg = 'Lesson was deleted'
         elif 'newOrder' in request.POST:
             reorderForm = ReorderForm(0, len(lessonTable), request.POST)
             if reorderForm.is_valid():
