@@ -43,3 +43,23 @@ if apps.is_installed('lti'):
         '',
         url(r'^lti/', include('lti.urls', namespace='lti')),
     )
+
+
+def handler404(request):
+    response = render(
+        request,
+        'lti/error.html',
+        {'message': 'Requested resource is not found.'}
+    )
+    response.status_code = 404
+    return response
+
+
+def handler500(request):
+    response = render(
+        request,
+        'lti/error.html',
+        {'message': 'Something goes wrong but we are working hard to fix this.'}
+    )
+    response.status_code = 500
+    return response
