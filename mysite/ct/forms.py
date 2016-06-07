@@ -147,17 +147,22 @@ class UnitTitleForm(forms.ModelForm):
 class NewUnitTitleForm(UnitTitleForm):
     submitLabel = 'Add'
 
+
 class CourseTitleForm(forms.ModelForm):
+    description = forms.CharField(max_length=1500, widget=forms.widgets.Textarea)
     submitLabel = 'Update'
+
     def __init__(self, *args, **kwargs):
         super(CourseTitleForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_id = 'id-courseTitleForm'
         self.helper.form_class = 'form-vertical'
         self.helper.add_input(Submit('submit', self.submitLabel))
+
     class Meta:
         model = Course
         fields = ['title', 'access', 'description']
+
 
 class NewCourseTitleForm(CourseTitleForm):
     submitLabel = 'Add'
