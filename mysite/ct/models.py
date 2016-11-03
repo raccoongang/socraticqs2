@@ -677,6 +677,9 @@ class UnitLesson(models.Model):
         'is this a question?'
         return self.lesson.kind == Lesson.ORCT_QUESTION
 
+    def __unicode__(self):
+        return self.lesson.title
+
 def reorder_exercise(self, old=0, new=0, l=()):
     'renumber exercises to move an exercise from old -> new position'
     if not l:
