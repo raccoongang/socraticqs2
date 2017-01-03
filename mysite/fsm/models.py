@@ -254,6 +254,7 @@ class FSMState(JSONBlobMixin, models.Model):
                                     related_name='children')
     linkState = models.ForeignKey('FSMState', null=True, blank=True,
                                   related_name='linkChildren')
+    previousNode = models.ForeignKey('FSMNode', null=True, blank=True, related_name='previousNode')
     unitLesson = models.ForeignKey('ct.UnitLesson', null=True, blank=True)
     title = models.CharField(max_length=200)
     path = models.CharField(max_length=200)

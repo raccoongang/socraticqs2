@@ -19,12 +19,6 @@ CUI.ChatPresenter = function(chatID, historyUrl, progressUrl, resourcesUrl){
   if(!progressUrl) throw new Error('CUI.ChatPresenter(): No progressUrl.');
   if(!resourcesUrl) throw new Error('CUI.ChatPresenter(): No resourcesUrl.');
 
-  /* When chat gets doWait parameter it should show messages only first time. This flag is about it.
-   * @type {bool}
-   * @protected
-   */
-  this._needShowMsg = true;
-
   /**
    * The chat's unique ID.
    * @type {number}
@@ -327,20 +321,12 @@ CUI.ChatPresenter.prototype._postInput = function(input){
     if(response && response.nextMessagesUrl && !response.input.doWait){
         // Load next set of messages
         this._getMessages(response.nextMessagesUrl);
-        // set flag to true, because we need to show messages 
-        this._needShowMsg = true;
     }else if(response && response.input.doWait) {
-      if(this._needShowMsg){
-       /* parse response to understand should we do more requests or not.
-        * this.setInput function will look into response.input.doWait parameter
-        * and if doWait is true will call setTimeout function with needed parameters.
-        */
-        this._getMessages(response.nextMessagesUrl);
-        // set to false cause we already shown messages.
-        this._needShowMsg = false;
-      }else{
-        this._setInput(response.input);
-      }
+        if(response.addMessages.length){
+            this._parseHistory(response);
+        }else{
+            this._setInput(response.input);
+        }
     }else if(response.error){
       // Enable input
       this._inputIsEnabled = true;

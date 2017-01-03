@@ -928,14 +928,6 @@ class Response(models.Model):
     def __unicode__(self):
         return 'answer by ' + self.author.username
 
-    def save(self, *args, **kwargs):
-        print "{}.save(*{}, **{}) \nlesson={}, unitLesson={}, course={}, kind={}, selfeval={}, text={}".format(
-            self.id, args, kwargs, self.lesson.id, self.unitLesson.id, self.course.id, self.kind, self.selfeval,
-            self.text
-        )
-
-        return super(Response, self).save(*args, **kwargs)
-
     @classmethod
     def get_counts(klass, query, fmt_count=fmt_count, n=0, tableKey='status',
                    simpleTable=False,

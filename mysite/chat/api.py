@@ -79,6 +79,7 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
             return Response({'errors': str(e)})
         self.check_object_permissions(self.request, chat)
         next_point = chat.next_point
+        previousNode = chat.state.fsmNode
 
         if (
             message.contenttype in ['response', 'uniterror'] and
@@ -108,6 +109,8 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
             message.chat = chat
 
         serializer = self.get_serializer(message)
+        chat.state.previousNode = previousNode
+        chat.state.save()
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
@@ -121,12 +124,22 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
         message = self.get_object()
         if message.input_type == 'text' and not self.request.data.get('text'):
             return Response({'error': 'Empty response. Enter something!'})
-        return super(MessagesView, self).update(request, *args, **kwargs)
+        return_data = super(MessagesView, self).update(request, *args, **kwargs)
+
+        # when JS is in WAIT_NODE loop we have to return addMessages only first time
+        # to understand 1-st calling time we are checking state.fsmNode and state.previousNode
+        # if they are equal, it means we already returned addMessages and now we don't need to return them.
+        # we need to return empty addMessages only after update, that's why this code is placed here,
+        # not in Serializer class.
+        if chat.state and chat.state.fsmNode == chat.state.previousNode:
+            return_data.data['addMessages'] = []
+        return return_data
 
     def perform_update(self, serializer):
         chat_id = self.request.data.get('chat_id')
         message = self.get_object()
         chat = Chat.objects.get(id=chat_id, user=self.request.user)
+        prevNode = chat.state and chat.state.fsmNode
         activity = chat.state and chat.state.activity
 
         # Check if message is not in current chat
@@ -207,6 +220,10 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
                 request=self.request
             )
             chat.save()
+        if chat.state and chat.state.previousNode != prevNode:
+            state = chat.state
+            state.previousNode = prevNode
+            state.save()
 
 
 class HistoryView(ValidateMixin, generics.RetrieveAPIView):

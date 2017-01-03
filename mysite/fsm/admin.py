@@ -31,6 +31,7 @@ class AdminFSMState(admin.ModelAdmin):
         'fsmNode',
         'parentState',
         'linkState',
+        'previousNode',
         'unitLesson',
         'path',
         'isLiveSession',
