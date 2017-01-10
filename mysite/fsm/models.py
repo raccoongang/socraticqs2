@@ -267,6 +267,19 @@ class FSMState(JSONBlobMixin, models.Model):
     activity = models.ForeignKey('ActivityLog', null=True, blank=True)
     activityEvent = models.ForeignKey('ActivityEvent', null=True, blank=True)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.id:  # if already saved to DB and has an id
+            prev_me = FSMState.objects.get(id=self.id)  # get previous version
+            self.previousNode = prev_me.fsmNode  # update previousNode
+        return super(FSMState, self).save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields
+        )
+
+
     def get_all_state_data(self):
         """
         Get dict of all our state data including unitLesson.

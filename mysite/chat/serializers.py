@@ -8,6 +8,22 @@ from ct.models import UnitLesson, Response
 from accounts.models import Instructor
 
 
+def getDoWait(obj):
+    # import ipdb; ipdb.set_trace()
+    if isinstance(obj, Message):
+        obj = obj.chat
+    if obj.state.fsmNode.name == 'ASK' and obj.state.linkState.fsmNode.name == 'QUESTION':
+        return True
+    return obj.state.fsmNode.name.startswith('WAIT_') if obj.state else False
+
+def getChatDoWait(obj):
+    return getDoWait(obj)
+
+def getMsgDoWait(obj):
+    return getDoWait(obj.chat)
+
+
+
 class InternalMessageSerializer(serializers.ModelSerializer):
     """
     Serializer for addMessage list representation.
@@ -92,7 +108,7 @@ class MessageSerializer(serializers.ModelSerializer):
             'type': obj.get_next_input_type(),
             'url': obj.get_next_url(),
             'options': obj.get_options(),
-            'doWait': obj.chat.state.fsmNode.name.startswith('WAIT_') if obj.chat.state else False,
+            'doWait': getMsgDoWait(obj),
             'includeSelectedValuesFromMessages': [i.id for i in self.qs if i.contenttype == 'uniterror']
         }
         if not obj.chat.next_point or input_data['doWait']:
@@ -127,7 +143,7 @@ class ChatHistorySerializer(serializers.ModelSerializer):
             'type': obj.next_point.input_type if obj.next_point else 'custom',
             'url': reverse('chat:messages-detail', args=(obj.next_point.id,)) if obj.next_point else None,
             'options': obj.get_options() if obj.next_point else None,
-            'doWait': obj.state.fsmNode.name.startswith('WAIT_') if obj.state else False,
+            'doWait': getChatDoWait(obj),
             # for test purpose only
             'includeSelectedValuesFromMessages': []
         }

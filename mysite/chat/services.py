@@ -38,7 +38,7 @@ class GroupMessageMixin(object):
                      'button',
                      Lesson.ORCT_QUESTION,
                      Lesson.BASE_EXPLANATION),
-        'button': (),
+        'button': ('button',),
         # 'answers': ('response'),
         'message': ('message',
                     'uniterror',
