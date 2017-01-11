@@ -16,6 +16,6 @@ def chat_id(obj):
 @admin.register(Message)
 class AdminRole(admin.ModelAdmin):
     list_display = (
-        'id', chat_id, 'text', 'owner', 'contenttype',
+        'id', chat_id, 'text', 'timestamp', 'owner', 'contenttype',
         'input_type', 'type', 'kind'
     )

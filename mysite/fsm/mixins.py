@@ -394,5 +394,12 @@ class ChatMixin(object):
                 is_additional=False,
                 owner=chat.user
             )
-            message = Message.objects.get_or_create(**lookup)[0]
+            if chat.state.previousNode != chat.state.fsmNode:
+                message = Message.objects.create(**lookup)
+            else:
+                messages = Message.objects.filter(**lookup).order_by('timestamp')
+                if messages:
+                    message = messages[0]
+                else:
+                    message = Message.objects.create(**lookup)
         return message

@@ -122,6 +122,7 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
         self.check_object_permissions(self.request, chat)
 
         message = self.get_object()
+        # import ipdb; ipdb.set_trace()
         if message.input_type == 'text' and not self.request.data.get('text'):
             return Response({'error': 'Empty response. Enter something!'})
         return_data = super(MessagesView, self).update(request, *args, **kwargs)
@@ -212,7 +213,7 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
                 chat.save()
                 message.text = selfeval
                 message.save()
-        if message.kind == 'button':
+        if message.kind == 'button' or message.chat.state.previousNode == message.chat.state.fsmNode:
             chat.next_point = self.next_handler.next_point(
                 current=message.content,
                 chat=chat,
