@@ -95,6 +95,7 @@ STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'lms/static'),
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
@@ -133,7 +134,8 @@ MIDDLEWARE_CLASSES = (
     'cms.middleware.language.LanguageCookieMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'ct.middleware.MySocialAuthExceptionMiddleware',
+    # 'ct.middleware.MySocialAuthExceptionMiddleware',
+    'waffle.middleware.WaffleMiddleware',
 )
 
 ROOT_URLCONF = 'mysite.urls'
@@ -161,6 +163,11 @@ INSTALLED_APPS = (
     # Socials
     'social.apps.django_app.default',
     'psa',
+    # Chat UI
+    'chat',
+    'rest_framework',
+    'accounts',
+    'waffle',
     # Django-CMS
     'cms',
     'treebeard',

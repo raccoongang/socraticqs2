@@ -12,12 +12,15 @@ Contents:
    :maxdepth: 2
 
    devintro
+   docker
    fsm
    lti
    psa
    fab
+   chat
 
-Project Enhancement Proposals:
+
+   Project Enhancement Proposals:
 
 .. toctree::
    :maxdepth: 2
@@ -38,4 +41,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

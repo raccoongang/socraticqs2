@@ -12,7 +12,7 @@ from django.db.models import Q, Count, Max
 class Concept(models.Model):
     title = models.CharField(max_length=200)
     addedBy = models.ForeignKey(User)
-    approvedBy = models.ForeignKey(User, null=True,
+    approvedBy = models.ForeignKey(User, null=True, blank=True,
                                    related_name='approvedConcepts')
     isError = models.BooleanField(default=False)
     isAbort = models.BooleanField(default=False)
@@ -111,7 +111,7 @@ class Concept(models.Model):
         return l
     def __unicode__(self):
         return self.title
-            
+
 
 class ConceptGraph(models.Model):
     DEPENDS = 'depends'
@@ -139,7 +139,7 @@ class ConceptGraph(models.Model):
     relationship = models.CharField(max_length=10, choices=REL_CHOICES,
                                     default=DEPENDS)
     addedBy = models.ForeignKey(User)
-    approvedBy = models.ForeignKey(User, null=True,
+    approvedBy = models.ForeignKey(User, null=True, blank=True,
                                    related_name='approvedConceptEdges')
     atime = models.DateTimeField('time submitted', default=timezone.now)
 
@@ -167,7 +167,7 @@ class Lesson(models.Model):
     EXERCISE = 'exercise'
     PROJECT = 'project'
     PRACTICE_EXAM = 'practice'
-    
+
     ANSWER = 'answer'
     ERROR_MODEL = 'errmod'
 
@@ -213,27 +213,27 @@ class Lesson(models.Model):
     )
     _sourceDBdict = {}
     title = models.CharField(max_length=200)
-    text = models.TextField(null=True)
-    data = models.TextField(null=True) # JSON DATA
-    url = models.CharField(max_length=256, null=True)
+    text = models.TextField(null=True, blank=True)
+    data = models.TextField(null=True, blank=True)  # JSON DATA
+    url = models.CharField(max_length=256, null=True, blank=True)
     kind = models.CharField(max_length=50, choices=KIND_CHOICES,
                             default=BASE_EXPLANATION)
     medium = models.CharField(max_length=10, choices=MEDIA_CHOICES,
                               default=READING)
     access = models.CharField(max_length=10, choices=ACCESS_CHOICES,
                               default=PUBLIC_ACCESS)
-    sourceDB = models.CharField(max_length=32, null=True)
-    sourceID = models.CharField(max_length=100, null=True)
+    sourceDB = models.CharField(max_length=32, null=True, blank=True)
+    sourceID = models.CharField(max_length=100, null=True, blank=True)
     addedBy = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    concept = models.ForeignKey(Concept, null=True) # concept definition
-    treeID = models.IntegerField(null=True) # VCS METADATA
-    parent = models.ForeignKey('Lesson', null=True,
+    concept = models.ForeignKey(Concept, null=True, blank=True)  # concept definition
+    treeID = models.IntegerField(null=True, blank=True)  # VCS METADATA
+    parent = models.ForeignKey('Lesson', null=True, blank=True,
                                related_name='children')
-    mergeParent = models.ForeignKey('Lesson', null=True,
+    mergeParent = models.ForeignKey('Lesson', null=True, blank=True,
                                     related_name='mergeChildren')
-    changeLog = models.TextField(null=True)
-    commitTime = models.DateTimeField('time committed', null=True)
+    changeLog = models.TextField(null=True, blank=True)
+    commitTime = models.DateTimeField('time committed', null=True, blank=True)
 
     _cloneAttrs = ('title', 'text', 'data', 'url', 'kind', 'medium', 'access',
                    'sourceDB', 'sourceID', 'concept', 'treeID')
@@ -349,7 +349,7 @@ class Lesson(models.Model):
                                        relationship=relationship).count() == 0:
             return self.conceptlink_set.create(concept=concept, addedBy=addedBy,
                                                relationship=relationship)
-        
+
     def __unicode__(self):
         return self.title
     ## def get_url(self):
@@ -368,8 +368,8 @@ def distinct_subset(inlist, distinct_func=lambda x:x.treeID):
             s.add(k)
             outlist.append(o)
     return outlist
-            
-    
+
+
 class ConceptLink(models.Model):
     DEFINES = 'defines'
     TESTS = 'tests'
@@ -425,7 +425,7 @@ DEFAULT_RELATION_MAP = {
     Lesson.EXERCISE:ConceptLink.TESTS,
     Lesson.PROJECT:ConceptLink.TESTS,
     Lesson.PRACTICE_EXAM:ConceptLink.TESTS,
-    
+
     Lesson.ANSWER:ConceptLink.ILLUSTRATES,
     Lesson.ERROR_MODEL:ConceptLink.DEFINES,
 
@@ -436,7 +436,7 @@ DEFAULT_RELATION_MAP = {
     Lesson.FORUM:ConceptLink.COMMENTS,
 }
 
-    
+
 class StudyList(models.Model):
     'list of materials of interest to each user'
     lesson = models.ForeignKey(Lesson)
@@ -478,9 +478,9 @@ class UnitLesson(models.Model):
     unit = models.ForeignKey('Unit')
     kind = models.CharField(max_length=10, choices=KIND_CHOICES,
                             default=COMPONENT)
-    lesson = models.ForeignKey(Lesson, null=True)
-    parent = models.ForeignKey('UnitLesson', null=True)
-    order = models.IntegerField(null=True)
+    lesson = models.ForeignKey(Lesson, null=True, blank=True)
+    parent = models.ForeignKey('UnitLesson', null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     atime = models.DateTimeField('time added', default=timezone.now)
     addedBy = models.ForeignKey(User)
     treeID = models.IntegerField() # VCS METADATA
@@ -490,6 +490,10 @@ class UnitLesson(models.Model):
     ##     'create lesson for initial concept definition'
     ##     lesson = Lesson.create_from_concept(concept, **kwargs)
     ##     return klass.create_from_lesson(lesson, unit, **ulArgs)
+
+    def __unicode__(self):
+        return self.lesson.title
+
     @classmethod
     def create_from_lesson(klass, lesson, unit, order=None, kind=None,
                            addAnswer=False, **kwargs):
@@ -692,7 +696,7 @@ def reorder_exercise(self, old=0, new=0, l=()):
             ex.save()
     return l # hand back the reordered list
 
-    
+
 class Unit(models.Model):
     'a container of exercises performed together'
     COURSELET = 'unit'
@@ -708,6 +712,10 @@ class Unit(models.Model):
                             default=COURSELET)
     atime = models.DateTimeField('time created', default=timezone.now)
     addedBy = models.ForeignKey(User)
+    description = models.TextField(blank=True)
+    img_url = models.URLField(blank=True)
+    small_img_url = models.URLField(blank=True)
+
     def next_order(self):
         'get next order value for appending new UnitLesson.order'
         n = self.unitlesson_set.all().aggregate(n=Max('order'))['n']
@@ -829,7 +837,7 @@ class Unit(models.Model):
     def __unicode__(self):
         return self.title
 
-    
+
 
 ############################################################
 # student response and error data
@@ -870,7 +878,7 @@ STATUS_TABLE_LABELS = (
     (DONE_STATUS, 'Solid understanding'),
 )
 
-        
+
 class Response(models.Model):
     'answer entered by a student in response to a question'
     ORCT_RESPONSE = 'orct'
@@ -893,7 +901,7 @@ class Response(models.Model):
     UNSURE = 'notsure'
     SURE = 'sure'
     CONF_CHOICES = (
-        (GUESS, 'Just guessing'), 
+        (GUESS, 'Just guessing'),
         (UNSURE, 'Not quite sure'),
         (SURE, 'Pretty sure'),
     )
@@ -904,21 +912,23 @@ class Response(models.Model):
     course = models.ForeignKey('Course')
     kind = models.CharField(max_length=10, choices=KIND_CHOICES,
                             default=ORCT_RESPONSE)
-    title = models.CharField(max_length=200, null=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
     text = models.TextField()
-    confidence = models.CharField(max_length=10, choices=CONF_CHOICES, 
+    confidence = models.CharField(max_length=10, choices=CONF_CHOICES,
                                   blank=False, null=False)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    selfeval = models.CharField(max_length=10, choices=EVAL_CHOICES, 
+    selfeval = models.CharField(max_length=10, choices=EVAL_CHOICES,
                                 blank=False, null=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, 
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES,
                               blank=False, null=True)
     author = models.ForeignKey(User)
     needsEval = models.BooleanField(default=False)
-    parent = models.ForeignKey('Response', null=True) # reply-to
-    activity = models.ForeignKey('fsm.ActivityLog', null=True)
+    parent = models.ForeignKey('Response', null=True, blank=True)  # reply-to
+    activity = models.ForeignKey('fsm.ActivityLog', null=True, blank=True)
+
     def __unicode__(self):
         return 'answer by ' + self.author.username
+
     @classmethod
     def get_counts(klass, query, fmt_count=fmt_count, n=0, tableKey='status',
                    simpleTable=False,
@@ -973,17 +983,17 @@ class Response(models.Model):
             if self.studenterror_set.count() == 0:
                 return self.CLASSIFY_STEP, 'classify your error(s)'
 
-        
+
 
 class StudentError(models.Model):
     'identification of a specific error model made by a student'
     response = models.ForeignKey(Response)
     atime = models.DateTimeField('time submitted', default=timezone.now)
     errorModel = models.ForeignKey(UnitLesson)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, 
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES,
                               blank=False, null=True)
     author = models.ForeignKey(User)
-    activity = models.ForeignKey('fsm.ActivityLog', null=True)
+    activity = models.ForeignKey('fsm.ActivityLog', null=True, blank=True)
     def __unicode__(self):
         return 'eval by ' + self.author.username
     @classmethod
@@ -1020,7 +1030,7 @@ class InquiryCount(models.Model):
     response = models.ForeignKey(Response)
     addedBy = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    
+
 class Liked(models.Model):
     'record users who found UnitLesson showed them something they were missing'
     unitLesson = models.ForeignKey(UnitLesson)
@@ -1033,7 +1043,7 @@ class FAQ(models.Model):
     unitLesson = models.ForeignKey(UnitLesson)
     addedBy = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    
+
 
 #######################################
 # Course and membership info
@@ -1047,22 +1057,29 @@ class Course(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField()
-    access = models.CharField(max_length=10, choices=ACCESS_CHOICES, 
+    access = models.CharField(max_length=10, choices=ACCESS_CHOICES,
                               default=PUBLIC_ACCESS)
-    enrollCode = models.CharField(max_length=64, null=True)
-    lockout = models.CharField(max_length=200, null=True)
+    enrollCode = models.CharField(max_length=64, null=True, blank=True)
+    lockout = models.CharField(max_length=200, null=True, blank=True)
     addedBy = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    def create_unit(self, title, author=None):
+
+    def create_unit(self, title, description=None, img_url=None, small_img_url=None, author=None):
         if author is None:
             author = self.addedBy
-        unit = Unit(title=title, addedBy=author)
+        unit = Unit(
+            title=title,
+            addedBy=author,
+            description=description,
+            img_url=img_url,
+            small_img_url=small_img_url
+        )
         unit.save()
         cu = CourseUnit(unit=unit, course=self, addedBy=author,
                         order=CourseUnit.objects.filter(course=self).count())
         cu.save()
         return unit
-        
+
     def get_user_role(self, user, justOne=True, raiseError=True):
         'return role(s) of specified user in this course'
         l = [r.role for r in self.role_set.filter(user=user)]
@@ -1095,10 +1112,10 @@ class CourseUnit(models.Model):
     order = models.IntegerField()
     addedBy = models.ForeignKey(User)
     atime = models.DateTimeField('time submitted', default=timezone.now)
-    releaseTime = models.DateTimeField('time released', null=True)
+    releaseTime = models.DateTimeField('time released', null=True, blank=True)
     def is_published(self):
         return self.releaseTime and self.releaseTime < timezone.now()
-    
+
 class Role(models.Model):
     'membership of a user in a course'
     INSTRUCTOR = 'prof'
@@ -1111,7 +1128,7 @@ class Role(models.Model):
         (ENROLLED, 'Enrolled Student'),
         (SELFSTUDY, 'Self-study'),
     )
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, 
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES,
                             default=ENROLLED)
     course = models.ForeignKey(Course)
     user = models.ForeignKey(User)
@@ -1153,7 +1170,7 @@ class UnitStatus(models.Model):
         if not self.endTime:
             self.endTime = timezone.now() # mark as done
             self.save()
-            return True        
+            return True
         self.save()
     def start_next_lesson(self):
         'advance to the next lesson, if any, else return None'

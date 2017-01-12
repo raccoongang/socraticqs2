@@ -1,5 +1,7 @@
 from fsm.models import ActivityLog
 
+FSM_NAMES_TO_RESET_ON_RECYCLE = ['live_chat']
+
 
 def quit_edge(self, edge, fsmStack, request, **kwargs):
     """
@@ -106,10 +108,24 @@ class RECYCLE(object):
     You have completed presenting this question.  Do you want to
     ask the students another question, or end this live session?
     """
+    quit_edge = quit_edge
+
     def next_edge(self, edge, fsmStack, request, pageData=None, **kwargs):
         'make sure timer is reset before going to another question'
         pageData.set_refresh_timer(request, False)
+
+        # reset all child nodes to WAIT_ASK node.
+        children = fsmStack.state.linkChildren.filter(
+            fsmNode__fsm__name__in=FSM_NAMES_TO_RESET_ON_RECYCLE
+        ).select_related('fsmNode.fsm')
+        for item in children:
+            fsm = item.fsmNode.fsm
+            wait_ask_node = item.fsmNode.__class__.objects.filter(fsm=fsm, name='WAIT_ASK').first()
+            if wait_ask_node:
+                item.fsmNode = wait_ask_node
+                item.save()
         return edge.toNode
+
     path = 'fsm:fsm_node'
     title = 'Do you want to ask another question?'
     edges = (

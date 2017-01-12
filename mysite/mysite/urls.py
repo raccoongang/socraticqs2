@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.conf import settings
-
+from django.apps import apps
 from mysite.views import *
 from pages.views import interested_form
 
@@ -10,17 +10,19 @@ admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    # (r'^$', home_page),
+    url(r'^$', home_page),
     # Examples:
     # url(r'^$', 'mysite.views.home', name='home'),
     # url(r'^mysite/', include('mysite.foo.urls')),
 
-    (r'^ct/', include('ct.urls', namespace='ct')),
-    (r'^fsm/', include('fsm.urls', namespace='fsm')),
+    url(r'^ct/', include('ct.urls', namespace='ct')),
+    url(r'^fsm/', include('fsm.urls', namespace='fsm')),
+    url(r'^chat/', include('chat.urls', namespace='chat')),
+    url(r'^lms/', include('lms.urls', namespace='lms')),
 
     # Login / logout.
-    (r'^login/$', 'psa.views.custom_login'),
-    (r'^logout/$', logout_page, {'next_page': '/login/'}),
+    url(r'^login/$', 'psa.views.custom_login', name='login'),
+    url(r'^logout/$', logout_page, {'next_page': '/login/'}, name='logout'),
 
 
     # Uncomment the admin/doc line below to enable admin documentation:
@@ -42,7 +44,12 @@ urlpatterns = patterns(
     url(r'^', include('cms.urls')),
 )
 
-
+if apps.is_installed('lti'):
+    urlpatterns += patterns(
+        '',
+        url(r'^lti/', include('lti.urls', namespace='lti')),
+    )
+    
 if settings.DEBUG:
     urlpatterns += [
         url(r'markup/(?P<path>.*)$', markup_view),
@@ -52,3 +59,4 @@ if settings.DEBUG:
             {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
         url(r'', include('django.contrib.staticfiles.urls')),
     ]
+

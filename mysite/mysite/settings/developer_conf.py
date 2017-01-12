@@ -15,6 +15,7 @@ LTI_SECRET = "__lti_secret__"  # can be any random python string with enough len
 
 INSTALLED_APPS_LOCAL = (
     'django_nose',
+    'behave_django',
 )
 
 INSTALLED_APPS += INSTALLED_APPS_LOCAL
@@ -25,7 +26,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # Tell nose to measure coverage on the 'lti' and 'psa' apps
 NOSE_ARGS = [
     '--with-coverage',
-    '--cover-package=lti,psa,ct,fsm',
+    '--cover-package=lti,psa,ct,fsm,chat',
     '--cover-inclusive',
 ]
 

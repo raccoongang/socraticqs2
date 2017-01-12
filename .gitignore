@@ -60,6 +60,8 @@ target/
 *.db
 settings_local.py
 mysite/static/
+static/
+assets/
 deploy.sh
 celerybeat-schedule
 .idea/
@@ -69,4 +71,7 @@ sftp-config.json
 _ve_socraticqs2/
 fab_settings.py
 backups/*
+bower_components/
+node_modules/
+.vscode/
 mysite/media/

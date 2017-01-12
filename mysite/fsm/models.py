@@ -1,4 +1,3 @@
-import json
 
 from django.utils import timezone
 from django.db import models, transaction
@@ -8,142 +7,8 @@ from django.core.urlresolvers import reverse
 from fsm.utils import get_plugin
 
 from ct.ct_util import reverse_path_args
-from ct.models import (
-    Role,
-    Unit,
-    Course,
-    Lesson,
-    Concept,
-    Response,
-    CourseUnit,
-    UnitStatus,
-    UnitLesson,
-    ConceptLink,
-    StudentError,
-    ConceptGraph
-)
-
-
-# index of types that can be saved in json blobs
-KLASS_NAME_DICT = dict(
-    Unit=Unit,
-    Role=Role,
-    Course=Course,
-    Lesson=Lesson,
-    Concept=Concept,
-    Response=Response,
-    UnitLesson=UnitLesson,
-    ConceptLink=ConceptLink,
-    ConceptGraph=ConceptGraph,
-    StudentError=StudentError,
-    CourseUnit=CourseUnit,
-    UnitStatus=UnitStatus,
-)
-
-
-class JSONBlobMixin(object):
-    """
-    Mixin to dump/load data to/from JSON blob fields.
-    """
-    @staticmethod
-    def dump_json_id(obj, name=None):
-        """
-        Produce tuple of form ("NAME_Response_id", obj.pk).
-        """
-        _list = []
-        if name:
-            _list.append(name)
-        name = '_'.join(_list + [obj.__class__.__name__, 'id'])
-        return (name, obj.pk)
-
-    def dump_json_id_dict(self, state_data):
-        """
-        Get json representation of dict of db objects.
-        """
-        data = {}
-        for key, value in state_data.items():
-            if value.__class__.__name__ in KLASS_NAME_DICT:  # save db object id
-                name, pk = self.dump_json_id(value, key)
-                data[name] = pk
-            else:  # just copy literal value, assuming JSON can serialize it
-                data[key] = value
-        return json.dumps(data)
-
-    def save_json_data(self, state_data=None, attr='data', doSave=True):
-        """
-        Save dict of object refs back to db blob field.
-        """
-        dict_attr = '_%s_dict' % attr
-        if state_data is None:  # save cached data
-            state_data = getattr(self, dict_attr)
-        else:  # save specified dict
-            setattr(self, dict_attr, state_data)  # cache on local object
-        if state_data:
-            dumped_state_data = self.dump_json_id_dict(state_data)
-        else:
-            dumped_state_data = None
-        setattr(self, attr, dumped_state_data)
-        if doSave:  # immediately write to db
-            self.save()
-
-    @staticmethod
-    def load_json_id(name, pk):
-        """
-        Get the specified object as (label, obj) tuple.
-        """
-        splitted_name = name.split('_')
-        klass_name = splitted_name[-2]
-        obj = KLASS_NAME_DICT[klass_name].objects.get(pk=pk)
-        return (splitted_name[0], obj)
-
-    def load_json_id_dict(self, state_data):
-        """
-        Get dict of db objects from json blob representation.
-        """
-        data = json.loads(state_data)
-        obj_dict = {}
-        for key, value in data.items():
-            if key.endswith('_id'):  # retrieve db object
-                name, obj = self.load_json_id(key, value)
-                obj_dict[name] = obj
-            else:  # just copy literal value
-                obj_dict[key] = value
-        return obj_dict
-
-    def load_json_data(self, attr='data'):
-        """
-        Get dict of db objects from json blob field.
-        """
-        dict_attr = '_%s_dict' % attr
-        try:
-            return getattr(self, dict_attr)
-        except AttributeError:
-            pass
-        state_data = getattr(self, attr)
-        if state_data:
-            obj_dict = self.load_json_id_dict(state_data)
-        else:
-            obj_dict = {}
-        setattr(self, dict_attr, obj_dict)
-        return obj_dict
-
-    def set_data_attr(self, attr, value):
-        """Set a single data attribute
-
-        Must later call save_json_data() to serialize.
-        """
-        obj_dict = self.load_json_data()
-        obj_dict[attr] = value
-
-    def get_data_attr(self, attr):
-        """
-        Get a single data attribute from json data.
-        """
-        obj_dict = self.load_json_data()
-        try:
-            return obj_dict[attr]
-        except KeyError:
-            raise AttributeError('JSON data has no attr %s' % attr)
+from ct.models import Course
+from mixins import JSONBlobMixin, ChatMixin
 
 
 class FSM(models.Model):
@@ -152,9 +17,9 @@ class FSM(models.Model):
     """
     name = models.CharField(max_length=64, unique=True)
     title = models.CharField(max_length=200)
-    description = models.TextField(null=True)
-    help = models.TextField(null=True)
-    startNode = models.ForeignKey('FSMNode', related_name='+', null=True)
+    description = models.TextField(null=True, blank=True)
+    help = models.TextField(null=True, blank=True)
+    startNode = models.ForeignKey('FSMNode', related_name='+', null=True, blank=True)
     hideTabs = models.BooleanField(default=False)
     hideLinks = models.BooleanField(default=False)
     hideNav = models.BooleanField(default=False)
@@ -221,6 +86,9 @@ class FSM(models.Model):
         """
         return self.fsmnode_set.get(name=name)
 
+    def __unicode__(self):
+        return self.name
+
 
 class FSMGroup(models.Model):
     """
@@ -228,6 +96,9 @@ class FSMGroup(models.Model):
     """
     fsm = models.ForeignKey(FSM)
     group = models.CharField(db_index=True, max_length=64)
+
+    def __unicode__(self):
+        return self.group
 
 
 class PluginDescriptor(object):
@@ -248,20 +119,20 @@ class PluginDescriptor(object):
         raise AttributeError('read only attribute!')
 
 
-class FSMNode(JSONBlobMixin, models.Model):
+class FSMNode(JSONBlobMixin, ChatMixin, models.Model):
     """
     Stores one node of an FSM state-graph.
     """
     fsm = models.ForeignKey(FSM)
     name = models.CharField(db_index=True, max_length=64)
     title = models.CharField(max_length=200)
-    description = models.TextField(null=True)
-    help = models.TextField(null=True)
-    path = models.CharField(max_length=200, null=True)
-    data = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
+    help = models.TextField(null=True, blank=True)
+    path = models.CharField(max_length=200, null=True, blank=True)
+    data = models.TextField(null=True, blank=True)
     atime = models.DateTimeField('time submitted', default=timezone.now)
     addedBy = models.ForeignKey(User)
-    funcName = models.CharField(max_length=200, null=True)
+    funcName = models.CharField(max_length=200, null=True, blank=True)
     doLogging = models.BooleanField(default=False)
     _plugin = PluginDescriptor()  # provide access to plugin code if any
 
@@ -312,6 +183,9 @@ class FSMNode(JSONBlobMixin, models.Model):
         else:
             return func(self, state, request)
 
+    def __unicode__(self):
+        return u'::'.join((self.name, self.funcName))
+
 
 class FSMDone(ValueError):
     pass
@@ -336,10 +210,10 @@ class FSMEdge(JSONBlobMixin, models.Model):
     fromNode = models.ForeignKey(FSMNode, related_name='outgoing')
     toNode = models.ForeignKey(FSMNode, related_name='incoming')
     title = models.CharField(max_length=200)
-    description = models.TextField(null=True)
-    help = models.TextField(null=True)
+    description = models.TextField(null=True, blank=True)
+    help = models.TextField(null=True, blank=True)
     showOption = models.BooleanField(default=False)
-    data = models.TextField(null=True)
+    data = models.TextField(null=True, blank=True)
     atime = models.DateTimeField('time submitted', default=timezone.now)
     addedBy = models.ForeignKey(User)
     _funcDict = {}
@@ -354,16 +228,20 @@ class FSMEdge(JSONBlobMixin, models.Model):
             return self.toNode
         else:
             return func(self, fsmStack, request, **kwargs)
+
     def filter_input(self, obj):
         """
         Use plugin code to check whether obj is acceptable input to this edge.
         """
-        try: # see if plugin code provides select_X_filter() call
+        try:  # see if plugin code provides select_X_filter() call
             func = getattr(self.fromNode._plugin, self.name + '_filter')
-        except AttributeError: # no plugin method, so accept by default
+        except AttributeError:  # no plugin method, so accept by default
             return True
         else:
             return func(self, obj)
+
+    def __unicode__(self):
+        return self.name
 
 
 class FSMState(JSONBlobMixin, models.Model):
@@ -372,21 +250,21 @@ class FSMState(JSONBlobMixin, models.Model):
     """
     user = models.ForeignKey(User)
     fsmNode = models.ForeignKey(FSMNode)
-    parentState = models.ForeignKey('FSMState', null=True,
+    parentState = models.ForeignKey('FSMState', null=True, blank=True,
                                     related_name='children')
-    linkState = models.ForeignKey('FSMState', null=True,
+    linkState = models.ForeignKey('FSMState', null=True, blank=True,
                                   related_name='linkChildren')
-    unitLesson = models.ForeignKey('ct.UnitLesson', null=True)
+    unitLesson = models.ForeignKey('ct.UnitLesson', null=True, blank=True)
     title = models.CharField(max_length=200)
     path = models.CharField(max_length=200)
-    data = models.TextField(null=True)
+    data = models.TextField(null=True, blank=True)
     hideTabs = models.BooleanField(default=False)
     hideLinks = models.BooleanField(default=False)
     hideNav = models.BooleanField(default=False)
     isLiveSession = models.BooleanField(default=False)
     atime = models.DateTimeField('time started', default=timezone.now)
-    activity = models.ForeignKey('ActivityLog', null=True)
-    activityEvent = models.ForeignKey('ActivityEvent', null=True)
+    activity = models.ForeignKey('ActivityLog', null=True, blank=True)
+    activityEvent = models.ForeignKey('ActivityEvent', null=True, blank=True)
 
     def get_all_state_data(self):
         """
@@ -477,7 +355,10 @@ class FSMState(JSONBlobMixin, models.Model):
         """
         return cls.objects.filter(
             isLiveSession=True, activity__course__role__user=user
-        )
+        ).distinct()
+
+    def __unicode__(self):
+        return u'::'.join((self.user.username, str(self.fsmNode)))
 
 
 class ActivityLog(models.Model):
@@ -486,8 +367,8 @@ class ActivityLog(models.Model):
     """
     fsmName = models.CharField(max_length=64)
     startTime = models.DateTimeField('time created', default=timezone.now)
-    endTime = models.DateTimeField('time ended', null=True)
-    course = models.ForeignKey(Course, null=True)
+    endTime = models.DateTimeField('time ended', null=True, blank=True)
+    course = models.ForeignKey(Course, null=True, blank=True)
 
     @classmethod
     def log_node_entry(cls, fsmNode, user, unitLesson=None):
@@ -504,6 +385,9 @@ class ActivityLog(models.Model):
         activity_event.save()
         return activity_event
 
+    def __unicode__(self):
+        return u'::'.join((self.fsmName, str(self.startTime)))
+
 
 class ActivityEvent(models.Model):
     """
@@ -512,9 +396,9 @@ class ActivityEvent(models.Model):
     activity = models.ForeignKey(ActivityLog)
     nodeName = models.CharField(max_length=64)
     user = models.ForeignKey(User)
-    unitLesson = models.ForeignKey('ct.UnitLesson', null=True)
+    unitLesson = models.ForeignKey('ct.UnitLesson', null=True, blank=True)
     startTime = models.DateTimeField('time created', default=timezone.now)
-    endTime = models.DateTimeField('time ended', null=True)
+    endTime = models.DateTimeField('time ended', null=True, blank=True)
     exitEvent = models.CharField(max_length=64)
 
     def log_exit_event(self, eventName):
@@ -524,3 +408,6 @@ class ActivityEvent(models.Model):
         self.exitEvent = eventName
         self.endTime = timezone.now()
         self.save()
+
+    def __unicode__(self):
+        return u'::'.join((self.user.username, self.nodeName, str(self.startTime)))
