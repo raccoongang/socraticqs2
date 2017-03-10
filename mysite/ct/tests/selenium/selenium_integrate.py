@@ -3,7 +3,7 @@
 Integration tests via Selenium Firefox webdriver.
 To run this test we need to install Firefox.
 """
-from django.test import LiveServerTestCase
+from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.core.management import call_command
 
@@ -11,30 +11,19 @@ from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.support.ui import Select
 
 
-class MySeleniumTests(LiveServerTestCase):
+class MySeleniumTests(TestCase):
     fixtures = ['ct/tests/fixtures/initial_data.json']
 
-    @classmethod
-    def setUpClass(cls):
-        cls.selenium = WebDriver()
-        super(MySeleniumTests, cls).setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.selenium.quit()
-        super(MySeleniumTests, cls).tearDownClass()
-
-    def test_courses(self):
-        self.selenium.get('%s%s' % (self.live_server_url, reverse('ct:courses')))
+    def test_courses(self, liveserver, selenium):
+        selenium.get('%s%s' % (self.live_server_url, reverse('ct:courses')))
 
     # Need to change test to reflex changes
-    def hidden_lessonseq(self):
+    def hidden_lessonseq(self, driver, live_server):
         """
         This test is hidden because we now use lessonseq by default.
         """
         call_command('fsm_deploy')
-        driver = self.selenium
-        driver.get(self.live_server_url + "/login/?next=/ct/")
+        driver.get(live_server.url + "/login/?next=/ct/")
         driver.find_element_by_link_text("Sign in").click()
         driver.find_element_by_id("username").clear()
         driver.find_element_by_id("username").send_keys("admin")
@@ -98,10 +87,10 @@ class MySeleniumTests(LiveServerTestCase):
         driver.find_element_by_link_text("The Teacher").click()
         driver.find_element_by_link_text("Logout").click()
 
-    def test_teacher_edit_course(self):
+    def test_teacher_edit_course(self, live_server, selenium):
         call_command('fsm_deploy')
-        driver = self.selenium
-        driver.get(self.live_server_url + "/")
+        driver = selenium
+        driver.get(live_server.url + "/")
         driver.find_element_by_link_text("Sign in").click()
         driver.find_element_by_id("username").clear()
         driver.find_element_by_id("username").send_keys("admin")
@@ -146,7 +135,7 @@ class MySeleniumTests(LiveServerTestCase):
         driver.find_element_by_css_selector("form > input[type=\"submit\"]").click()
         driver.find_element_by_link_text("Home").click()
         driver.find_element_by_link_text("Courselets.org").click()
-        driver.get(self.live_server_url + "/ct/")
+        driver.get(live_server.url + "/ct/")
         driver.find_element_by_link_text("An Introduction to Courselets [new title]").click()
         Select(driver.find_element_by_xpath("(//select[@id='id_newOrder'])[3]")).select_by_visible_text("1")
         driver.find_element_by_xpath("(//input[@value='Move'])[3]").click()
@@ -156,10 +145,9 @@ class MySeleniumTests(LiveServerTestCase):
         driver.find_element_by_link_text("Logout").click()
 
     # TODO need to change test
-    def hidden_add_lesson_search_concept(self):
+    def hidden_add_lesson_search_concept(self, driver, live_server):
         call_command('fsm_deploy')
-        driver = self.selenium
-        driver.get(self.live_server_url + "/")
+        driver.get(live_server.url + "/")
         driver.find_element_by_link_text("Sign in").click()
         driver.find_element_by_id("username").clear()
         driver.find_element_by_id("username").send_keys("admin")
