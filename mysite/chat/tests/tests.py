@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.http.response import HttpResponseNotFound
+from django.utils.safestring import mark_safe
 from mock import patch, Mock
 import injections
 
@@ -269,8 +270,10 @@ class MessagesViewTests(SetUpMixin, TestCase):
         self.assertEquals(response.status_code, 200)
         json_content = json.loads(response.content)
 
+        coded_message = mark_safe(md2html(answer))
+
         self.assertIn('html', json_content['addMessages'][0])
-        self.assertEquals(json_content['addMessages'][0]['html'], answer)
+        self.assertEquals(json_content['addMessages'][0]['html'], coded_message)
 
     def test_typical_chat_flow(self):
         """
