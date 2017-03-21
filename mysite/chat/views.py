@@ -2,6 +2,7 @@ import logging
 
 import waffle
 import injections
+from django.db import models
 from django.db.models import Q
 from django.views.generic import View
 from django.http import Http404
@@ -37,6 +38,23 @@ class ChatInitialView(LoginRequiredMixin, View):
         :return: EnrollUnitCode instance
         """
         return get_object_or_404(EnrollUnitCode, enrollCode=enroll_key)
+
+    def create_chat(self, enroll_code, courseUnit):
+        chat = Chat(
+            user=self.request.user,
+            enroll_code=enroll_code,
+            instructor=courseUnit.course.addedBy
+        )
+        chat.save(self.request)
+        return chat
+
+    def check_course_unit_not_published(self, courseUnit):
+        return (not courseUnit.is_published() and
+            not User.objects.filter(
+                id=self.request.user.id,
+                role__role=Role.INSTRUCTOR,
+                role__course=courseUnit.course
+            ).exists())
 
     def get_will_learn_need_know(self, unit, courseUnit):
         """
@@ -97,14 +115,7 @@ class ChatInitialView(LoginRequiredMixin, View):
                 'lti/error.html',
                 {'message': 'There are no Lessons to display for that Courselet.'}
             )
-        if (
-            not courseUnit.is_published() and
-            not User.objects.filter(
-                id=request.user.id,
-                role__role=Role.INSTRUCTOR,
-                role__course=courseUnit.course
-            ).exists()
-        ):
+        if self.check_course_unit_not_published(courseUnit):
             return render(
                 request,
                 'lti/error.html',
@@ -121,12 +132,7 @@ class ChatInitialView(LoginRequiredMixin, View):
 
         chat = Chat.objects.filter(enroll_code=enroll_code, user=request.user).first()
         if not chat and enroll_key:
-            chat = Chat(
-                user=request.user,
-                enroll_code=enroll_code,
-                instructor=courseUnit.course.addedBy
-            )
-            chat.save(request)
+            chat = self.create_chat(enroll_code, courseUnit)
         if chat.message_set.count() == 0:
             next_point = self.next_handler.start_point(unit=unit, chat=chat, request=request)
         elif not chat.state:
@@ -299,3 +305,24 @@ class InitializeLiveSession(ChatInitialView):
                 'fsmstate': chat.state,
             }
         )
+
+
+class TestChatInitialView(ChatInitialView):
+    def create_chat(self, enroll_code, courseUnit):
+        chat = Chat(
+            user=self.request.user,
+            enroll_code=enroll_code,
+            instructor=courseUnit.course.addedBy,
+            is_test=True
+        )
+        chat.save(self.request)
+        return chat
+
+    def check_course_unit_not_published(self, courseUnit):
+        return not courseUnit.course.invite_set.filter(
+            models.Q(user=self.request.user) | models.Q(email=self.request.user.email),
+        ) and not User.objects.filter(
+            id=self.request.user.id,
+            role__role=Role.INSTRUCTOR,
+            role__course=courseUnit.course
+        ).exists()
