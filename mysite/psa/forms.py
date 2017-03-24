@@ -49,18 +49,3 @@ class UsernameLoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput())
     next = forms.CharField(required=False, widget=forms.HiddenInput())
-
-
-class SocialForm(forms.ModelForm):
-    class Meta:
-        model = Instructor
-        fields = (
-            'user',
-            'institution',
-            'id',
-        )
-        widgets = {
-            'user': forms.HiddenInput(),
-            'id': forms.HiddenInput(),
-
-        }

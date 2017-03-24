@@ -13,7 +13,7 @@ from accounts.models import Instructor
 
 from psa.utils import render_to
 from psa.models import SecondaryEmail, AnonymEmail
-from psa.forms import SignUpForm, EmailLoginForm, UsernameLoginForm, SocialForm
+from psa.forms import SignUpForm, EmailLoginForm, UsernameLoginForm
 
 
 def context(**extra):
@@ -63,6 +63,8 @@ def custom_login(request, template_name='psa/custom_login.html', next_page='/ct/
     """
     username = password = ''
     logout(request)
+    if not next_page.startswith('/'):
+        next_page = reverse(next_page)
     kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
     if request.POST:
         form = login_form_cls(request.POST)
@@ -92,6 +94,7 @@ def custom_login(request, template_name='psa/custom_login.html', next_page='/ct/
     else:
         form = login_form_cls(initial={'next': next_page})
     kwargs['form'] = form
+    kwargs['next'] = next_page
     return render(
         request,
         template_name,
@@ -150,6 +153,7 @@ def signup(request, next_page=None):
     if 'next' in params:  # must pass through for both GET or POST
         kwargs['next'] = params['next']
     kwargs['form'] = form
+    kwargs['next'] = next_page
     return render(request, 'psa/signup.html', kwargs)
 
 
@@ -159,35 +163,7 @@ def done(request):
     """
     Login complete view, displays user data.
     """
-    form = None
-    instructor = None
-    try:
-        instructor = request.user.instructor
-        has_inst  = bool(instructor.institution)
-    except request.user._meta.model.instructor.RelatedObjectDoesNotExist as e:
-        has_inst = False
-
-    if not has_inst:
-        initial = {
-            'user': request.user,
-        }
-        if request.POST:
-            form = SocialForm(
-                request.POST,
-                initial=initial,
-                instance=instructor
-            )
-            if form.is_valid():
-                form.save()
-                return HttpResponseRedirect(reverse('ct:courses'))
-        else:
-            form = SocialForm(
-                initial=initial,
-                instance=instructor
-            )
-    return context(
-        person=request.user, form=form
-    )
+    return context(person=request.user)
 
 
 @login_required
