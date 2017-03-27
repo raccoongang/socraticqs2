@@ -1,0 +1,14 @@
+{% extends 'ctms/ctms_base.html' %}
+
+{% block base_content %}
+<h4 class="center">Confirm Your Email</h4>
+<p>Please click on the link in your welcome email to activate your account</p>
+<hr>
+<form action="{% url 'accounts:resend_email' %}" method="post">
+  {% csrf_token %}
+  <input type="hidden" value="{{ code }}" name="code">
+  <input type="submit" value="Send Link Again" class="btn btn-success center">
+</form>
+<p>I've activated my account and want to <a href="{% url 'new_login' %}">log in</a></p>
+<p>Go back to <a href="{% url 'signup' %}">signUp page</a></p>
+{% endblock%}

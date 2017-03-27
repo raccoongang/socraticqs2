@@ -4,6 +4,7 @@ from django.contrib.auth.views import (
     password_reset, password_reset_done,
     password_reset_confirm, password_reset_complete)
 from accounts.forms import CustomPasswordResetForm
+from accounts.views import InstructionsView, ResendEmailView
 
 from .views import DeleteAccountView, AccountSettingsView, ProfileUpdateView
 
@@ -36,6 +37,10 @@ urlpatterns = patterns(
 
     url(r'^profile_update/$', ProfileUpdateView.as_view(), name='profile_update'),
 
+    url(r'^signup_instructions/$', InstructionsView.as_view(),
+        name='signup_instruction'),
+
+    url(r'^resend_email/$', ResendEmailView.as_view(), name='resend_email'),
+
     url(r'^$', AccountSettingsView.as_view(), name='settings'),
 )
-

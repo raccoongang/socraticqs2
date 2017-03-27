@@ -1,11 +1,14 @@
 from functools import partial
 
 from django.contrib.auth import logout
+from django.core.mail import send_mail
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.views.generic import View
 from django.core.urlresolvers import reverse
 from django.views.generic.edit import FormView, CreateView
+from social.utils import build_absolute_uri, setting_name
+from django.conf import settings
 
 from accounts.forms import (
     UserForm, InstructorForm, ChangePasswordForm,
@@ -14,6 +17,7 @@ from accounts.forms import (
 from accounts.models import Instructor
 from mysite.mixins import LoginRequiredMixin, NotAnonymousRequiredMixin
 from .forms import SocialForm
+from psa.custom_django_storage import CustomCode\
 
 
 class AccountSettingsView(NotAnonymousRequiredMixin, View):
@@ -135,3 +139,42 @@ class ProfileUpdateView(NotAnonymousRequiredMixin, CreateView):
                 'accounts/profile_edit.html',
                 {'form': form}
             )
+
+class InstructionsView(NotAnonymousRequiredMixin, View):
+    def get(self, request):
+        code = ''
+        custom_code = CustomCode.objects.filter(user_id=self.request.user.id).first()
+        if custom_code:
+            code = custom_code.code
+        return render(request, 'accounts/instruction.html', {'code': code})
+
+
+class ResendEmailView(NotAnonymousRequiredMixin, View):
+    def post(self, request):
+        code = request.POST.get('code')
+        custom_code = CustomCode.objects.filter(code=code, user_id=request.user.id).first()
+        if not code or not custom_code:
+            return render(
+                request,
+                'ctms/error.html',
+                {'message': 'Not valid request'}
+            )
+
+        NAMESPACE = getattr(settings, setting_name('URL_NAMESPACE'), None) or 'social'
+        path = reverse('{}:complete'.format(NAMESPACE), kwargs={'backend': 'email'}) + "?verification_code={}".format(custom_code.code)
+        url= "{}://{}".format(request.scheme, request.get_host())
+        uri = build_absolute_uri(url, path)
+
+        send_mail(
+            'Validate your account',
+            'Validate your account {}'.format(uri),
+            settings.EMAIL_FROM,
+            [custom_code.email],
+            fail_silently=False
+        )
+        return render(
+            request,
+            'psa/validation_sent.html',
+            {'email': custom_code.email}
+        )
+

@@ -7,6 +7,9 @@ from mysite.views import *
 from pages.views import interested_form
 from psa.forms import UsernameLoginForm, EmailLoginForm
 from accounts.views import AccountSettingsView
+from social.utils import setting_name
+
+extra = getattr(settings, setting_name('TRAILING_SLASH'), True) and '/' or ''
 
 admin.autodiscover()
 
@@ -25,12 +28,12 @@ urlpatterns = patterns(
             'next_page': '/ct/',
             'login_form_cls': UsernameLoginForm
         }, name='login'),
-    url(r'^signup/$', 'psa.views.signup', {'next_page': '/ctms/'}, name='signup'),
+    url(r'^signup/$', 'psa.views.signup', {'next_page': 'accounts:signup_instruction'}, name='signup'),
     url(r'^new_login/$',
         'psa.views.custom_login',
         {
             'template_name': 'psa/new_custom_login.html',
-            'next_page': 'accouts:profile_update',
+            'next_page': 'accounts:profile_update',
             'login_form_cls': EmailLoginForm
         },
         name='new_login'),

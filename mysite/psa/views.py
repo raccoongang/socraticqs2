@@ -1,3 +1,4 @@
+from django.contrib.admin.utils import quote
 from django.db.models import Q
 from django.conf import settings
 from django.http.response import HttpResponseRedirect
@@ -7,14 +8,21 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render_to_response, render
 from django.contrib.auth import logout, login, authenticate
 from django.core.urlresolvers import reverse
+from django.views.decorators.cache import never_cache
+from django.contrib.auth import login, REDIRECT_FIELD_NAME
+from django.views.decorators.csrf import csrf_exempt
+from social.apps.django_app.utils import psa
 from social.backends.utils import load_backends
-from social.apps.django_app.views import complete
+from social.apps.django_app.views import complete, _do_login
+from social.actions import do_complete
+from social.utils import setting_name
 from accounts.models import Instructor
 
 from psa.utils import render_to
 from psa.models import SecondaryEmail, AnonymEmail
 from psa.forms import SignUpForm, EmailLoginForm, UsernameLoginForm
 
+NAMESPACE = getattr(settings, setting_name('URL_NAMESPACE'), None) or 'social'
 
 def context(**extra):
     """
@@ -119,13 +127,18 @@ def check_username_and_create_user(username, email, password, **kwargs):
         return check_username_and_create_user(username, email, password, **kwargs)
 
 
+def check_next_page(next=None):
+    if not next.startswith('/'):
+        return reverse(next)
+    return next
+
 def signup(request, next_page=None):
     """
     This function handles custom login to integrate social auth and default login.
     """
     username = password = ''
     logout(request)
-    form = SignUpForm(initial={'next': next_page})
+    form = SignUpForm(initial={'next': check_next_page(next_page)})
     kwargs = dict(available_backends=load_backends(settings.AUTHENTICATION_BACKENDS))
     if request.POST:
         form = SignUpForm(request.POST)
@@ -150,10 +163,11 @@ def signup(request, next_page=None):
             return response
     else:
         params = request.GET
-    if 'next' in params:  # must pass through for both GET or POST
-        kwargs['next'] = params['next']
+
+    next_page = next_page or params.get('next_page')
+
     kwargs['form'] = form
-    kwargs['next'] = next_page
+    kwargs['next'] = check_next_page(next_page)
     return render(request, 'psa/signup.html', kwargs)
 
 
