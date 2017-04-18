@@ -197,3 +197,23 @@ class SideBarMiddleware(SideBarUtils):
                 response.context_data['sidebar'] = sidebar_context
                 response.render()
         return response
+
+
+class NextPageHandleMiddleware(object):
+    def process_template_response(self, request, response):
+        next_get = request.GET.get('next')
+        next_post = request.POST.get('next')
+        # if GET contains next then store it in session
+        if next_get and request.path != next_get:
+            request.session['next'] = next_get
+        # POST['next'] has more priority
+        if next_post and request.path != next_post:
+            request.session['next'] = next_post
+
+        if request.path == request.session.get('next'):
+            del request.session['next']
+
+        # TODO: What should I do next? What else if we are not on the <next> page when the next request comes?
+        # print "GET next -> ", request.GET.get('next')
+        # print "POST next -> ", request.POST.get('next')
+        return response

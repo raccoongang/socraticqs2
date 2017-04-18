@@ -127,6 +127,7 @@ MIDDLEWARE_CLASSES = (
     # 'ct.middleware.MySocialAuthExceptionMiddleware',
     'waffle.middleware.WaffleMiddleware',
     'ctms.middleware.SideBarMiddleware',
+    'ctms.middleware.NextPageHandleMiddleware',
 )
 
 ROOT_URLCONF = 'mysite.urls'
