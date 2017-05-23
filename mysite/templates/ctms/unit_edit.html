@@ -186,7 +186,7 @@ Create new courslet
                     {# <!-- or for crispy forms --> {% crispy item_form %} #}
 
                     <!-- TODO: Add functionality for removing error models -->
-                    <a href="#" class="error-models-form__remove">Remove error model</a>
+                    <a href="" class="error-models-form__remove">Remove error model</a>
                   </div>
                 {% endfor %}
               </div>
@@ -254,6 +254,17 @@ Create new courslet
         $('html, body').animate({
           scrollTop: $('.error-models-form__items div:last-of-type').offset().top - 84
         }, 800);
+      });
+
+      $('.error-models-form__remove').on('click', function(e) {
+        var me = $(this);
+        var data = me.data();
+        $.ajax({
+          url: me.attr('href'),
+          type: 'DELETE',
+          success: function(){}
+        });
+        e.preventDefault();
       });
     });
   </script>

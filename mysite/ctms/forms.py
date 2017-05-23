@@ -76,7 +76,7 @@ class CreateEditUnitAnswerForm(forms.ModelForm):
 class ErrorModelForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ('title', 'text')
+        fields = ('title', 'text', 'id')
 
     def save(self, questionUL, user, commit=True):
         self.instance.addedBy = user

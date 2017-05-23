@@ -233,12 +233,12 @@ class UpdateCourseView(NewLoginRequiredMixin, CourseCoursletUnitMixin, UpdateVie
     def get(self, request, *args, **kwargs):
         if not self.am_i_instructor():
             raise Http404()
-        return super(CreateCourseView, self).get(request, *args, **kwargs)
+        return super(UpdateCourseView, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         if not self.am_i_instructor():
             raise Http404()
-        return super(CreateCourseView, self).post(request, *args, **kwargs)
+        return super(UpdateCourseView, self).post(request, *args, **kwargs)
 
 
     def get_object(self, queryset=None):
@@ -817,6 +817,19 @@ class CreateEditUnitView(NewLoginRequiredMixin, CourseCoursletUnitMixin, FormSet
             'answer_form': CreateEditUnitAnswerForm(**self.get_answer_form_kwargs()),
         })
         return kwargs
+
+
+class DeleteErrorModelView(NewLoginRequiredMixin, CourseCoursletUnitMixin, DeleteView):
+    model = UnitLesson
+
+    def delete(self, request, *args, **kwargs):
+        if self.object.addedBy == request.user:
+            response = super(DeleteErrorModelView, self).delete(request, *args, **kwargs)
+            self.object.lesson.concept.delete()
+            self.object.lesson.delete()
+            messages.add_message(request, messages.SUCCESS, "Error model successfully deleted.")
+            return response
+        return Http404()
 
 
 class RedirectToCourseletPreviewView(NewLoginRequiredMixin, CourseCoursletUnitMixin, View):
