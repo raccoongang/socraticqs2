@@ -1,4 +1,6 @@
 import injections
+from itertools import chain
+
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
@@ -96,11 +98,13 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
             return self.roll_fsm_forward(chat, message)
 
         if (
-            message.contenttype in ['response', 'uniterror'] and
+            (message.contenttype in ['response', 'uniterror']
+             # or (message.contenttype == 'unitlesson' and message.content.sub_kind == 'choices')
+            ) and
             message.content_id and
             next_point == message
         ):
-            return self.roll_fsm_forward(chat, message)
+            self.roll_fsm_forward(chat, message)
 
         if not message.chat or message.chat != chat or message.timestamp:
             serializer = self.get_serializer(message)
@@ -265,6 +269,51 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
                 serializer.save(content_id=resp.id, timestamp=timezone.now(), chat=chat)
             else:
                 serializer.save()
+
+        if (
+            message.contenttype == 'response' and
+            message.lesson_to_answer and
+            message.lesson_to_answer.sub_kind and
+            not message.content and
+            not message.is_additional
+        ):
+            resp_text = ''
+            if message.lesson_to_answer.sub_kind == Lesson.MULTIPLE_CHOICES:
+                selected_items = self.request.data.get('selected')
+                try:
+                    selected = selected_items[str(message.id)]['choices']
+                except KeyError:
+                    selected_msg_ids = self.request.data.get(
+                        'selected'
+                    ).keys()
+                    msg_ids = Message.objects.filter(id__in=selected_msg_ids, chat=chat).values_list('id', flat=True)
+                    correct_ids = set(msg_ids).intersection(set(int(i) for i in selected_items.keys()))
+                    selected_choices = []
+                    for i in correct_ids:
+                        selected_choices.append(selected_items[str(i)]['choices'])
+                    selected = chain(*selected_choices)
+
+                resp_text = '[selected_choices] ' + ' '.join(str(i) for i in selected)
+            # if not message.content_id:
+            resp = StudentResponse(text=resp_text)
+            resp.kind = message.lesson_to_answer.kind
+            resp.sub_kind = message.lesson_to_answer.sub_kind
+            resp.lesson = message.lesson_to_answer.lesson
+            resp.unitLesson = message.lesson_to_answer
+            resp.course = message.chat.enroll_code.courseUnit.course
+            resp.author = self.request.user
+            resp.activity = activity
+            resp.is_test = chat.is_test
+            # NOTE: next line is a temporary solution.
+            resp.confidence = StudentResponse.SURE
+            resp.save()
+
+            if not message.timestamp:
+                serializer.save(content_id=resp.id, timestamp=timezone.now(), chat=chat, response_to_check=resp)
+            else:
+                serializer.save()
+            return
+
         if message.input_type == 'options' and message.kind != 'button':
             if (
                 message.contenttype == 'uniterror' and
@@ -299,6 +348,48 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
                 chat.next_point = message
                 chat.save()
                 serializer.save(content_id=resp.id, chat=chat)
+            # elif (
+            #     message.contenttype == 'response' and
+            #     message.lesson_to_answer.sub_kind and
+            #     not message.content and
+            #     not message.is_additional
+            # ):
+            #     resp_text = ''
+            #     if message.lesson_to_answer.sub_kind == Lesson.MULTIPLE_CHOICES:
+            #         selected_items = self.request.data.get('selected')
+            #         try:
+            #             selected = selected_items[str(message.id)]['choices']
+            #         except KeyError:
+            #             selected_msg_ids = self.request.data.get(
+            #                 'selected'
+            #             ).keys()
+            #             msg_ids = Message.objects.filter(id__in=selected_msg_ids, chat=chat).values_list('id', flat=True)
+            #             correct_ids = set(msg_ids).intersection(set(int(i) for i in selected_items.keys()))
+            #             selected_choices = []
+            #             for i in correct_ids:
+            #                 selected_choices.append(selected_items[str(i)]['choices'])
+            #             selected = chain(*selected_choices)
+            #
+            #         resp_text = '[selected_choices] ' + ' '.join(str(i) for i in selected)
+            #     # if not message.content_id:
+            #     resp = StudentResponse(text=resp_text)
+            #     resp.kind = message.lesson_to_answer.kind
+            #     resp.sub_kind = message.lesson_to_answer.sub_kind
+            #     resp.lesson = message.lesson_to_answer.lesson
+            #     resp.unitLesson = message.lesson_to_answer
+            #     resp.course = message.chat.enroll_code.courseUnit.course
+            #     resp.author = self.request.user
+            #     resp.activity = activity
+            #     resp.is_test = chat.is_test
+            #     # NOTE: next line is a temporary solution.
+            #     resp.confidence = StudentResponse.SURE
+            #     resp.save()
+            #
+            #     if not message.timestamp:
+            #         serializer.save(content_id=resp.id, timestamp=timezone.now(), chat=chat, response_to_check=resp)
+            #     else:
+            #         serializer.save()
+            #     return
             else:
                 message.chat = chat
                 selfeval = self.request.data.get('option')
@@ -309,7 +400,8 @@ class MessagesView(ValidateMixin, generics.RetrieveUpdateAPIView, viewsets.Gener
                 chat.save()
                 message.text = selfeval
                 message.save()
-        if message.kind == 'button':
+                serializer.save(text=selfeval, chat=chat)
+        if message.kind == 'button' and not (message.content and message.content.sub_kind):
             chat.next_point = self.next_handler.next_point(
                 current=message.content,
                 chat=chat,

@@ -182,13 +182,20 @@ class ChatMixin(object):
                             kind=kind,
                             is_additional=is_additional)[0]
         if self.name == 'ASK':
+            SUB_KIND_TO_KIND_MAP = {
+                'choices': 'button',
+            }
+            SUBKIND_TO_INPUT_TYPE_MAP = {
+                'choices': 'options',
+            }
+            sub_kind = next_lesson.lesson.sub_kind
             _data = {
                 'contenttype': 'unitlesson',
                 'content_id': next_lesson.id,
                 'chat': chat,
                 'owner': chat.user,
-                'input_type': 'custom',
-                'kind': next_lesson.lesson.kind,
+                'input_type': 'custom', # SUBKIND_TO_INPUT_TYPE_MAP.get(sub_kind, 'custom'),
+                'kind': next_lesson.lesson.kind,  # SUB_KIND_TO_KIND_MAP.get(sub_kind, next_lesson.lesson.kind),
                 'is_additional': is_additional
             }
             if not self.fsm.name == 'live_chat':
@@ -197,7 +204,8 @@ class ChatMixin(object):
                 message = Message(**_data)
                 message.save()
         if self.name == 'GET_ANSWER':
-            answer = current.get_answers().first()
+            # answer = current.get_answers().first()
+            # import ipdb; ipdb.set_trace()
             _data = {
                 'contenttype': 'response',
                 'input_type': 'text',
@@ -208,6 +216,12 @@ class ChatMixin(object):
                 'userMessage': True,
                 'is_additional': is_additional
             }
+            if current.lesson.sub_kind == 'choices':
+                _data.update(dict(
+                    input_type='options',
+
+                ))
+
             if not self.fsm.name == 'live_chat':
                 message = Message.objects.get_or_create(**_data)[0]
             else:
@@ -436,7 +450,6 @@ class ChatMixin(object):
                 is_additional=is_additional,
                 owner=chat.user,
             )
-            # import ipdb; ipdb.set_trace()
             if message and message.content_id:
                 _data['content_id'] = message.content_id
                 _data['contenttype'] = 'unitlesson'
