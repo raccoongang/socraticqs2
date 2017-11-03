@@ -23,7 +23,7 @@ from ..serializers import (
 )
 from ..services import TestHandler
 from ..models import Chat
-from ..fsm_plugin.chat import get_specs, END as CHAT_END
+from ..fsm_plugin.chat_flow import get_specs, END as CHAT_END
 from ..fsm_plugin.additional import get_specs as get_specs_additional
 from ..fsm_plugin.resource import END, get_specs as get_specs_resource
 

@@ -24,7 +24,7 @@ class LTITestCase(TestCase):
         """
         Preconditions.
         """
-        from chat.fsm_plugin.chat import get_specs
+        from chat.fsm_plugin.chat_flow import get_specs
         from chat.fsm_plugin.additional import get_specs as get_specs_additional
         self.client = Client()
         self.user = User.objects.create_user('test', 'test@test.com', 'test')

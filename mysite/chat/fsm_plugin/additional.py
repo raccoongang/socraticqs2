@@ -1,7 +1,9 @@
 from ct.models import UnitStatus, NEED_HELP_STATUS, NEED_REVIEW_STATUS, DONE_STATUS, StudentError
 
 from ..models import Message
+from fsm.base_fsm_node import BaseFMSNode
 
+is_additional = True
 
 def next_additional_lesson(self, edge, fsmStack, request, useCurrent=False, **kwargs):
     """
@@ -50,7 +52,7 @@ def get_lesson_url(self, node, state, request, **kwargs):
     return ul.get_study_url(course.pk)
 
 
-class START(object):
+class START(BaseFMSNode):
     """
     Initialize data for viewing a courselet, and go immediately
     to first lesson (not yet completed).
@@ -81,7 +83,7 @@ class START(object):
         )
 
 
-class START_MESSAGE(object):
+class START_MESSAGE(BaseFMSNode):
     get_path = get_lesson_url
     # node specification data goes here
     title = 'Click continue to get additional materials'
@@ -89,8 +91,19 @@ class START_MESSAGE(object):
         dict(name='next', toNode='STUDENTERROR', title='View Next Lesson'),
     )
 
+    def _get_message(self, chat, message, current):
+        message = Message.objects.create(
+            input_type='options',
+            text=self.title,
+            chat=chat,
+            owner=chat.user,
+            kind='button',
+            is_additional=is_additional
+        )
+        return message
 
-class STUDENTERROR(object):
+
+class STUDENTERROR(BaseFMSNode):
     get_path = get_lesson_url
     # node specification data goes here
     title = 'Additional lessons begin'
@@ -98,8 +111,30 @@ class STUDENTERROR(object):
         dict(name='next', toNode='RESOLVE', title='View Next Lesson'),
     )
 
+    def _get_message(self, chat, message, current):
+        next_unit_lesson = chat.state.unitLesson
+        resolve_message = Message.objects.get(
+                        contenttype='unitlesson',
+                        content_id=next_unit_lesson.id,
+                        chat=chat,
+                        owner=chat.user,
+                        input_type='custom',
+                        kind='message',
+                        timestamp__isnull=True,
+                        is_additional=True)
+        message = Message.objects.get_or_create(
+                        contenttype='unitlesson',
+                        content_id=resolve_message.student_error.errorModel.id,
+                        chat=chat,
+                        owner=chat.user,
+                        student_error=resolve_message.student_error,
+                        input_type='options',
+                        kind='button',
+                        is_additional=True)[0]
+        return message
 
-class RESOLVE(object):
+
+class RESOLVE(BaseFMSNode):
     get_path = get_lesson_url
     # node specification data goes here
     title = 'It is time to answer'
@@ -107,16 +142,41 @@ class RESOLVE(object):
             dict(name='next', toNode='MESSAGE_NODE', title='Go to self-assessment'),
         )
 
-class MESSAGE_NODE(object):
-        get_path = get_lesson_url
-        # node specification data goes here
-        title = 'Choose the degree of your understanding'
-        edges = (
-            dict(name='next', toNode='GET_RESOLVE', title='Go to self-assessment'),
-        )
+    def _get_message(self, chat, message, current):
+        next_unit_lesson = chat.state.unitLesson
+        message = Message.objects.get_or_create(
+                            contenttype='unitlesson',
+                            content_id=next_unit_lesson.id,
+                            chat=chat,
+                            owner=chat.user,
+                            input_type='custom',
+                            kind='message',
+                            timestamp__isnull=True,
+                            is_additional=True)[0]
+        return message
 
 
-class GET_RESOLVE(object):
+class MESSAGE_NODE(BaseFMSNode):
+    get_path = get_lesson_url
+    # node specification data goes here
+    title = 'Choose the degree of your understanding'
+    edges = (
+        dict(name='next', toNode='GET_RESOLVE', title='Go to self-assessment'),
+    )
+
+    def _get_message(self, chat, message, current):
+        message = Message.objects.get_or_create(
+            chat=chat,
+            owner=chat.user,
+            text=chat.state.fsmNode.title,
+            student_error=message.student_error,
+            input_type='custom',
+            kind='message',
+            is_additional=True)[0]
+        return message
+
+
+class GET_RESOLVE(BaseFMSNode):
     get_path = get_lesson_url
     next_edge = next_additional_lesson
 
@@ -126,8 +186,22 @@ class GET_RESOLVE(object):
             dict(name='next', toNode='RESOLVE', title='Go to self-assessment'),
         )
 
+    def _get_message(self, chat, message, current):
+        next_unit_lesson = chat.state.unitLesson
+        message = Message.objects.create(
+            contenttype='unitlesson',
+            content_id=next_unit_lesson.id,
+            input_type='options',
+            chat=chat,
+            owner=chat.user,
+            student_error=message.student_error,
+            kind='response',
+            userMessage=True,
+            is_additional=is_additional)
+        return message
 
-class END(object):
+
+class END(BaseFMSNode):
     def get_path(self, node, state, request, **kwargs):
         """
         Get URL for next steps in this unit.
@@ -138,6 +212,19 @@ class END(object):
     title = 'Additional lessons completed'
     help = '''You've finished resolving previous Unit.'''
 
+    def _get_message(self, chat, message, current):
+        if not self.help:
+            text = chat.state.fsmNode.get_help(chat.state, request=None)
+        else:
+            text = self.help
+        message = Message.objects.get_or_create(
+                        chat=chat,
+                        owner=chat.user,
+                        text=text,
+                        input_type='custom',
+                        kind='message',
+                        is_additional=True)[0]
+        return message
 
 def get_specs():
     """

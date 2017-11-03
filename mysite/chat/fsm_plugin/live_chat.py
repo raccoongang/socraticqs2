@@ -1,3 +1,10 @@
+from ct.models import Response
+from fsm.base_fsm_node import BaseFMSNode
+from chat.models import Message, ChatDivider, UnitError
+
+
+is_additional = False
+
 def ask_edge(self, edge, fsmStack, request, **kwargs):
     """
     Try to transition to ASK, or WAIT_ASK if not ready.
@@ -67,7 +74,7 @@ def next_edge_teacher_coherent(nodes, fail_node='WAIT_ASK'):
     return wrapp
 
 
-class START(object):
+class START(BaseFMSNode):
     """
     In this activity you will answer questions
     presented by your instructor in-class.
@@ -89,8 +96,17 @@ class START(object):
         dict(name='next', toNode='WAIT_ASK', title='Start answering questions'),
     )
 
+    def _get_message(self, chat, message, current):
+        return Message.objects.get_or_create(
+            chat=chat,
+            text=self.title,
+            kind='button',
+            is_additional=True,
+            owner=chat.user,
+        )[0]
 
-class WAIT_ASK(object):
+
+class WAIT_ASK(BaseFMSNode):
     """
     The instructor has not assigned the next exercise yet.
     Please wait, and click the Next button when the instructor tells
@@ -105,7 +121,7 @@ class WAIT_ASK(object):
     )
 
 
-class TITLE(object):
+class TITLE(BaseFMSNode):
     """
     View a lesson explanation.
     """
@@ -116,7 +132,25 @@ class TITLE(object):
         dict(name='next', toNode='ASK', title='View Next Lesson'),
     )
 
-class ASK(object):
+    def _get_message(self, chat, message, current):
+        next_unit_lesson = chat.state.unitLesson
+        divider = ChatDivider(text=next_unit_lesson.lesson.title,
+                              unitlesson=next_unit_lesson)
+        divider.save()
+        message = Message.objects.get_or_create(
+            contenttype='chatdivider',
+            content_id=divider.id,
+            input_type='custom',
+            type='breakpoint',
+            chat=chat,
+            owner=chat.user,
+            kind='message',
+            is_additional=is_additional
+        )[0]
+        return message
+
+
+class ASK(BaseFMSNode):
     """
     In this stage you write a brief answer to a conceptual question.
     """
@@ -141,11 +175,25 @@ class ASK(object):
     for a minute or two, then briefly write whatever answer you
     come up with. """
     edges = (
-            dict(name='next', toNode='GET_ANSWER', title='Answer a question'),
-        )
+        dict(name='next', toNode='GET_ANSWER', title='Answer a question'),
+    )
+
+    def _get_message(self, chat, message, current):
+        next_unit_lesson = chat.state.unitLesson
+        _data = {
+            'contenttype': 'unitlesson',
+            'content_id': next_unit_lesson.id,
+            'chat': chat,
+            'owner': chat.user,
+            'input_type': 'custom',
+            'kind': next_unit_lesson.lesson.kind,
+            'is_additional': is_additional
+        }
+        message = Message.objects.get_or_create(**_data)[0]
+        return message
 
 
-class GET_ANSWER(object):
+class GET_ANSWER(BaseFMSNode):
     get_path = get_lesson_url
     # node specification data goes here
     next_edge = next_edge_teacher_coherent(["QUESTION", "ANSWER"])(
@@ -156,22 +204,36 @@ class GET_ANSWER(object):
             dict(name='next', toNode='CONFIDENCE', title='Go to self-assessment'),
         )
 
+    def _get_message(self, chat, message, current):
+        answer = current.get_answers().first()
+        _data = {
+            'contenttype': 'response',
+            'input_type': 'text',
+            'lesson_to_answer': current,
+            'chat': chat,
+            'owner': chat.user,
+            'kind': 'response',
+            'userMessage': True,
+            'is_additional': is_additional
+        }
+        message = Message.objects.get_or_create(**_data)[0]
+        return message
 
-class CONFIDENCE(object):
+class CONFIDENCE(BaseFMSNode):
     title = 'Select the level of your confidence?'
     edges = (
         dict(name='next', toNode='GET_CONFIDENCE', title='Go to choosing your confidence'),
     )
 
 
-class GET_CONFIDENCE(object):
+class GET_CONFIDENCE(BaseFMSNode):
     title = 'Choose confidence'
     edges = (
         dict(name='next', toNode='WAIT_ASSESS', title='Go to self-assessment'),
     )
 
 
-class WAIT_ASSESS(object):
+class WAIT_ASSESS(BaseFMSNode):
     """
     The instructor has not ended the question period yet.
     Please wait, and click the Next button when the instructor tells
@@ -193,8 +255,23 @@ class WAIT_ASSESS(object):
         return assess_edge(self, edge, fsmStack, request, response=response,
                            **kwargs)
 
+    def _get_message(self, chat, message, current):
+        if isinstance(current, Response):
+            resp_to_chk = current
+        else:
+            resp_to_chk = message.response_to_check
+        message = Message.objects.get_or_create(
+            chat=chat,
+            text=self.title,
+            kind='button',
+            response_to_check=resp_to_chk,
+            is_additional=is_additional,
+            owner=chat.user,
+        )[0]
+        return message
 
-class ASSESS(object):
+
+class ASSESS(BaseFMSNode):
     """
     In this stage you assess your own answer vs. the correct answer.
     """
@@ -207,21 +284,57 @@ class ASSESS(object):
     understand this concept now. """
 
     edges = (
-            dict(name='next', toNode='GET_ASSESS', title='Assess yourself'),
-        )
+        dict(name='next', toNode='GET_ASSESS', title='Assess yourself'),
+    )
+
+    def _get_message(self, chat, message, current):
+        if isinstance(current, Response):
+            response_to_chk = current
+            answer = current.unitLesson.get_answers().first()
+        else:
+            response_to_chk = message.response_to_check
+            if not message.lesson_to_answer:
+                answer = message.response_to_check.unitLesson.get_answers().first()
+            else:
+                answer = message.lesson_to_answer.get_answers().first()
+        message = Message.objects.get_or_create(
+            contenttype='unitlesson',
+            response_to_check=response_to_chk,
+            input_type='custom',
+            content_id=answer.id,
+            chat=chat,
+            owner=chat.user,
+            kind=answer.kind,
+            is_additional=is_additional
+        )[0]
+        return message
 
 
-class GET_ASSESS(object):
+class GET_ASSESS(BaseFMSNode):
     get_path = get_lesson_url
     next_edge = next_edge_teacher_coherent(["ANSWER", "RECYCYLE"])(check_selfassess_and_next_lesson)
     # node specification data goes here
     title = 'Assess your answer'
     edges = (
-            dict(name='next', toNode='WAIT_ASK', title='View Next Lesson'),
+        dict(name='next', toNode='WAIT_ASK', title='View Next Lesson'),
+    )
+
+    def _get_message(self, chat, message, current):
+        _data = dict(
+            contenttype='response',
+            content_id=message.response_to_check.id,
+            input_type='options',
+            chat=chat,
+            owner=chat.user,
+            kind='response',
+            userMessage=True,
+            is_additional=is_additional
         )
+        message = Message.objects.create(**_data)
+        return message
 
 
-class ERRORS(object):
+class ERRORS(BaseFMSNode):
     """
     In this stage you assess whether you made any of the common errors for this concept.
     """
@@ -235,8 +348,20 @@ class ERRORS(object):
         lambda self, edge, *args, **kwargs: edge.toNode
     )
 
+    def _get_message(self, chat, message, current):
+        message = Message.objects.get_or_create(
+            chat=chat,
+            owner=chat.user,
+            text='''Below are some common misconceptions. '''
+                 '''Select one or more that is similar to your reasoning.''',
+            kind='message',
+            input_type='custom',
+            is_additional=is_additional
+        )[0]
+        return message
 
-class GET_ERRORS(object):
+
+class GET_ERRORS(BaseFMSNode):
     get_path = get_lesson_url
     # next_edge = next_lesson
     # node specification data goes here
@@ -248,11 +373,39 @@ class GET_ERRORS(object):
         lambda self, edge, *args, **kwargs: edge.toNode
     )
 
-class END(object):
+    def _get_message(self, chat, message, current):
+        uniterror = UnitError.get_by_message(message)
+        message = Message.objects.get_or_create(
+            contenttype='uniterror',
+            content_id=uniterror.id,
+            input_type='options',
+            chat=chat,
+            kind='uniterror',
+            owner=chat.user,
+            userMessage=False,
+            is_additional=is_additional)[0]
+        return message
+
+
+class END(BaseFMSNode):
     # node specification data goes here
     path = 'ct:unit_tasks_student'
     title = 'Live classroom session completed'
     help = '''The instructor has ended the Live classroom session.'''
+
+    def _get_message(self, chat, message, current):
+        if not self.help:
+            text = chat.state.fsmNode.get_help(chat.state, request=None)
+        else:
+            text = self.help
+        message = Message.objects.get_or_create(
+                        chat=chat,
+                        owner=chat.user,
+                        text=text,
+                        input_type='custom',
+                        kind='message',
+                        is_additional=True)[0]
+        return message
 
 
 def get_specs():

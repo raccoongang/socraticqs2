@@ -20,13 +20,6 @@ from ct.models import (
 )
 from chat.models import Message, ChatDivider, UnitError
 
-WAIT_NODES_REGS = [r"^WAIT_(?!ASSESS$).*$", r"^RECYCLE$"]
-
-
-def is_wait_node(name):
-    return any(
-        map(partial(re.search, string=name), WAIT_NODES_REGS)
-    )
 
 # index of types that can be saved in json blobs
 KLASS_NAME_DICT = dict(
@@ -163,6 +156,10 @@ class ChatMixin(object):
     def get_message(self, chat, current=None, message=None):
         is_additional = chat.state.fsmNode.fsm.fsm_name_is_one_of('additional', 'resource')
         next_lesson = chat.state.unitLesson
+        message = chat.state.fsmNode._plugin.get_message(chat, message, current)
+        return message
+
+
         if self.node_name_is_one_of('LESSON'):
             input_type = 'custom'
             kind = next_lesson.lesson.kind
