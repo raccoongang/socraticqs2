@@ -225,12 +225,48 @@ class CONFIDENCE(BaseFMSNode):
         dict(name='next', toNode='GET_CONFIDENCE', title='Go to choosing your confidence'),
     )
 
+    def _get_message(self, chat, message, current):
+        # current here is Response instance
+        if isinstance(current, Response):
+            response_to_chk = current
+            answer = current.unitLesson.get_answers().first()
+        else:
+            response_to_chk = message.response_to_check
+            if not message.lesson_to_answer:
+                answer = message.response_to_check.unitLesson.get_answers().first()
+            else:
+                answer = message.lesson_to_answer.get_answers().first()
+        message = Message.objects.get_or_create(
+                        contenttype='unitlesson',
+                        response_to_check=response_to_chk,
+                        input_type='custom',
+                        text=self.title,
+                        chat=chat,
+                        owner=chat.user,
+                        kind=answer.kind,
+                        is_additional=is_additional)[0]
+        return message
+
 
 class GET_CONFIDENCE(BaseFMSNode):
     title = 'Choose confidence'
     edges = (
         dict(name='next', toNode='WAIT_ASSESS', title='Go to self-assessment'),
     )
+
+    def _get_message(self, chat, message, current):
+        _data = dict(
+            contenttype='response',
+            content_id=message.response_to_check.id,
+            input_type='options',
+            chat=chat,
+            owner=chat.user,
+            kind='response',
+            userMessage=True,
+            is_additional=is_additional,
+        )
+        message = Message.objects.create(**_data)
+        return message
 
 
 class WAIT_ASSESS(BaseFMSNode):
