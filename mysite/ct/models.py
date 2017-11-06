@@ -7,6 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max
+from django.utils.safestring import mark_safe
+from ct.templatetags.ct_extras import md2html
 
 
 def copy_model_instance(inst, **kwargs):
@@ -516,6 +518,34 @@ class UnitLesson(models.Model):
     def __unicode__(self):
         return self.lesson.title
 
+    def get_html(self, message, chat):
+        from chat.models import STATUS_OPTIONS
+        html = message.text
+        if self.kind == UnitLesson.MISUNDERSTANDS:
+            html = mark_safe(
+                md2html(
+                    '**%s** \n %s' %
+                    (self.lesson.title, self.lesson.text)
+                )
+            )
+        elif message.input_type == 'options' and message.text:
+            html = STATUS_OPTIONS[message.text]
+        else:
+            if self.lesson.url:
+                raw_html = u'`Read more <{0}>`_ \n\n{1}'.format(
+                    self.lesson.url,
+                    self.lesson.text
+                )
+            else:
+                raw_html = self.lesson.text
+
+            html = mark_safe(md2html(raw_html))
+        return html
+
+    def get_options(self, message, chat, **kwargs):
+        from chat.models import STATUS_OPTIONS
+        return [dict(value=i[0], text=i[1]) for i in STATUS_CHOICES]
+
     @classmethod
     def create_from_lesson(klass, lesson, unit, order=None, kind=None,
                            addAnswer=False, **kwargs):
@@ -1015,6 +1045,49 @@ class Response(models.Model):
         if self.selfeval == self.DIFFERENT or self.status == NEED_HELP_STATUS:
             if self.studenterror_set.count() == 0:
                 return self.CLASSIFY_STEP, 'classify your error(s)'
+
+    def get_html(self, message, chat, **kwargs):
+        from chat.models import EVAL_OPTIONS
+        html = message.text
+        if message.input_type == 'text':
+            html = mark_safe(md2html(self.text))
+        else:
+            CONF_CHOICES = dict(Response.CONF_CHOICES)
+            is_chat_fsm = (
+                chat and
+                chat.state and
+                chat.state.fsmNode.fsm.fsm_name_is_one_of('chat')
+            )
+            values = CONF_CHOICES.values() + EVAL_OPTIONS.values()
+            text_in_values = message.text in values
+            if is_chat_fsm and not message.text:
+                if self.selfeval:  # confidence is before selfeval
+                    html = EVAL_OPTIONS.get(
+                        self.selfeval, 'Self evaluation not completed yet'
+                    )
+                elif self.confidence:
+                    html = CONF_CHOICES.get(
+                        self.confidence, 'Confidence not settled yet'
+                    )
+            elif is_chat_fsm and message.text and not text_in_values:
+                html = EVAL_OPTIONS.get(
+                    message.text,
+                    dict(Response.CONF_CHOICES).get(
+                        message.text,
+                        message.text
+                    )
+                )
+        return html
+
+    def get_options(self, message, chat):
+        if message.should_ask_confidence():
+            if not chat.next_point.content.confidence:
+                options = [dict(value=i[0], text=i[1]) for i in Response.CONF_CHOICES]
+            else:
+                options = [dict(value=i[0], text=i[1]) for i in Response.EVAL_CHOICES]
+        else:
+            options = [dict(value=i[0], text=i[1]) for i in Response.EVAL_CHOICES]
+        return options
 
 
 

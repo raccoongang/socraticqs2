@@ -1,9 +1,12 @@
-from chat.models import Message
+from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe
+from chat.models import Message, EVAL_OPTIONS, STATUS_OPTIONS
 from ct.models import UnitStatus, UnitLesson, Lesson, Response
 # from chat.models import Chat, Message, ChatDivider, UnitError
 import logging
 import re
 from functools import partial
+from ct.templatetags.ct_extras import md2html
 
 
 class BaseFMSNode(object):
@@ -14,13 +17,11 @@ class BaseFMSNode(object):
     WAIT_NODES_REGS = [r"^WAIT_(?!ASSESS$).*$", r"^RECYCLE$"]
     SIMILAR_KINDS = (Lesson.BASE_EXPLANATION, Lesson.EXPLANATION)
 
-    def get_html(self, message):
-        pass
-
+    @property
+    def name(self):
+        return self.__class__.__name__
+    
     def get_options(self, message):
-        pass
-
-    def get_input(self, message):
         pass
 
     def _get_message(self, chat, message, current):

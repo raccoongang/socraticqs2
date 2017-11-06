@@ -177,30 +177,30 @@ class Message(models.Model):
             args=(self.chat.next_point.id,)
         ) if self.chat and self.chat.next_point else None
 
-    def get_errors(self):
-        errors = None
-        error_list = UnitError.objects.get(id=self.content_id).get_errors()
-        if error_list:
-            checked_errors = UnitError.objects.get(
-                id=self.content_id
-            ).response.studenterror_set.all().values_list('errorModel', flat=True)
-            error_str = (
-                u'<li><div class="chat-check chat-selectable {}" data-selectable-attribute="errorModel" '
-                u'data-selectable-value="{:d}"></div><h3>{}</h3></li>'
-            )
-            errors = reduce(
-                lambda x, y: x+y, map(
-                    lambda x: error_str.format(
-                        'chat-selectable-selected' if x.id in checked_errors else '',
-                        x.id,
-                        x.lesson.title
-                    ),
-                    error_list
-                )
-            )
-        return u'<ul class="chat-select-list">{}</ul>'.format(
-            errors or '<li><h3>There are no Misunderstands to display.</h3></li>'
-        )
+    # def get_errors(self):
+    #     errors = None
+    #     error_list = UnitError.objects.get(id=self.content_id).get_errors()
+    #     if error_list:
+    #         checked_errors = UnitError.objects.get(
+    #             id=self.content_id
+    #         ).response.studenterror_set.all().values_list('errorModel', flat=True)
+    #         error_str = (
+    #             u'<li><div class="chat-check chat-selectable {}" data-selectable-attribute="errorModel" '
+    #             u'data-selectable-value="{:d}"></div><h3>{}</h3></li>'
+    #         )
+    #         errors = reduce(
+    #             lambda x, y: x+y, map(
+    #                 lambda x: error_str.format(
+    #                     'chat-selectable-selected' if x.id in checked_errors else '',
+    #                     x.id,
+    #                     x.lesson.title
+    #                 ),
+    #                 error_list
+    #             )
+    #         )
+    #     return u'<ul class="chat-select-list">{}</ul>'.format(
+    #         errors or '<li><h3>There are no Misunderstands to display.</h3></li>'
+    #     )
 
     def should_ask_confidence(self):
         if self.chat.state:
@@ -211,91 +211,63 @@ class Message(models.Model):
         return False
 
     def get_options(self):
-        options = None
+        # Continue button is default
+        options = [{"value": 1, "text": "Continue"}]
         if (
             self.chat and self.chat.state and self.chat.next_point and
             self.chat.next_point.input_type == 'options'
         ):
-            if self.chat.next_point.kind == 'button':
-                options = [{"value": 1, "text": "Continue"}]
-            elif self.chat.next_point.contenttype == 'unitlesson':
-                options = [dict(value=i[0], text=i[1]) for i in STATUS_CHOICES]
-            elif self.chat.next_point.contenttype == 'response':
-                if self.should_ask_confidence():
-                    if not self.chat.next_point.content.confidence:
-                        options = [dict(value=i[0], text=i[1]) for i in Response.CONF_CHOICES]
-                    else:
-                        options = [dict(value=i[0], text=i[1]) for i in Response.EVAL_CHOICES]
-                else:
-                    options = [dict(value=i[0], text=i[1]) for i in Response.EVAL_CHOICES]
-            else:
-                options = [{"value": 1, "text": "Continue"}]
-
+            if self.chat.next_point.contenttype in ['unitlesson', 'response']:
+                # TODO: change it to if self.chat.next_point.content_id:
+                options = self.chat.next_point.content.get_options(self, self.chat)
         return options
 
     def get_html(self):
+        """
+        Logic implemented in this method:
+        if content:
+            check if it is:
+                divider:
+                    return devider's text
+                response:
+                    if input_type is text:
+                        return content's text
+                    other:
+                        check if it is:
+                            chat FSM and NO message.text:
+                                if message.content.selfeval:
+                                    show self evaluation
+                                elif message.content.confidence:
+                                    show confidence message
+                            elif is chat FSM and message.text and no confidence and no seleval:
+                                try show selfeval message firstly if no selfeval, try to show confidence msg
+                unitlesson:
+                    if it is error model:  # content.kind == MISUNDERSTANDS
+                        show error model message
+                    elif message.text and input_type == 'options':
+                        show status options  # how user understand
+                    else:
+                        if content.lesson.url:
+                            show "Read More ..."" message
+                        else:
+                            show message.content.lesson.text
+                uniterror:
+                    show message.get_errors()
+        check if html is None:  # this hack is placed here for JS capability (JS raise error if html is empty)
+            show mesg.content.selfeval if message.selfeval otherwise message.content
+
+        :return: html
+        """
+
         html = self.text
         if self.content_id:
-            if self.contenttype == 'chatdivider':
-                html = self.content.text
-            elif self.contenttype == 'response':
-                if self.input_type == 'text':
-                    html = mark_safe(md2html(self.content.text))
-                else:
-                    CONF_CHOICES = dict(Response.CONF_CHOICES)
-                    is_chat_fsm = (
-                        self.chat and
-                        self.chat.state and
-                        self.chat.state.fsmNode.fsm.fsm_name_is_one_of('chat')
-                    )
-                    values = CONF_CHOICES.values() + EVAL_OPTIONS.values()
-                    text_in_values = self.text in values
-                    if is_chat_fsm and not self.text:
-                        if self.content.selfeval:  # confidence is before selfeval
-                            html = EVAL_OPTIONS.get(
-                                self.content.selfeval, 'Self evaluation not completed yet'
-                            )
-                        elif self.content.confidence:
-                            html = CONF_CHOICES.get(
-                                self.content.confidence, 'Confidence not settled yet'
-                            )
-                    elif is_chat_fsm and self.text and not text_in_values:
-                        html = EVAL_OPTIONS.get(
-                            self.text,
-                            dict(Response.CONF_CHOICES).get(
-                                self.text,
-                                self.text
-                            )
-                        )
-            elif self.contenttype == 'unitlesson':
-                if self.content.kind == UnitLesson.MISUNDERSTANDS:
-                    html = mark_safe(
-                        md2html(
-                            '**%s** \n %s' %
-                            (self.content.lesson.title, self.content.lesson.text)
-                        )
-                    )
-                elif self.input_type == 'options' and self.text:
-                    html = STATUS_OPTIONS[self.text]
-                else:
-                    if self.content.lesson.url:
-                        raw_html = u'`Read more <{0}>`_ \n\n{1}'.format(
-                            self.content.lesson.url,
-                            self.content.lesson.text
-                        )
-                    else:
-                        raw_html = self.content.lesson.text
-
-                    html = mark_safe(md2html(raw_html))
-            elif self.contenttype == 'uniterror':
-                html = self.get_errors()
+            html = self.content.get_html(self, self.chat)
         if html is None:
             html = (
                 self.content.selfeval
                 if self.content.selfeval else
                 str(self.content)
             )
-
         return html
 
     def get_name(self):
@@ -400,7 +372,34 @@ class UnitError(models.Model):
         else:
             raise AttributeError
 
+    def get_html(self, message, chat, **kwargs):
+        # return message.get_errors()
+        errors = None
+        error_list = self.get_errors()
+        if error_list:
+            checked_errors = self.response.studenterror_set.all().values_list('errorModel', flat=True)
+            error_str = (
+                u'<li><div class="chat-check chat-selectable {}" data-selectable-attribute="errorModel" '
+                u'data-selectable-value="{:d}"></div><h3>{}</h3></li>'
+            )
+            errors = reduce(
+                lambda x, y: x+y, map(
+                    lambda x: error_str.format(
+                        'chat-selectable-selected' if x.id in checked_errors else '',
+                        x.id,
+                        x.lesson.title
+                    ),
+                    error_list
+                )
+            )
+        return u'<ul class="chat-select-list">{}</ul>'.format(
+            errors or '<li><h3>There are no Misunderstands to display.</h3></li>'
+        )
+
 
 class ChatDivider(models.Model):
     text = models.CharField(max_length=200)
     unitlesson = models.ForeignKey(UnitLesson, null=True)
+
+    def get_html(self, message, chat, **kwargs):
+        return message.content.text
