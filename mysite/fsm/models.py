@@ -9,7 +9,7 @@ from fsm.utils import get_plugin
 
 from ct.ct_util import reverse_path_args
 from ct.models import Course, Role
-from mixins import JSONBlobMixin, ChatMixin
+from mixins import JSONBlobMixin #, ChatMixin
 
 
 class FSM(models.Model):
@@ -123,7 +123,7 @@ class PluginDescriptor(object):
         raise AttributeError('read only attribute!')
 
 
-class FSMNode(JSONBlobMixin, ChatMixin, models.Model):
+class FSMNode(JSONBlobMixin, models.Model):  #ChatMixin
     """
     Stores one node of an FSM state-graph.
     """
@@ -139,6 +139,9 @@ class FSMNode(JSONBlobMixin, ChatMixin, models.Model):
     funcName = models.CharField(max_length=200, null=True, blank=True)
     doLogging = models.BooleanField(default=False)
     _plugin = PluginDescriptor()  # provide access to plugin code if any
+
+    def node_name_is_one_of(self, *args):
+        return self.name in args
 
     def event(self, fsmStack, request, eventName, **kwargs):
         """
@@ -186,6 +189,10 @@ class FSMNode(JSONBlobMixin, ChatMixin, models.Model):
                 return self.help  # use node's help message if any
         else:
             return func(self, state, request)
+
+    def get_message(self, chat, current=None, message=None):
+        message = chat.state.fsmNode._plugin.get_message(chat, message, current)
+        return message
 
     def __unicode__(self):
         return u'::'.join((self.name, self.funcName))
