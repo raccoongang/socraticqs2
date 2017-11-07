@@ -374,6 +374,30 @@ class Lesson(models.Model):
             return self.conceptlink_set.create(concept=concept, addedBy=addedBy,
                                                relationship=relationship)
 
+    def get_html(self, message, chat, **kwargs):
+        from chat.models import STATUS_OPTIONS
+        html = message.text
+        if self.kind == UnitLesson.MISUNDERSTANDS:
+            html = mark_safe(
+                md2html(
+                    '**%s** \n %s' %
+                    (self.title, self.text)
+                )
+            )
+        elif message.input_type == 'options' and message.text:
+            html = STATUS_OPTIONS[message.text]
+        else:
+            if self.url:
+                raw_html = u'`Read more <{0}>`_ \n\n{1}'.format(
+                    self.url,
+                    self.text
+                )
+            else:
+                raw_html = self.text
+
+            html = mark_safe(md2html(raw_html))
+        return html
+
     def __unicode__(self):
         return self.title
     ## def get_url(self):
@@ -518,29 +542,8 @@ class UnitLesson(models.Model):
     def __unicode__(self):
         return self.lesson.title
 
-    def get_html(self, message, chat):
-        from chat.models import STATUS_OPTIONS
-        html = message.text
-        if self.kind == UnitLesson.MISUNDERSTANDS:
-            html = mark_safe(
-                md2html(
-                    '**%s** \n %s' %
-                    (self.lesson.title, self.lesson.text)
-                )
-            )
-        elif message.input_type == 'options' and message.text:
-            html = STATUS_OPTIONS[message.text]
-        else:
-            if self.lesson.url:
-                raw_html = u'`Read more <{0}>`_ \n\n{1}'.format(
-                    self.lesson.url,
-                    self.lesson.text
-                )
-            else:
-                raw_html = self.lesson.text
-
-            html = mark_safe(md2html(raw_html))
-        return html
+    def get_html(self, message, chat, **kwargs):
+        return self.lesson.get_html(message, chat, **kwargs)
 
     def get_options(self, message, chat, **kwargs):
         from chat.models import STATUS_OPTIONS

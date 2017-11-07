@@ -373,7 +373,6 @@ class UnitError(models.Model):
             raise AttributeError
 
     def get_html(self, message, chat, **kwargs):
-        # return message.get_errors()
         errors = None
         error_list = self.get_errors()
         if error_list:
