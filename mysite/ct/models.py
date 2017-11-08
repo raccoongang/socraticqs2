@@ -398,6 +398,9 @@ class Lesson(models.Model):
             html = mark_safe(md2html(raw_html))
         return html
 
+    def get_options(self, message, chat, **kwargs):
+        return [dict(value=i[0], text=i[1]) for i in STATUS_CHOICES]
+
     def __unicode__(self):
         return self.title
     ## def get_url(self):
@@ -547,7 +550,8 @@ class UnitLesson(models.Model):
 
     def get_options(self, message, chat, **kwargs):
         from chat.models import STATUS_OPTIONS
-        return [dict(value=i[0], text=i[1]) for i in STATUS_CHOICES]
+        return self.lesson.get_options(message, chat, **kwargs)
+
 
     @classmethod
     def create_from_lesson(klass, lesson, unit, order=None, kind=None,

@@ -177,31 +177,6 @@ class Message(models.Model):
             args=(self.chat.next_point.id,)
         ) if self.chat and self.chat.next_point else None
 
-    # def get_errors(self):
-    #     errors = None
-    #     error_list = UnitError.objects.get(id=self.content_id).get_errors()
-    #     if error_list:
-    #         checked_errors = UnitError.objects.get(
-    #             id=self.content_id
-    #         ).response.studenterror_set.all().values_list('errorModel', flat=True)
-    #         error_str = (
-    #             u'<li><div class="chat-check chat-selectable {}" data-selectable-attribute="errorModel" '
-    #             u'data-selectable-value="{:d}"></div><h3>{}</h3></li>'
-    #         )
-    #         errors = reduce(
-    #             lambda x, y: x+y, map(
-    #                 lambda x: error_str.format(
-    #                     'chat-selectable-selected' if x.id in checked_errors else '',
-    #                     x.id,
-    #                     x.lesson.title
-    #                 ),
-    #                 error_list
-    #             )
-    #         )
-    #     return u'<ul class="chat-select-list">{}</ul>'.format(
-    #         errors or '<li><h3>There are no Misunderstands to display.</h3></li>'
-    #     )
-
     def should_ask_confidence(self):
         if self.chat.state:
             return 'CONFIDENCE' in [
