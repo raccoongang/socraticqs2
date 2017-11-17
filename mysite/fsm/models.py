@@ -9,7 +9,7 @@ from fsm.utils import get_plugin
 
 from ct.ct_util import reverse_path_args
 from ct.models import Course, Role
-from mixins import JSONBlobMixin #, ChatMixin
+from mixins import JSONBlobMixin
 
 
 class FSM(models.Model):
@@ -123,7 +123,7 @@ class PluginDescriptor(object):
         raise AttributeError('read only attribute!')
 
 
-class FSMNode(JSONBlobMixin, models.Model):  #ChatMixin
+class FSMNode(JSONBlobMixin, models.Model):
     """
     Stores one node of an FSM state-graph.
     """

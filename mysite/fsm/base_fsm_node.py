@@ -1,17 +1,16 @@
-from django.core.urlresolvers import reverse
-from django.utils.safestring import mark_safe
-from chat.models import Message, EVAL_OPTIONS, STATUS_OPTIONS
-from ct.models import UnitStatus, UnitLesson, Lesson, Response
-# from chat.models import Chat, Message, ChatDivider, UnitError
-import logging
 import re
+import logging
 from functools import partial
+
+from chat.models import Message
+from ct.models import Lesson
 from ct.templatetags.ct_extras import md2html
 
 
 class BaseFMSNode(object):
     """
-    Base class for all FSM nodes which implements logic to get html (get_html method), get options (get_options)
+    Base class for all FSM nodes which implements
+    logic to get html (get_html method), get options (get_options)
     and get input (get_input).
     """
     WAIT_NODES_REGS = [r"^WAIT_(?!ASSESS$).*$", r"^RECYCLE$"]

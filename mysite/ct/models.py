@@ -8,7 +8,21 @@ from django.utils import timezone
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Count, Max
 from django.utils.safestring import mark_safe
+
 from ct.templatetags.ct_extras import md2html
+
+
+EVAL_OPTIONS = {
+    'close': 'It was very close',
+    'different': 'No similarities at all',
+    'correct': 'Essentially the same'
+}
+
+STATUS_OPTIONS = {
+    'help': 'Still confused, need help',
+    'review': 'OK, but need further review and practice',
+    'done': 'Solidly',
+}
 
 
 def copy_model_instance(inst, **kwargs):
@@ -375,7 +389,6 @@ class Lesson(models.Model):
                                                relationship=relationship)
 
     def get_html(self, message, chat, **kwargs):
-        from chat.models import STATUS_OPTIONS
         html = message.text
         if self.kind == UnitLesson.MISUNDERSTANDS:
             html = mark_safe(
@@ -1054,7 +1067,6 @@ class Response(models.Model):
                 return self.CLASSIFY_STEP, 'classify your error(s)'
 
     def get_html(self, message, chat, **kwargs):
-        from chat.models import EVAL_OPTIONS
         html = message.text
         if message.input_type == 'text':
             html = mark_safe(md2html(self.text))

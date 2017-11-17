@@ -54,18 +54,6 @@ KIND_CHOICES = (
     ('button', 'button')
 )
 
-EVAL_OPTIONS = {
-    'close': 'It was very close',
-    'different': 'No similarities at all',
-    'correct': 'Essentially the same'
-}
-
-STATUS_OPTIONS = {
-    'help': 'Still confused, need help',
-    'review': 'OK, but need further review and practice',
-    'done': 'Solidly',
-}
-
 
 class Chat(models.Model):
     """
