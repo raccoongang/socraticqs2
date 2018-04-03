@@ -1,0 +1,9 @@
+stages:
+  - tests
+
+run python tests:
+  stage: tests
+  script:
+    - ls
+  only:
+    - feat/ci
